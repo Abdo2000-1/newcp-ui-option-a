@@ -1,0 +1,18 @@
+export * from '@/types';
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ApiErrorResponse {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  instance?: string;
+  errors?: Record<string, string[]>;
+}
