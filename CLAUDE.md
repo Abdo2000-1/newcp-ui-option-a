@@ -11,7 +11,9 @@ This repository contains the CP PRO MAX frontend and its project-specific AI-ass
 5. `docs/02_REQUIREMENTS/traceability-matrix.md`
 6. `docs/02_REQUIREMENTS/open-questions.md`
 7. `docs/01_PROJECT/project-overview.md` and `docs/01_PROJECT/architecture.md`
-7. Any official source files explicitly listed as available by `docs/00_SOURCE_INVENTORY.md`.
+8. `docs/01_PROJECT/architecture-understanding-report.md` when it exists
+9. `.claude/rules/business-domain.md` before any product-behavior work
+10. Any official source files explicitly listed as available by `docs/00_SOURCE_INVENTORY.md`.
 
 Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `implement-task`, `code-review-task`, and `finalize-task`. Use specialist subagents only for the bounded read-only analysis described in `.claude/agents/`.
 
@@ -35,6 +37,8 @@ Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `impl
 ## Verification and approval
 
 - Inspect diffs and run actual repository commands when they exist. Report skipped or unavailable checks.
+- Treat lockfile installation, lint, typecheck, applicable tests, production builds, SonarQube or the approved quality scan, Docker/image validation where supported, contract checks, accessibility, responsive checks, documentation, and evidence as task-dependent completion gates.
+- Reuse the approved CI provider and workflow. Do not invent GitHub Actions, SonarQube, Docker registries, image names, secrets, or deployment settings when the environment is not confirmed; record the blocker instead.
 - Tests, lint, typecheck, builds, contract checks, accessibility checks, and evidence are completion inputs—not claims to fill in later.
 - Human owners retain responsibility for business correctness, architecture approval, security decisions, and merge approval. Claude must not merge, deploy, publish, or claim approval.
 - Stop when a missing contract, unavailable service, ambiguous scope, missing owner, or failed quality gate affects correctness. Record the blocker and next decision owner.
