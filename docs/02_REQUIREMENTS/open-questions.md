@@ -1,0 +1,18 @@
+# Open Questions and Blockers
+
+These items must be resolved by the named human owner before the affected implementation or acceptance claim can proceed.
+
+| ID | Question or blocker | Why it matters | Decision owner | Safe interim action |
+|---|---|---|---|---|
+| OQ-001 | Where is the approved backend repository, and is this existing frontend the confirmed New CP Option A baseline? | Backend architecture and contract integration remain unverifiable; the frontend currently uses local JSON fixtures | Technical lead / repository owner | Preserve the application source unchanged; assess it against the approved contract before implementation |
+| OQ-002 | Is the selected package still discussion draft V1.2, and which kickoff decisions were formally approved? | Prevents proposed structures and 80% coverage target from being treated as approval | Technical lead | Label all package directions as draft/confirmed-in-package |
+| OQ-003 | What is the canonical approved OpenAPI 3.0.3 file and freeze/change process? | Candidate paths and schemas must not become invented frontend contracts | Backend owner + technical lead | Use typed mocks only when explicitly marked simulated |
+| OQ-004 | What are the exact Models and Conversion options, fields, editability rules, and one permitted transition? | Needed for plan, API DTOs, UI acceptance, and tests | Technical lead + business owner | Do not implement unspecified fields or transitions |
+| OQ-005 | What are the service-instance display/reference rules and line/item semantics? | Needed for duplicate same-type identity, attachments, pricing, assignment, and history | Technical lead + backend owner | Preserve instance identity requirement; defer labels/semantics |
+| OQ-006 | Which Google OAuth provider configuration, callback URLs, scopes, token/session model, and test environment are approved? | A client login button cannot establish a complete authentication flow | Full-time developer + backend/security owner | Document dependency; no client secrets or fake success |
+| OQ-007 | Which tenant roles, membership checks, error policy, and retry/idempotency convention are approved? | Required for authorization, cross-tenant tests, and duplicate submission behavior | Technical lead + backend/security owner | Block security-sensitive implementation until defined |
+| OQ-008 | Are POC source repositories/commits, configuration, sanitized data, and app-role database access available? | POC existence is not integration proof; live behavior cannot be claimed | Full-time developer / operations owner | Record each capability as Unknown in the register |
+| OQ-009 | What is the official assignment mapping for Abdo? | Official tables describe unnamed roles and conflict with the user-provided Option A/MUI boundary | Technical lead | Apply user-provided boundary for this workspace; do not assign MUI to Abdo |
+| OQ-010 | Does “Full Stack: 5 hours” mean total allocation, per-day allocation, or another unit? | User explicitly prohibits inventing the meaning; planning could be wrong | Abdo + technical lead | Record exactly as “5 hours as written”; no schedule arithmetic |
+| OQ-011 | Which Git host, CI provider, SonarQube instance, container registry, and branch/review policy apply? | Prevents unsupported GitHub automation and unverifiable CI claims | Repository owner / full-time developer | Do not add CI or PR templates here |
+| OQ-012 | Is a formal evidence directory required, and what submission naming/retention rules apply? | Evidence must be authentic, sanitized, and deliverable-specific | Technical lead | Provide the evidence design and procedures; add artifacts only when real |

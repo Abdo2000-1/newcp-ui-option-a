@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Claude preferences and settings
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Temporary rendering and local tool output
+tmp/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Unsanitized evidence must remain outside version control
+evidence/raw/
+evidence/**/private/
