@@ -192,7 +192,8 @@ cp-pro-max/
 
 This repository contains the existing application and the project-specific engineering system used to plan, implement, review, and finalize future changes. The documentation is numbered so that a new contributor can follow one predictable path. These controls were merged without modifying the existing application source.
 
-- [`CLAUDE.md`](CLAUDE.md) — concise repository instructions and approval gates.
+- [`AGENTS.md`](AGENTS.md) — Antigravity workspace instructions and approval gates.
+- [`CLAUDE.md`](CLAUDE.md) — Claude Code compatibility instructions retained for the original workflow.
 - [`docs/00_READ_FIRST.md`](docs/00_READ_FIRST.md) — numbered navigation and reading order.
 - [`docs/00_SOURCE_INVENTORY.md`](docs/00_SOURCE_INVENTORY.md) — source precedence and availability record.
 - [`docs/01_PROJECT/`](docs/01_PROJECT/) — project overview, architecture, conventions, engineering guidelines, and security.
@@ -202,9 +203,11 @@ This repository contains the existing application and the project-specific engin
 - [`docs/05_QUALITY/`](docs/05_QUALITY/) — testing strategy, quality gates, and evidence procedures.
 - [`docs/03_WORKFLOW/ownership/abdo.md`](docs/03_WORKFLOW/ownership/abdo.md) — Abdo's Full Stack 5-hour allocation, React Option A boundary, and MUI exclusion.
 - [`docs/90_PRODUCT_REFERENCE/`](docs/90_PRODUCT_REFERENCE/) — original product specifications and design references.
-- [`.claude/skills/`](.claude/skills/) — reusable planning, grooming, implementation, review, finalization, audit, API, testing, and evidence workflows.
-- [`.claude/rules/`](.claude/rules/) — scope, API contract, testing, security, and evidence rules.
-- [`.claude/agents/`](.claude/agents/) — bounded specialist configurations for architecture, API, testing, and evidence analysis.
+- [`.agents/skills/`](.agents/skills/) — Antigravity-discoverable planning, grooming, implementation, review, finalization, audit, API, testing, and evidence workflows.
+- [`.agents/rules/`](.agents/rules/) — Antigravity-discoverable scope, API contract, testing, security, and evidence rules.
+- [`.agents/agents/`](.agents/agents/) — Antigravity-compatible bounded specialist subagents.
+- [`.claude/`](.claude/) — retained compatibility mirror for Claude Code.
+- [`docs/03_WORKFLOW/ai-tooling-compatibility.md`](docs/03_WORKFLOW/ai-tooling-compatibility.md) — discovery, model, and compatibility guidance.
 - [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md) and [`CONTRIBUTION_SUMMARY.md`](CONTRIBUTION_SUMMARY.md) — evidence-oriented work records.
 
 The existing frontend documentation is preserved under [`docs/90_PRODUCT_REFERENCE/`](docs/90_PRODUCT_REFERENCE/). Where repository documentation conflicts with the engineering-system controls above, the project-specific engineering controls are the governing workflow record; original product documents are preserved as source references and are not silently rewritten.

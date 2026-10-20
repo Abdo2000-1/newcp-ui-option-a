@@ -1,0 +1,38 @@
+# Antigravity Workspace Instructions
+
+This repository contains the CP PRO MAX frontend and its project-specific AI-assisted engineering system. These instructions are the Antigravity workspace entry point. The application source is the existing baseline; do not implement features unless the user provides an approved task.
+
+## Read before work
+
+1. `README.md`
+2. `docs/00_READ_FIRST.md`
+3. `docs/00_SOURCE_INVENTORY.md`
+4. `docs/02_REQUIREMENTS/requirements-inventory.md`
+5. `docs/02_REQUIREMENTS/traceability-matrix.md`
+6. `docs/02_REQUIREMENTS/open-questions.md`
+7. `docs/01_PROJECT/project-overview.md` and `docs/01_PROJECT/architecture.md`
+
+Use the relevant skill under `.agents/skills/`. The normal lifecycle is `plan-task` → `groom-task` → `implement-task` → `code-review-task` → human review/approval → `finalize-task`.
+
+## Source of truth and scope
+
+- Approved task documents outrank repository conventions. The merged engineering controls govern workflow, traceability, review, and evidence when generic or legacy repository documentation conflicts with them.
+- Keep confirmed facts, approved requirements, existing implementation, proposed practices, assumptions, open questions, and blockers separate.
+- Never invent endpoints, fields, credentials, commands, test results, architecture, approvals, or team ownership.
+- Abdo's controlling boundary is Full Stack 5 hours as written, React UI Option A only, and no MUI implementation or MUI comparison-spike ownership.
+
+## Engineering constraints
+
+- Preserve existing application source and conventions unless an approved task authorizes a change.
+- Do not add unrelated features, dependencies, broad refactors, or production operations.
+- Use the approved OpenAPI contract when available; never infer backend behavior from local fixtures.
+- Do not connect the frontend directly to a database or place secrets, tokens, PHI, customer data, or production dumps in prompts, logs, screenshots, or evidence.
+
+## Verification and approval
+
+- Run actual repository commands and report their real results. Never turn warnings, skipped checks, or unavailable infrastructure into success claims.
+- Inspect the diff and preserve application behavior.
+- Human owners retain responsibility for business correctness, architecture, security, and merge approval. Do not merge, deploy, publish, or claim approval.
+- Stop and record a blocker when a missing contract, ambiguous requirement, unavailable service, missing owner, or failed quality gate affects correctness.
+
+`.claude/` and `CLAUDE.md` are retained as compatibility documentation for Claude Code; Antigravity-native rules and skills are under `.agents/`.

@@ -2,11 +2,11 @@
 
 This repository contains the existing CP PRO MAX frontend plus the merged engineering system that governs future work. The numbered documentation sections are intentional:
 
-1. `CLAUDE.md` — mandatory Claude Code instructions and approval gates.
+1. `AGENTS.md` — Antigravity workspace instructions and approval gates.
 2. `docs/00_SOURCE_INVENTORY.md` — source precedence, confirmed facts, and unavailable dependencies.
 3. `docs/01_PROJECT/` — project purpose, current architecture, conventions, security, and engineering guidelines.
 4. `docs/02_REQUIREMENTS/` — requirements inventory, traceability matrix, and open questions.
-5. `docs/03_WORKFLOW/` — task lifecycle, Definition of Done, ownership, and decision records.
+5. `docs/03_WORKFLOW/` — task lifecycle, Definition of Done, ownership, decisions, and AI-tool compatibility.
 6. `docs/04_INTEGRATION/` — OpenAPI and frontend/backend integration status.
 7. `docs/05_QUALITY/` — testing strategy, quality gates, and evidence procedures.
 8. `docs/90_PRODUCT_REFERENCE/` — original frontend product specifications and design references.
@@ -15,12 +15,12 @@ This repository contains the existing CP PRO MAX frontend plus the merged engine
 
 Use the relevant skill in this order for implementation work:
 
-1. `.claude/skills/plan-task/`
-2. `.claude/skills/groom-task/`
-3. `.claude/skills/implement-task/`
-4. `.claude/skills/code-review-task/`
+1. `.agents/skills/plan-task/`
+2. `.agents/skills/groom-task/`
+3. `.agents/skills/implement-task/`
+4. `.agents/skills/code-review-task/`
 5. Human review and approval
-6. `.claude/skills/finalize-task/`
+6. `.agents/skills/finalize-task/`
 
 Use the specialist skills only when their narrower responsibility is needed:
 
@@ -28,6 +28,8 @@ Use the specialist skills only when their narrower responsibility is needed:
 - `api-contract-analysis` for OpenAPI and integration questions.
 - `testing-quality` for test planning and quality gates.
 - `evidence-acceptance` for evidence and acceptance verification.
+
+Antigravity discovery details and the Claude compatibility layer are documented in `docs/03_WORKFLOW/ai-tooling-compatibility.md`.
 
 ## Application source order
 
