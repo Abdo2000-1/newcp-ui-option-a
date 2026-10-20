@@ -6,7 +6,7 @@ The user-provided task states that Abdo's assigned contribution is:
 
 - Full Stack: 5 hours, preserved exactly as written.
 - React UI: Option A only.
-- Material UI (MUI): outside Abdo's assigned implementation scope.
+- NO Material UI (MUI): outside Abdo's assigned implementation scope.
 
 The unit and meaning of “5 hours” are not inferred. This document does not convert it to hours per day, total hours, or task duration.
 
