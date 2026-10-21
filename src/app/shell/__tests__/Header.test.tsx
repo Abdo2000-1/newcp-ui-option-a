@@ -1,8 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Header } from '../Header';
 import { AppProviders } from '@/app/providers';
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 function renderHeader(onMenuClick = vi.fn()) {
   return render(
@@ -15,6 +24,19 @@ function renderHeader(onMenuClick = vi.fn()) {
 }
 
 describe('Shell Header Component', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+  });
+
+  it('navigates to /add-case when New Order button is clicked', () => {
+    renderHeader();
+
+    const newOrderBtn = screen.getByRole('button', { name: /new order/i });
+    expect(newOrderBtn).toBeInTheDocument();
+
+    fireEvent.click(newOrderBtn);
+    expect(mockNavigate).toHaveBeenCalledWith('/add-case');
+  });
   it('renders search input with placeholder', () => {
     renderHeader();
     expect(screen.getByPlaceholderText(/quick search orders, patients/i)).toBeInTheDocument();
