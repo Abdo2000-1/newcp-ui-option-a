@@ -22,16 +22,18 @@ The primary design goal is transitioning the application from a coupled, mock-de
 
 ## 2. Current Architecture vs. Target Clean Architecture
 
-### 2.1 Current-State Architecture (POC Baseline)
-In the current implementation:
-- **Presentation & State Coupling:** UI pages (`src/pages/*.tsx`) import the singleton `store` (`src/services/store.ts`) directly.
-- **LocalStorage as Single Source of Truth:** `ReactiveStore` synchronizes all entity mutations to browser `localStorage` under `dentalab_store_*`.
-- **Static JSON Fetching:** `src/services/api.ts` performs direct `fetch()` calls against static JSON files in `/data/*.json` and simulates database joins and filtering in client memory.
-- **Generic Data Models:** The domain models in `src/types/index.ts` use generic string enumerations (`OrderStatus = 'New' | 'Review' | 'Design' ...`) which contradict the product-specific status codes defined by the 3DDX Business Guide.
+### 2.1 Current-State Architecture (Post T-001 & T-002 Baseline)
+`[CONFIRMED FACT]` Following tasks T-001 and T-002:
+- **Modular Directory Layout:** The codebase has been realigned into domain features (`src/features/`), application shell and routing (`src/app/`), and cross-cutting reusable infrastructure (`src/shared/`).
+- **Presentation & State Isolation:** UI pages reside under `src/features/*` and atomic UI components in `src/shared/components/`.
+- **Testing & Quality Foundation:** Vitest (v5) + React Testing Library (v16) is active with 44 unit and component tests passing via `npm run test`.
+- **LocalStorage Prototype State:** `ReactiveStore` (`src/shared/services/store.ts`) manages client mutations in browser `localStorage` pending backend integration.
+- **Static JSON Mock Fetching:** `src/shared/services/api.ts` simulates API responses by fetching static JSON files in `/data/*.json`.
+- **Domain Errors & Types:** Typed API error envelopes (`ApiClientError`, `AuthenticationError`, `TenantAccessDeniedError`, `ClinicalApprovalRequiredError`) are implemented in `src/shared/api/errors.ts`.
 
 ```
-[Current POC Flow]
-[React UI Page] <---> [ReactiveStore (localStorage)] <---> [api.ts (fetch '/data/*.json')]
+[Current State Flow]
+[Feature Pages (src/features/*)] <---> [ReactiveStore (localStorage)] <---> [api.ts (fetch '/data/*.json')]
 ```
 
 ### 2.2 Target Architecture (Clean Architecture / Hexagonal)
@@ -758,11 +760,12 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ## 12. Architectural Decisions Requiring Human Approval
 
-The following critical decisions require explicit sign-off from the Technical Lead and Product Owner before code execution:
-1. **Selection of Unit Testing Engine:** Formal adoption of Vitest over Jest for alignment with Vite.
-2. **Adoption of TanStack Query:** Replacing `ReactiveStore` with React Query for server-state synchronization.
-3. **OpenAPI Specification Freeze:** Confirmation of the final OpenAPI 3.0.3 contract from the backend engineering team.
-4. **Approval of FMP/GFMP Status Sequences:** Finalizing the open business question regarding whether FMP/GFMP are independent services, order forms, or bundled workflows.
+The following critical decisions and architectural items track governance requirements:
+1. **Selection of Unit Testing Engine:** `[CONFIRMED FACT]` Formally resolved with Vitest (v5) + React Testing Library (v16) in Task T-002.
+2. **Styling Engine (Tailwind CSS v4 vs. React + MUI):** `[OPEN QUESTION]` Unresolved architectural decision pending explicit human approval from Technical Lead and stakeholders. Retained Tailwind CSS v4 in Option A; MUI excluded from Abdo's scope. No premature ADR created.
+3. **Adoption of TanStack Query:** Replacing `ReactiveStore` with React Query for server-state synchronization upon backend readiness.
+4. **OpenAPI Specification Freeze:** Confirmation and ingestion of the canonical OpenAPI 3.0.3 contract (`newcp.openapi.yaml`) from the backend team.
+5. **Approval of FMP/GFMP Status Sequences:** Finalizing whether FMP/GFMP are independent services, order forms, or bundled workflows.
 
 ---
 
