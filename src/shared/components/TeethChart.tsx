@@ -842,13 +842,8 @@ export function TeethChart({
   showToolbar = true,
   className = ''
 }: TeethChartProps) {
-  let appConfig: any = null;
-  try {
-    const configCtx = useAppConfig();
-    appConfig = configCtx?.config;
-  } catch (e) {
-    // context optional
-  }
+  const configCtx = useAppConfig();
+  const appConfig = configCtx?.config;
 
   const [viewLayoutMode, setViewLayoutMode] = useState<'grid' | 'anatomical'>('grid');
   const propSelected = selected ?? selectedTeeth;
