@@ -26,6 +26,8 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { store } from '@/shared/services/store';
+import Box from '@mui/material/Box';
+import FormHelperText from '@mui/material/FormHelperText';
 
 export default function AddCase() {
   const navigate = useNavigate();
@@ -44,6 +46,13 @@ export default function AddCase() {
   const [patientChartId, setPatientChartId] = useState('');
   const [patientDob, setPatientDob] = useState('1985-06-15');
   const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Male');
+  const [showErrors, setShowErrors] = useState(false);
+
+  const isStep1Valid = Boolean(
+    patientFirstName.trim() &&
+    patientLastName.trim() &&
+    patientChartId.trim()
+  );
 
   // Arches & Services
   const [archSelection, setArchSelection] = useState<'Maxilla' | 'Mandible' | 'Dual Arch'>('Dual Arch');
@@ -115,11 +124,16 @@ export default function AddCase() {
   const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
     e?.preventDefault();
     if (submitting) return;
+    if (!isStep1Valid) {
+      setShowErrors(true);
+      setCurrentStep(1);
+      return;
+    }
     setSubmitting(true);
 
     setTimeout(() => {
       const newOrderNum = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-      const fullName = `${patientFirstName || 'Alex'} ${patientLastName || 'Morgan'}`.trim();
+      const fullName = `${patientFirstName.trim()} ${patientLastName.trim()}`.trim();
       
       store.createOrder({
         orderNumber: newOrderNum,
@@ -235,6 +249,10 @@ export default function AddCase() {
                   type="button"
                   onClick={() => {
                     setSuccessCaseNumber(null);
+                    setShowErrors(false);
+                    setPatientFirstName('');
+                    setPatientLastName('');
+                    setPatientChartId('');
                     setCurrentStep(1);
                   }}
                   className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300"
@@ -258,7 +276,13 @@ export default function AddCase() {
                     <button
                       key={s.num}
                       type="button"
-                      onClick={() => setCurrentStep(s.num)}
+                      onClick={() => {
+                        if (s.num > 1 && !isStep1Valid) {
+                          setShowErrors(true);
+                          return;
+                        }
+                        setCurrentStep(s.num);
+                      }}
                       className={`flex items-center gap-2 p-2 rounded-xl text-left transition-colors cursor-pointer ${
                         currentStep === s.num
                           ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30'
@@ -334,44 +358,87 @@ export default function AddCase() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                       <div>
-                        <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
+                        <label htmlFor="patientFirstName" className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
                           First Name *
                         </label>
-                        <input
+                        <Box
+                          component="input"
+                          id="patientFirstName"
                           type="text"
                           required
+                          aria-required="true"
+                          aria-invalid={Boolean(showErrors && !patientFirstName.trim())}
+                          aria-describedby={showErrors && !patientFirstName.trim() ? "patientFirstName-error" : undefined}
                           value={patientFirstName}
-                          onChange={(e) => setPatientFirstName(e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPatientFirstName(e.target.value)}
                           placeholder="e.g. Michael"
                           className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                          sx={showErrors && !patientFirstName.trim() ? {
+                            borderColor: 'error.main !important',
+                            boxShadow: (theme) => `0 0 0 1px ${theme.palette.error.main}`,
+                          } : undefined}
                         />
+                        {showErrors && !patientFirstName.trim() && (
+                          <FormHelperText error id="patientFirstName-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
+                            First name is required
+                          </FormHelperText>
+                        )}
                       </div>
 
                       <div>
-                        <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
+                        <label htmlFor="patientLastName" className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
                           Last Name *
                         </label>
-                        <input
+                        <Box
+                          component="input"
+                          id="patientLastName"
                           type="text"
                           required
+                          aria-required="true"
+                          aria-invalid={Boolean(showErrors && !patientLastName.trim())}
+                          aria-describedby={showErrors && !patientLastName.trim() ? "patientLastName-error" : undefined}
                           value={patientLastName}
-                          onChange={(e) => setPatientLastName(e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPatientLastName(e.target.value)}
                           placeholder="e.g. Henderson"
                           className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                          sx={showErrors && !patientLastName.trim() ? {
+                            borderColor: 'error.main !important',
+                            boxShadow: (theme) => `0 0 0 1px ${theme.palette.error.main}`,
+                          } : undefined}
                         />
+                        {showErrors && !patientLastName.trim() && (
+                          <FormHelperText error id="patientLastName-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
+                            Last name is required
+                          </FormHelperText>
+                        )}
                       </div>
 
                       <div>
-                        <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
-                          Patient Chart ID / PACS ID
+                        <label htmlFor="patientChartId" className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
+                          Patient Chart ID / PACS ID *
                         </label>
-                        <input
+                        <Box
+                          component="input"
+                          id="patientChartId"
                           type="text"
+                          required
+                          aria-required="true"
+                          aria-invalid={Boolean(showErrors && !patientChartId.trim())}
+                          aria-describedby={showErrors && !patientChartId.trim() ? "patientChartId-error" : undefined}
                           value={patientChartId}
-                          onChange={(e) => setPatientChartId(e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPatientChartId(e.target.value)}
                           placeholder="e.g. PT-99210"
                           className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono"
+                          sx={showErrors && !patientChartId.trim() ? {
+                            borderColor: 'error.main !important',
+                            boxShadow: (theme) => `0 0 0 1px ${theme.palette.error.main}`,
+                          } : undefined}
                         />
+                        {showErrors && !patientChartId.trim() && (
+                          <FormHelperText error id="patientChartId-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
+                            Patient Chart ID / PACS ID is required
+                          </FormHelperText>
+                        )}
                       </div>
 
                       <div>
@@ -576,7 +643,11 @@ export default function AddCase() {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1 border-t border-sky-200/60 dark:border-sky-800/40">
                         <div>
                           <span className="text-slate-500 dark:text-slate-400 block">Patient</span>
-                          <strong className="text-slate-900 dark:text-white">{patientFirstName || 'Alex'} {patientLastName || 'Morgan'}</strong>
+                          <strong className="text-slate-900 dark:text-white">
+                            {patientFirstName.trim() && patientLastName.trim()
+                              ? `${patientFirstName.trim()} ${patientLastName.trim()}`
+                              : '—'}
+                          </strong>
                         </div>
                         <div>
                           <span className="text-slate-500 dark:text-slate-400 block">Clinician</span>
@@ -676,7 +747,13 @@ export default function AddCase() {
                   {currentStep < totalSteps ? (
                     <button
                       type="button"
-                      onClick={() => setCurrentStep(currentStep + 1)}
+                      onClick={() => {
+                        if (currentStep === 1 && !isStep1Valid) {
+                          setShowErrors(true);
+                          return;
+                        }
+                        setCurrentStep(currentStep + 1);
+                      }}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0284c7] hover:bg-sky-600 text-white font-bold text-xs shadow-md shadow-sky-500/20 cursor-pointer"
                     >
                       <span>Continue</span>
