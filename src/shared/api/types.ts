@@ -1,4 +1,4 @@
-import type { Order, Patient, Case, BillingRecord } from '@/types';
+import type { Order, Patient, Case, BillingRecord } from '@/shared/types';
 import type { PaginatedResult } from '@/shared/types';
 
 export interface CaseQueryParams {

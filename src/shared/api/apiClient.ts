@@ -1,6 +1,6 @@
-import { api } from '@/services/api';
+import { api } from '@/shared/services/api';
 import type { IApiClient, CaseQueryParams, OrderQueryParams } from './types';
-import type { Case, Order, Patient, BillingRecord } from '@/types';
+import type { Case, Order, Patient, BillingRecord } from '@/shared/types';
 import type { PaginatedResult } from '@/shared/types';
 
 export class ApiClient implements IApiClient {

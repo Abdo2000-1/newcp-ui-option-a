@@ -1,4 +1,4 @@
-import type { Order, SubOrder, OrderStatus, Priority } from '@/types';
+import type { Order, SubOrder, OrderStatus, Priority } from '@/shared/types';
 
 export interface ServiceLineItem {
   id: string;
