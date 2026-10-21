@@ -152,7 +152,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Cohesive, Modern Header Action Button */}
         <button 
-          onClick={() => navigate('/orders/create')}
+          onClick={() => navigate('/add-case')}
           className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-xs shadow-cyan-500/20 transition-all duration-150 active:scale-95 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
