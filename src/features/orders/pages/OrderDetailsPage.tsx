@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -53,9 +53,12 @@ import { PriorityBadge } from '@/shared/components/PriorityBadge';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
+import { Button } from '@/shared/components/Button';
 import { DicomMprViewer } from '@/features/conversion/components/DicomMprViewer';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { MASTER_WORKFLOW_ORDERS, MasterWorkflowOrder, SubServiceItem } from '@/shared/data/flowMockData';
+import { useStore } from '@/shared/hooks/useStore';
+import { store } from '@/shared/services/store';
 import type { OrderStatus, Priority } from '@/shared/types';
 
 interface UploadedFileItem {
@@ -81,22 +84,84 @@ export default function OrderDetailsPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  // URL Params matching: OrderDetails.php?xid=1016;reg=1;u=1;modID=288004;ID=504901 or ?ID=504901
-  const paramId = searchParams.get('ID') || searchParams.get('id') || '504901';
+  // URL Params matching: OrderDetails.php?xid=1016;reg=1;u=1;modID=288004;ID=504901 or ?ID=504901 or ?id=ord-1
+  const paramId = searchParams.get('ID') || searchParams.get('id');
   const modId = searchParams.get('modID') || '288004';
   const xid = searchParams.get('xid') || '1016';
 
-  // Find matching case in MASTER_WORKFLOW_ORDERS for complete realistic business data
-  const flowOrder = MASTER_WORKFLOW_ORDERS.find(
-    (o) =>
-      o.orderNum === paramId ||
-      o.id === paramId ||
-      paramId.includes(o.orderNum) ||
-      o.orderNum.includes(paramId)
-  ) || MASTER_WORKFLOW_ORDERS[0];
+  const storeOrders = useStore((s) => s.getOrders());
+
+  // Find matching case in MASTER_WORKFLOW_ORDERS or store orders
+  const flowOrder: MasterWorkflowOrder | undefined = useMemo(() => {
+    if (!paramId) return undefined;
+
+    // 1. Search in MASTER_WORKFLOW_ORDERS
+    const wfMatch = MASTER_WORKFLOW_ORDERS.find(
+      (o) =>
+        o.orderNum === paramId ||
+        o.id === paramId ||
+        o.orderNum.toLowerCase() === paramId.toLowerCase() ||
+        o.id.toLowerCase() === paramId.toLowerCase()
+    );
+    if (wfMatch) return wfMatch;
+
+    // 2. Search in store orders (by id or orderNumber)
+    const stMatch =
+      storeOrders.find(
+        (o) =>
+          o.id === paramId ||
+          o.orderNumber === paramId ||
+          o.id.toLowerCase() === paramId.toLowerCase() ||
+          o.orderNumber.toLowerCase() === paramId.toLowerCase()
+      ) || store.getOrderById(paramId);
+
+    if (stMatch) {
+      return {
+        id: stMatch.id,
+        serial: 1,
+        orderNum: stMatch.orderNumber || stMatch.id,
+        source: 'Via CP',
+        scanCenter: stMatch.scanCenterName || stMatch.clinicName || '3DDX Boston Radiology Hub',
+        doctorName: stMatch.doctorName || 'Dr. Allison Park',
+        doctorSub: 'DDS',
+        patientName: stMatch.patientName || 'Patient Record',
+        patientSub: stMatch.patientId || '',
+        isLocked: Boolean(stMatch.isLocked),
+        notes: stMatch.notes || '',
+        archiveDate: stMatch.archiveDate || '',
+        services: [
+          {
+            id: `srv-${stMatch.id}`,
+            type: stMatch.restoration || 'Treatment Plan & Guide',
+            typeCode: (stMatch.restoration?.slice(0, 2) || 'TP').toUpperCase(),
+            title: `${stMatch.restoration || 'Treatment Plan'} (${stMatch.arch || 'Maxilla'})`,
+            subtitle: stMatch.format || 'STL Mesh',
+            billTo: stMatch.billTo || stMatch.clinicName || 'California Diagnostics',
+            maxilla: stMatch.arch === 'Maxilla' || stMatch.arch === 'Both' ? 'Yes' : 'No',
+            mandible: stMatch.arch === 'Mandible' || stMatch.arch === 'Both' ? 'Yes' : 'No',
+            format: stMatch.format || 'coDiagnostiX',
+            amount: stMatch.amount || 200,
+            vouchers: String(stMatch.vouchers || 0),
+            receivedTime: stMatch.receivedAt || '',
+            sentTime: stMatch.sentAt || '',
+            updateTime: stMatch.updatedAt || '',
+            chargedOn: stMatch.chargedAt || '',
+            hasActionAlert: stMatch.priority === 'Urgent',
+            actionLabel: stMatch.status || 'In Progress',
+            changeRequest: stMatch.changeRequest || 'None',
+            csTask: {
+              status: 'Assign',
+            },
+          },
+        ],
+      };
+    }
+
+    return undefined;
+  }, [paramId, storeOrders]);
 
   // The primary service title serves as the main hook
-  const primaryService = flowOrder.services[0] || {
+  const primaryService = flowOrder?.services[0] || {
     title: 'Treatment Plan & Surgical Guide',
     format: 'coDiagnostiX',
     typeCode: 'TP',
@@ -110,9 +175,18 @@ export default function OrderDetailsPage() {
   const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
 
   // Core Form Fields
-  const [doctorName, setDoctorName] = useState<string>(flowOrder.doctorName || 'Dr. Alex Mercer, DDS');
-  const [patientName, setPatientName] = useState<string>(flowOrder.patientName || 'Sarah Jenkins');
-  const [scanCenter, setScanCenter] = useState<string>(flowOrder.scanCenter || 'San Francisco Imaging Hub');
+  const [doctorName, setDoctorName] = useState<string>(flowOrder?.doctorName || 'Dr. Alex Mercer, DDS');
+  const [patientName, setPatientName] = useState<string>(flowOrder?.patientName || 'Sarah Jenkins');
+  const [scanCenter, setScanCenter] = useState<string>(flowOrder?.scanCenter || 'San Francisco Imaging Hub');
+
+  useEffect(() => {
+    if (flowOrder) {
+      setDoctorName(flowOrder.doctorName || 'Dr. Alex Mercer, DDS');
+      setPatientName(flowOrder.patientName || 'Sarah Jenkins');
+      setScanCenter(flowOrder.scanCenter || 'San Francisco Imaging Hub');
+      setOrderStatus(flowOrder.services[0]?.actionLabel || 'In Progress');
+    }
+  }, [flowOrder]);
   const [drSpecialRequest, setDrSpecialRequest] = useState<string>('Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.');
   const [scSpecialRequest, setScSpecialRequest] = useState<string>('General');
   const [scSpecialValue, setScSpecialValue] = useState<string>('0');
@@ -169,7 +243,7 @@ export default function OrderDetailsPage() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadedFilesList, setUploadedFilesList] = useState<UploadedFileItem[]>([
-    { id: 'f-1', name: `${flowOrder.patientName.replace(/\s+/g, '_')}_CBCT_Raw.zip`, size: '142 MB', type: 'DICOM Archive', uploadDate: '2026-09-28 09:15' },
+    { id: 'f-1', name: `${(flowOrder?.patientName || 'Patient').replace(/\s+/g, '_')}_CBCT_Raw.zip`, size: '142 MB', type: 'DICOM Archive', uploadDate: '2026-09-28 09:15' },
     { id: 'f-2', name: 'Maxilla_Optical_Scan.stl', size: '18 MB', type: 'STL Mesh', uploadDate: '2026-09-28 09:20' },
     { id: 'f-3', name: 'Mandible_Optical_Scan.stl', size: '16 MB', type: 'STL Mesh', uploadDate: '2026-09-28 09:22' }
   ]);
@@ -192,9 +266,11 @@ export default function OrderDetailsPage() {
   };
 
   const copyOrderId = () => {
-    navigator.clipboard.writeText(flowOrder.orderNum);
+    if (!flowOrder) return;
+    const orderNum = flowOrder.orderNum;
+    navigator.clipboard.writeText(orderNum);
     setIsCopiedId(true);
-    triggerToast(`Order ID #${flowOrder.orderNum} copied to clipboard!`);
+    triggerToast(`Order ID #${orderNum} copied to clipboard!`);
     setTimeout(() => setIsCopiedId(false), 2000);
   };
 
@@ -293,7 +369,9 @@ export default function OrderDetailsPage() {
   };
 
   const handleDownloadFile = (fileName: string) => {
-    const dummyContent = `3D Diagnostix Case Asset: ${fileName}\nOrder ID: ${flowOrder.orderNum}\nPatient: ${flowOrder.patientName}\nClinician: ${flowOrder.doctorName}\nExported on: ${new Date().toISOString()}`;
+    if (!flowOrder) return;
+    const { orderNum, patientName: ptName, doctorName: docName } = flowOrder;
+    const dummyContent = `3D Diagnostix Case Asset: ${fileName}\nOrder ID: ${orderNum}\nPatient: ${ptName}\nClinician: ${docName}\nExported on: ${new Date().toISOString()}`;
     const blob = new Blob([dummyContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -317,9 +395,11 @@ export default function OrderDetailsPage() {
   };
 
   const exportCaseSummary = () => {
+    if (!flowOrder) return;
+    const activeOrder = flowOrder;
     const summary = `3D DIAGNOSTIX CLINICAL CASE SUMMARY
 =========================================
-Order ID: #${flowOrder.orderNum}
+Order ID: #${activeOrder.orderNum}
 Status: ${orderStatus}
 Primary Service: ${primaryService.title} (${primaryService.format})
 Doctor: ${doctorName}
@@ -329,19 +409,58 @@ Dr. Special Request: ${drSpecialRequest}
 Client Note: ${clientNote}
 Registration Type: ${registrationType.toUpperCase()}
 Shipping Instructions: ${specialPreShippingOld}
-Active Modules: ${flowOrder.services.map((s) => `${s.typeCode}: ${s.title} ($${s.amount})`).join(', ')}
-Total Value: $${flowOrder.services.reduce((a, s) => a + s.amount, 0)}.00 USD
+Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} ($${s.amount})`).join(', ')}
+Total Value: ${activeOrder.services.reduce((a, s) => a + s.amount, 0)}.00 USD
 Generated on: ${new Date().toLocaleString()}
 `;
     const blob = new Blob([summary], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Case_${flowOrder.orderNum}_Prescription_Summary.txt`;
+    a.download = `Case_${activeOrder.orderNum}_Prescription_Summary.txt`;
     a.click();
     URL.revokeObjectURL(url);
     triggerToast('Prescription summary downloaded successfully!');
   };
+
+  if (!flowOrder) {
+    return (
+      <div className="space-y-4 w-full min-w-0 pb-16 select-none">
+        <div className="flex items-center gap-3 bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/dashboard')}
+            aria-label="Back to Dashboard"
+          >
+            <ArrowLeft size={16} />
+          </Button>
+          <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+            Order Details
+          </h1>
+        </div>
+
+        <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
+          <EmptyState
+            title="Order Not Found"
+            description={
+              paramId
+                ? `No clinical order or case could be found matching identifier "${paramId}".`
+                : "No order identifier was specified in the request."
+            }
+            suggestion="Verify the order number or navigate from the Dashboard or Production Flow."
+            action={
+              <Button
+                variant="primary"
+                onClick={() => navigate('/dashboard')}
+              >
+                Return to Dashboard
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 w-full min-w-0 pb-16 select-none">
