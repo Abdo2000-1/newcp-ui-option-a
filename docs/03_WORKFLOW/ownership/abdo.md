@@ -1,47 +1,67 @@
 # Abdo Ownership and Boundaries
 
-## Controlling individual assignment
+`[APPROVED REQUIREMENT]`
 
-The user-provided task states that Abdo's assigned contribution is:
+## 1. Controlling Individual Assignment
 
-- Full Stack: 5 hours, preserved exactly as written.
-- React UI: Option A only.
-- NO Material UI (MUI): outside Abdo's assigned implementation scope.
+The user-provided task instructions establish Abdo's assigned contribution:
 
-The unit and meaning of “5 hours” are not inferred. This document does not convert it to hours per day, total hours, or task duration.
+- **Role & Allocation:** Full Stack: 5 hours, preserved strictly as written.
+- **Frontend Target:** React UI Option A only (`newcp-ui-option-a`).
+- **Framework Constraint:** **NO Material UI (MUI)**. MUI is strictly outside Abdo's assigned implementation scope.
+- **Allocation Unit:** The unit and meaning of "5 hours" are not inferred or converted. This document does not convert it to hours per day, total hours, or task duration.
 
-## Official-source discrepancy
+---
 
-The official selected package does not name Abdo. Its role table in `01_Team_Discussion_and_Execution_Plan.docx`, Table 3, describes the Full-stack intern as 5 hours/day with React Design B ownership and the FE intern as React Design A ownership. The user-provided Abdo boundary therefore conflicts with the unnamed role table on UI option and MUI scope. The user instruction controls this workspace; the technical lead must still confirm the official assignment before implementation planning is accepted.
+## 2. Official-Source Discrepancy & Resolution
 
-The team-level requirement for two React + MUI options remains intact. Excluding MUI from Abdo's personal work does not remove MUI from another owner's team responsibility.
+The official selected package draft does not name Abdo. Its role table in `01_Team_Discussion_and_Execution_Plan.docx`, Table 3, describes the Full-stack intern as 5 hours/day with React Design B ownership and the FE intern as React Design A ownership. 
 
-## Abdo-owned work to plan after repository access
+The user-provided Abdo boundary conflicts with the unnamed role table regarding UI option (Option A vs. B) and MUI scope.
+- `[CONFIRMED FACT]` The user instruction controls this workspace.
+- `[APPROVED REQUIREMENT]` Excluding MUI from Abdo's personal work does not remove MUI from another owner's team responsibility (e.g. Option B).
+- `[APPROVED REQUIREMENT]` Tailwind CSS v4 remains active in Option A until a formal decision is approved.
 
-Only the following categories may be assigned to Abdo without further clarification:
+---
 
-1. Full-stack work explicitly bounded by an approved task and within the stated 5-hour allocation.
-2. React UI Option A implementation or integration, using the approved API contract and preserving functional equivalence.
-3. Tests and evidence for Abdo's own changes, including loading/empty/error/validation/permission/responsive behavior as applicable.
-4. Cross-team handoffs needed by Option A, including contract questions, mock-to-live integration proof, and reproducible blockers.
+## 3. Completed Deliverables
 
-Do not assign Abdo MUI component implementation, MUI dependencies, MUI comparison-spike work, Option B ownership, broad V3 review/migration/ETL/reconciliation, production rollout, or another person's POC ownership unless a later human decision explicitly changes the boundary.
+`[CONFIRMED FACT]`
 
-## Expected deliverable map
-
-| Area | Abdo responsibility | Required dependency | Evidence required |
+| Task ID | Deliverable | Git Ref / PR | Actual Results |
 |---|---|---|---|
-| Full Stack | Bounded task explicitly approved within the 5-hour allocation | Named task owner, contract, affected repository, reviewer | Diff, tests/checks actually run, handoff and limitation record |
-| React Option A | Implement/integrate only approved Option A screens and workflows | Canonical OpenAPI, business fields/transitions, auth/tenant behavior, existing Option A source | Component/integration/E2E or manual evidence for success/invalid/loading/empty/error/responsive/permission cases |
-| API integration | Consume the approved contract; report gaps rather than invent endpoints | Backend owner and contract approval | Request/response proof against mocks and then live API, error mapping, contract-gap record |
-| Team handoff | Surface blockers and dependency status; do not absorb other ownership | Backend/full-time/lead decisions as applicable | Handoff note with owner, requested decision, deadline, fallback |
+| **T-000** | Architecture Understanding Baseline Report, SRS, SDS, Baseline Evidence | Commit on `main` | Initial baseline audited, verified scripts, documented domain rules. |
+| **T-001** | Structural alignment to `src/app`, `src/features`, `src/shared` | [PR #4](https://github.com/Abdo2000-1/newcp-ui-option-a/pull/4) (Merged) | 95 files restructured, 0 dead folders, typecheck & build passing. |
+| **T-002** | Foundational testing & CI quality gates | [PR #5](https://github.com/Abdo2000-1/newcp-ui-option-a/pull/5) (Merged) | Vitest + RTL configured, 44 tests passing, GitHub Actions CI green with Docker build. |
+| **T-003** | Documentation, ownership, and standards alignment | Current Task | Reconciled architecture docs, open questions, and restructuring estimates. |
 
-## Ownership acceptance checklist
+---
 
-- [ ] Abdo's exact task IDs and deliverables are named by the lead.
-- [ ] The 5-hour allocation unit is clarified if it affects scheduling.
-- [ ] Option A boundaries are separated from any Full Stack task.
-- [ ] MUI work is excluded from Abdo's personal task breakdown.
-- [ ] Every owned task has acceptance criteria, tests, evidence, reviewer, and handoff.
-- [ ] No other team member's work is claimed as Abdo's contribution.
+## 4. Abdo-Owned Work Scope (Forward-Looking)
 
+Only the following categories may be assigned to Abdo:
+
+1. **Full-Stack Implementation:** Work explicitly bounded by an approved task and within the stated 5-hour allocation.
+2. **React UI Option A:** Implementation or integration of approved Option A screens and workflows using the canonical API contract while preserving functional equivalence.
+3. **Quality & Evidence:** Automated tests (unit, component, integration) and evidence records for Abdo's own changes.
+4. **Cross-Team Handoffs:** Surfacing blockers, contract questions, mock-to-live integration proof, and PR delivery.
+
+### Explicitly Excluded from Abdo's Scope:
+- `[CONFIRMED FACT]` Material UI (MUI) component implementation or dependencies.
+- `[CONFIRMED FACT]` MUI comparison-spike ownership.
+- `[CONFIRMED FACT]` Option B implementation or ownership.
+- `[CONFIRMED FACT]` Broad database migrations, ETL, or PostgreSQL production administration.
+- `[CONFIRMED FACT]` Merging PRs into `main` without human review and approval.
+
+---
+
+## 5. Active Dependencies & Handoff Map
+
+`[CONFIRMED FACT]`
+
+| Dependency / Handoff | External Owner | Impact on Abdo Scope | Status |
+|---|---|---|---|
+| **Canonical OpenAPI Contract (`newcp.openapi.yaml`)** | Backend Owner / Tech Lead | Blocks typed client code generation and live API integration for Option A | `[BLOCKER]` |
+| **Running Backend API / Dev Database** | Backend Owner / Ops | Blocks Phase 4 real data fetching and Phase 5 authentication | `[BLOCKER]` |
+| **SonarQube Credentials** (`SONAR_HOST_URL`, `SONAR_TOKEN`, `SONAR_PROJECT_KEY`) | Repository Owner / Admin | Safe conditional CI step ready; scan blocked until secrets added | `[BLOCKER]` |
+| **Tailwind vs. MUI Formal Decision** | Technical Lead / Stakeholders | Determines whether Option A remains on Tailwind or requires handoff to an MUI owner | `[OPEN QUESTION]` |

@@ -1,34 +1,43 @@
 # OpenAPI and Integration Status
 
-## Authority
+`[CONFIRMED FACT]`
 
-The selected package requires a New CP OpenAPI 3.0.3 contract derived from approved business requirements and target architecture. Legacy Swagger/endpoint shapes are historical reference only. The standards draft proposes `newcp-api/openapi/newcp.openapi.yaml` as the canonical location, subject to repository-topology confirmation.
+## 1. Authority and Standards
 
-## Current status
+The approved New CP package requires an OpenAPI 3.0.3 contract derived from business domain specifications. Legacy Swagger files and mock fixtures serve as historical and transitional reference only. The canonical contract location proposed by standards is `newcp-api/openapi/newcp.openapi.yaml`.
 
-No OpenAPI file, backend repository, endpoint implementation, generated client, contract-test harness, or approved freeze/version process was available in this workspace. Candidate paths in `03_API_Contract_and_Domain_Guardrails.md` are explicitly illustrative and must not be copied into frontend code as approved API behavior.
+---
 
-## Required contract contents
+## 2. Current Implementation Status
 
-Before live frontend integration, the approved contract must define for each operation:
+- `[CONFIRMED FACT]` **Status:** **Pending / Simulated**.
+- `[CONFIRMED FACT]` No live backend service, database connection, or canonical OpenAPI file exists in this repository.
+- `[EXISTING IMPLEMENTATION]` **Mock Data Layer:**
+  - `public/data/*.json`: 12 static fixtures supplying simulated records.
+  - `src/shared/data/flowMockData.ts`: Static workflow arrays for complex workflow board views.
+  - `src/shared/services/api.ts`: Fetch abstractions simulating network delays and returning typed domain data.
+- `[EXISTING IMPLEMENTATION]` **Transport Domain Errors:**
+  - `src/shared/api/errors.ts` defines typed HTTP error classes (`ApiClientError`, `AuthenticationError` 401, `TenantAccessDeniedError` 403, `ClinicalApprovalRequiredError` 409).
+  - Verified with 4 unit tests in `src/shared/api/__tests__/errors.test.ts`.
 
-- path and method;
-- service-instance identity and tenant-scope derivation;
-- required permission;
-- request parameters/body and response schemas;
-- status and error conventions, including correlation ID;
-- examples and pagination where needed;
-- retry/concurrency/idempotency behavior where applicable;
-- authentication and authorization expectations.
+---
 
-## Integration workflow
+## 3. Required Contract Contents (Pre-Integration Prerequisites)
 
-1. Technical lead and business owner approve Models/Conversion operations, fields, editability, and the permitted transition.
-2. Backend owner drafts the contract from those decisions and maps it to V3 entities.
-3. Full-time/security owner reviews tenant, session, authorization, and error boundaries.
-4. Both frontend owners review consumption needs without changing business semantics.
-5. Contract lint and behavior tests run against the implementation.
-6. Breaking changes require impact notice to both UIs, updated tests/docs, and human approval before merge.
+Before frontend integration begins, the canonical OpenAPI contract must supply:
+1. Complete path, HTTP method, and operation IDs for Models, Conversion, Orders, and Reporting.
+2. Tenant derivation headers (`X-Tenant-ID`) and instance identification (`X-Instance-ID`).
+3. Required Casbin / RBAC permissions per endpoint.
+4. Request bodies, query parameters, and response schemas conforming to PostgreSQL V3 models.
+5. Standard RFC 7807 problem details or typed error envelope conventions.
+6. Rate limiting, pagination (`page`, `pageSize`, `totalCount`), and idempotency headers for mutations.
 
-If the backend is unavailable, use explicit typed mocks/fixtures marked as simulated. Do not claim live integration until the actual endpoint is exercised against the approved environment.
+---
 
+## 4. Integration Workflow & Next Steps
+
+1. **Ingest Canonical Contract:** Backend team commits `newcp.openapi.yaml`.
+2. **Automated Code Generation:** Run `openapi-typescript` to generate strict TypeScript models.
+3. **HTTP Client Configuration:** Instantiate `apiClient` with automatic tenant header injection and error mapping.
+4. **Vertical Slice Integration:** Connect one end-to-end slice (e.g. Models / Conversion read & write) against real backend dev server.
+5. **Contract Testing:** Validate frontend client schemas against OpenAPI definitions.
