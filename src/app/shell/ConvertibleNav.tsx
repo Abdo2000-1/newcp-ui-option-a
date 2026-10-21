@@ -276,7 +276,7 @@ export function ConvertibleNav({
               >
                 <div className="h-8 px-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center shadow-xs group-hover:border-[#0284c7] transition-colors">
                   <img
-                    src="/logo-3ddx-full.png"
+                    src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
                     alt="3D Diagnostix"
                     className="h-5 w-auto object-contain"
                   />
@@ -647,7 +647,7 @@ export function ConvertibleNav({
           {!collapsed ? (
             <div className="flex items-center gap-2 overflow-hidden">
               <img
-                src="/logo-3ddx-full.png"
+                src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
                 alt="3DDX"
                 className="h-5 w-auto object-contain"
               />

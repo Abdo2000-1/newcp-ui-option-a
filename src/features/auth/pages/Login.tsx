@@ -98,7 +98,7 @@ export default function Login() {
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative">
             <img
-              src="/logo-3ddx-full.png"
+              src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
               alt="3DDX Logo"
               className="h-12 w-auto object-contain drop-shadow-xs"
             />
