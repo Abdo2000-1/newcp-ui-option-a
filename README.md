@@ -1,18 +1,19 @@
-
-
 <div align="center">
 
-# 🏥 CP PRO MAX (Dental SaaS Web Platform)
+# 🏥 3DDX CP PRO MAX Clinical Web Portal
 
-### **Enterprise-Grade Dental Clinic & Laboratory Operations Management System**
+### **Enterprise-Grade Dental CAD/CAM, Clinical Case Management & 3D PACS Platform**
 
-[![Version](https://img.shields.io/badge/version-4.2.0-blue.svg?style=for-the-badge&logo=semver&logoColor=white)](package.json)
+[![Live Demo](https://img.shields.io/badge/Demo-Live_Preview-success?style=for-the-badge&logo=githubpages&logoColor=white)](https://abdo2000-1.github.io/newcp-ui-option-a/)
+[![Release](https://img.shields.io/badge/Release-v4.2.0-blue.svg?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/Abdo2000-1/newcp-ui-option-a/releases)
+[![CI Pipeline](https://img.shields.io/badge/GitHub_Actions-CI_Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/Abdo2000-1/newcp-ui-option-a/actions)
 [![React](https://img.shields.io/badge/React-19.2.8-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![MUI](https://img.shields.io/badge/MUI-v7.3.7-007FFF?style=for-the-badge&logo=mui&logoColor=white)](https://mui.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.1-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-44%20Tests%20Passing-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](src/test/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_2.0-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4.3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![CI Pipeline](https://img.shields.io/badge/GitHub_Actions-CI_Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
+[![Docker Container](https://img.shields.io/badge/GHCR-Docker_Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/Abdo2000-1/newcp-ui-option-a/pkgs/container/newcp-ui-option-a)
 
 ---
 
@@ -20,16 +21,29 @@
 
 | Role | Name | Title & Responsibility | Contact / Profile |
 | :--- | :--- | :--- | :--- |
-| **Front End Engineer** | **Abdo Al Adawy** | Architecture,  Platform Implementation | [@Abdo2000-1](https://github.com/Abdo2000-1) |
-| **Technical Lead** | **Eng. Aya Adel** | Project Supervision, Architecture Review & Clinical Delivery Compliance | Clinical Systems Lead |
+| **Front End Engineer** | **Abdo Al Adawy** | Architecture, UI/UX Implementation & Standards Alignment | [@Abdo2000-1](https://github.com/Abdo2000-1) |
+| **Technical Lead** | **Eng. Aya Adel** | Project Supervision, Architecture Review & Clinical Compliance | Clinical Systems Lead |
 
 ---
 
 </div>
 
+## 🌐 Live Demo & Deployment
+
+The application is deployed continuously via GitHub Pages and containerized for multi-environment production execution:
+
+* 🚀 **Interactive Web Application**: [https://abdo2000-1.github.io/newcp-ui-option-a/](https://abdo2000-1.github.io/newcp-ui-option-a/)
+* 🐳 **GitHub Container Registry (GHCR)**:
+  ```bash
+  docker pull ghcr.io/abdo2000-1/newcp-ui-option-a:v4.2.0
+  docker run -p 8080:80 ghcr.io/abdo2000-1/newcp-ui-option-a:v4.2.0
+  ```
+
+---
+
 ## 📖 Executive Summary & Platform Overview
 
-**CP PRO MAX** is a high-performance, multi-tenant Dental SaaS web application designed for dental practices, scanning centers, and dental laboratories. The platform centralizes patient intake, order management, multi-stage clinical workflows, lab change requests, PowerBI business analytics, staff performance targets, and digital dental case records.
+**3DDX CP PRO MAX** is a high-performance, multi-tenant Dental SaaS web application designed for dental clinics, scanning centers, and dental laboratories. The platform centralizes patient intake, order management, multi-stage clinical workflows, lab change requests, PowerBI business analytics, staff performance targets, and digital dental case records.
 
 Integrated directly within the platform is the **3DDX Clinical Teeth Chart Engine**, enabling dental professionals to record and manipulate 2D odontogram findings and inspect full 3D biomechanical dental arches with titanium implants in real-time WebGL.
 
@@ -78,59 +92,61 @@ Integrated directly within the platform is the **3DDX Clinical Teeth Chart Engin
 ## 🏗️ Technical Architecture & Stack
 
 ```
-Frontend Architecture:
+Frontend Architecture (Feature-Sliced Design / Clean Architecture):
 ├── React 19 (Component UI Architecture & Fiber Concurrency)
+├── Material-UI (MUI v7 Enterprise Component Library & Design Tokens)
 ├── TypeScript 6.0 (Strict Typing, Clinical Domain Interfaces)
 ├── Vite 8.3 (High-Speed ESM Bundler & HMR Engine)
 ├── Three.js (WebGL 2.0 Physically Based Rendering Engine)
-├── Tailwind CSS 4.3 (Modern Clinical Design Tokens)
+├── Vitest 5.0 (Deterministic Automated Test Framework with 44/44 passed tests)
 ├── PowerBI Client (Enterprise Embedded Analytics Integration)
 ├── Lucide React (Standardized Healthcare & UI Iconography)
 └── Framer Motion (Smooth Workflow & Modal Transitions)
 ```
 
-### Clean Architecture & SOLID Principles
+### Clean Architecture & Module Separation
 
-* **Single Responsibility (SRP)**: Distinct layers for API services (`/src/services`), UI components (`/src/components`), custom data hooks (`/src/hooks`), and page views (`/src/pages`).
-* **Open/Closed (OCP)**: Procedure definitions, workflow statuses, and dental arch render pipelines extend via registry configurations without altering core engine logic.
-* **Dependency Inversion (DIP)**: View components rely on abstract interfaces (`/src/types`) rather than concrete service implementations.
+* **`src/app/`**: Application bootstrap, core providers (MUI theme, React Query, Error Boundary, Language), routing definitions, and shell layout.
+* **`src/features/`**: Domain-driven feature modules (`auth`, `orders`, `models`, `reporting`, `settings`), isolating business logic and dedicated views.
+* **`src/shared/`**: Reusable shared UI design system components (`Button`, `EmptyState`, `ErrorState`, `Pagination`, `SearchInput`, `UIStateSwitcher`, `Avatar`, `StatusBadge`), API clients, custom hooks, and clinical utility functions.
+* **`src/theme/`**: Central MUI theme engine supporting light/dark clinical modes, palette tokens, component overrides, and typography.
 
 ---
 
 ## 🚀 Quick Start & Local Development
 
 ### Prerequisites
-* **Node.js**: `v20.x` or higher
+* **Node.js**: `v20.x` or higher (tested on Node 22)
 * **npm**: `v10.x` or higher
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/Abdo2000-1/cp-pro-max.git
-cd cp-pro-max
+git clone https://github.com/Abdo2000-1/newcp-ui-option-a.git
+cd newcp-ui-option-a
 
-# Install dependencies
-npm install
+# Install dependencies deterministically
+npm ci
 
 # Start the Vite local development server
 npm run dev
 ```
 
-### Accessing the Platform
-* **Platform Dashboard**: `http://localhost:5173/`
-* **Clinical Teeth Chart View**: `http://localhost:5173/teeth-chart`
-* **Workflow Kanban Board**: `http://localhost:5173/workflow-board`
-* **Reports & Analytics**: `http://localhost:5173/reports`
-
-### Production Build & Linting
+### Running Quality Gates & Tests
 
 ```bash
-# Type check and build optimized static assets
-npm run build
+# Execute Vitest automated unit and component tests
+npm run test
 
-# Run fast code linting
+# TypeScript strict type check
+npx tsc -b
+
+# Fast static code linting
 npm run lint
+
+# Production bundle build
+npm run build
 ```
 
 ---
@@ -138,76 +154,60 @@ npm run lint
 ## 📁 Repository Structure
 
 ```
-cp-pro-max/
+newcp-ui-option-a/
 ├── .github/
-│   ├── workflows/ci.yml             # Automated CI pipeline
-│   ├── PULL_REQUEST_TEMPLATE.md     # Production PR template
-│   └── ISSUE_TEMPLATE/              # Bug reports & feature request templates
+│   └── workflows/
+│       ├── ci.yml                    # Automated CI validation pipeline (lint, type-check, test, build, docker)
+│       ├── deploy-pages.yml          # GitHub Pages continuous deployment
+│       └── package.yml               # GHCR container package publisher
 ├── docs/
-│   ├── assets/images/               # Animated SVG hero banners & clinical evidence
-│   ├── SRS_SOFTWARE_REQUIREMENTS_SPECIFICATION.md  # IEEE 830 Specification
-│   ├── SDS_SOFTWARE_DESIGN_SPECIFICATION.md        # IEEE 1016 Specification
-│   └── ARCHITECTURE_AND_DESIGN_PATTERNS.md         # Architecture Documentation
+│   ├── 00_READ_FIRST.md              # Reading guide and project navigation
+│   ├── 00_SOURCE_INVENTORY.md        # Source precedence and authority record
+│   ├── 01_PROJECT/                   # Architecture, standards, and Tailwind exception report
+│   ├── 02_REQUIREMENTS/              # Requirements inventory and traceability matrix
+│   ├── 03_WORKFLOW/                  # Task lifecycle, DoD, and Abdo ownership boundary
+│   ├── 04_INTEGRATION/               # OpenAPI and backend integration status
+│   └── 05_QUALITY/                   # Testing strategy, verification gates, and evidence
+├── public/
+│   ├── 404.html                      # GitHub Pages SPA deep-linking fallback
+│   └── ...
 ├── src/
-│   ├── components/                  # Reusable UI widgets & Teeth Chart facade
-│   │   └── ui/
-│   │       ├── TeethChart.tsx       # Unified 2D/3D Odontogram Facade
-│   │       └── ...
-│   ├── pages/                       # Platform page routes
-│   │   ├── Dashboard.tsx            # Main executive overview
-│   │   ├── Cases.tsx & Orders.tsx   # Clinical casework & orders
-│   │   ├── WorkflowBoard.tsx        # Lab stage Kanban board
-│   │   ├── Billing.tsx              # Financial invoices & accounts
-│   │   ├── Reports.tsx              # PowerBI analytics & reports
-│   │   └── ...
-│   ├── hooks/                       # Custom hooks & responsive layout drivers
-│   ├── services/                    # API communication & data fetching layer
-│   └── types/                       # Clinical domain TypeScript definitions
-├── package.json                     # Dependency manifests & metadata
-├── tsconfig.json                    # Strict TypeScript configuration
-└── vite.config.ts                   # Vite bundler & plugin setup
+│   ├── app/                          # App bootstrap, providers, routing, shell
+│   ├── features/                     # Domain modules (auth, orders, models, reporting, settings)
+│   ├── shared/                       # Reusable UI components, hooks, api, utils
+│   ├── theme/                        # Central MUI theme configuration
+│   ├── test/                         # Test setup and test fixtures
+│   └── main.tsx                      # Vite React 19 entrypoint
+├── Dockerfile                        # Multi-stage production container image
+├── package.json                      # Dependency manifests & scripts
+├── tsconfig.json                     # Strict TypeScript configuration
+└── vite.config.ts                    # Vite configuration with base-path and Vitest
 ```
 
 ---
 
-## 🔒 Security, Compliance & Code Quality
+## 🔒 Security, Compliance & Code Quality Gates
 
-* **Strict Type Safety**: Full TypeScript compilation without implicit `any` escapes.
-* **Oxlint Performance**: Sub-second static analysis ensuring modern React and Clean Code best practices.
-* **Automated CI**: GitHub Actions workflow validating TypeScript typings and build integrity on every push and pull request.
+* **Zero Type Regressions**: Full TypeScript strict compilation with zero errors.
+* **MUI Enterprise Design System**: Standardized clinical UI components adhering to accessibility and WCAG standards.
+* **Deterministic CI**: Every push and PR is automatically validated with `npm ci`, strict linting, type-checking, test execution, production compilation, and Docker container build.
 
 ---
 
-## 👥 Credits & Contact
+## 👥 Credits & Contacts
 
-
-* **Technical Supervisor**: **Eng. Aya Adel**
-* **Front end Engineer**: **Abdo Al Adawy** — [GitHub](https://github.com/Abdo2000-1)
-* **Project**: **CP PRO MAX** (Dental SaaS Web Platform)
+* **Technical Supervisor**: **Eng. Aya Adel** — Clinical Systems Lead
+* **Front End Engineer**: **Abdo Al Adawy** — [@Abdo2000-1](https://github.com/Abdo2000-1)
+* **Project**: **3DDX CP PRO MAX** (Clinical Dental SaaS Platform)
 * **License**: Private & Proprietary — All Rights Reserved.
 
 ---
 
-## 🧭 Start Here: Repository Organization
-
-This repository contains the existing application and the project-specific engineering system used to plan, implement, review, and finalize future changes. The documentation is numbered so that a new contributor can follow one predictable path. These controls were merged without modifying the existing application source.
+## 🧭 Governance & Repository Organization
 
 - [`AGENTS.md`](AGENTS.md) — Antigravity workspace instructions and approval gates.
 - [`CLAUDE.md`](CLAUDE.md) — Claude Code compatibility instructions retained for the original workflow.
-- [`docs/00_READ_FIRST.md`](docs/00_READ_FIRST.md) — numbered navigation and reading order.
-- [`docs/00_SOURCE_INVENTORY.md`](docs/00_SOURCE_INVENTORY.md) — source precedence and availability record.
-- [`docs/01_PROJECT/`](docs/01_PROJECT/) — project overview, architecture, conventions, engineering guidelines, and security.
-- [`docs/02_REQUIREMENTS/`](docs/02_REQUIREMENTS/) — requirements inventory, traceability matrix, and open questions.
-- [`docs/03_WORKFLOW/`](docs/03_WORKFLOW/) — task lifecycle, Definition of Done, ownership, and decisions.
-- [`docs/04_INTEGRATION/`](docs/04_INTEGRATION/) — OpenAPI and integration status.
-- [`docs/05_QUALITY/`](docs/05_QUALITY/) — testing strategy, quality gates, and evidence procedures.
-- [`docs/03_WORKFLOW/ownership/abdo.md`](docs/03_WORKFLOW/ownership/abdo.md) — Abdo's Full Stack 5-hour allocation, React Option A boundary, and MUI exclusion.
-- [`docs/90_PRODUCT_REFERENCE/`](docs/90_PRODUCT_REFERENCE/) — original product specifications and design references.
-- [`.agents/skills/`](.agents/skills/) — Antigravity-discoverable planning, grooming, implementation, review, finalization, audit, API, testing, and evidence workflows.
-- [`.agents/rules/`](.agents/rules/) — Antigravity-discoverable scope, API contract, testing, security, and evidence rules.
-- [`.agents/agents/`](.agents/agents/) — Antigravity-compatible bounded specialist subagents.
-- [`.claude/`](.claude/) — retained compatibility mirror for Claude Code.
-- [`docs/03_WORKFLOW/ai-tooling-compatibility.md`](docs/03_WORKFLOW/ai-tooling-compatibility.md) — discovery, model, and compatibility guidance.
-- [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md) and [`CONTRIBUTION_SUMMARY.md`](CONTRIBUTION_SUMMARY.md) — evidence-oriented work records.
-
-The existing frontend documentation is preserved under [`docs/90_PRODUCT_REFERENCE/`](docs/90_PRODUCT_REFERENCE/). Where repository documentation conflicts with the engineering-system controls above, the project-specific engineering controls are the governing workflow record; original product documents are preserved as source references and are not silently rewritten.
+- [`docs/00_READ_FIRST.md`](docs/00_READ_FIRST.md) — Numbered navigation and reading order.
+- [`docs/00_SOURCE_INVENTORY.md`](docs/00_SOURCE_INVENTORY.md) — Source precedence and availability record.
+- [`docs/01_PROJECT/tailwind-exception-report.md`](docs/01_PROJECT/tailwind-exception-report.md) — Justified technical exceptions for Three.js & DICOM Canvas.
+- [`docs/03_WORKFLOW/ownership/abdo.md`](docs/03_WORKFLOW/ownership/abdo.md) — Abdo's Full Stack allocation and React Option A boundary.

@@ -3,7 +3,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
+const isGithubPages = process.env.GITHUB_PAGES === 'true' || process.env.CI === 'true'
+
 export default defineConfig({
+  base: isGithubPages ? '/newcp-ui-option-a/' : '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
