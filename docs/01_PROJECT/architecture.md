@@ -4,10 +4,11 @@
 
 The backend repository is not present in this repository. The frontend observations below are confirmed from the existing source tree; they are not claims about the missing backend:
 
-- `src/main.tsx` is the browser entry point and renders `src/App.tsx`.
-- `src/App.tsx` owns the React Router route composition and lazy-loads the existing pages under `src/pages/`.
-- Reusable UI, layout, contexts, hooks, services, types, and pages are separated under `src/components/`, `src/contexts/`, `src/hooks/`, `src/services/`, `src/types/`, and `src/pages/`.
-- `src/services/api.ts` currently fetches typed JSON fixtures from `/data/*.json`; this is a local-data boundary, not verified backend integration.
+- `src/main.tsx` is the browser entry point and renders `src/app/App.tsx`.
+- `src/app/` owns application bootstrap, root providers (`src/app/providers/`), route definitions (`src/app/router/`), and application shell layout (`src/app/shell/`).
+- Feature pages and clinical business workflows are organized under `src/features/` (`auth/`, `orders/`, `models/`, `conversion/`, `reporting/`, `settings/`).
+- Cross-cutting reusable UI primitives, hooks, utilities, types, mock services, and configuration are consolidated under `src/shared/` (`shared/components/`, `shared/hooks/`, `shared/utils/`, `shared/types/`, `shared/services/`, `shared/api/`).
+- `src/shared/services/api.ts` currently fetches typed JSON fixtures from `/data/*.json`; this is a local-data boundary, not verified backend integration.
 - `public/data/` supplies the fixture resources consumed by the frontend.
 - The repository has an existing Vite/TypeScript build and an Oxlint script. It has no verified New CP OpenAPI client or approved backend connection.
 - The database report records conceptual/documented V3 behavior, including tenant context and RLS, but explicitly says it is not a full audit, security certification, or production-readiness approval.
