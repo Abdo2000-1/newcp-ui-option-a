@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Inbox, Sparkles, PlusCircle } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { Inbox, Sparkles } from 'lucide-react';
 import { sound } from '@/shared/utils/sound';
 
 interface EmptyStateProps {
@@ -25,44 +27,123 @@ export function EmptyState({
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="flex flex-col items-center justify-center py-16 px-4 text-center select-none"
     >
-      {/* Visual Graphic with Illuminated Backdrop */}
-      <div className="relative mb-5">
-        <div className="absolute inset-0 bg-blue-500/10 dark:bg-cyan-500/15 rounded-3xl blur-2xl transform scale-150 pointer-events-none" />
-        
-        <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border border-slate-300/80 dark:border-slate-700/80 flex items-center justify-center shadow-lg shadow-slate-900/5 text-cyan-600 dark:text-cyan-400">
-          {icon || <Inbox className="w-10 h-10 opacity-80 stroke-[1.5]" />}
-          <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center shadow-md">
-            <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
-          </div>
-        </div>
-      </div>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 8,
+          px: 2,
+          textAlign: 'center',
+          userSelect: 'none',
+        }}
+      >
+        {/* Visual Graphic with Illuminated Backdrop */}
+        <Box sx={{ position: 'relative', mb: 2.5 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: 80,
+              height: 80,
+              borderRadius: '24px',
+              bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#1e293b' : '#f1f5f9'),
+              border: '1px solid',
+              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#00706a',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            {icon || <Inbox style={{ width: 40, height: 40, opacity: 0.8 }} />}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -6,
+                right: -6,
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                bgcolor: '#0284c7',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 2,
+              }}
+            >
+              <Sparkles style={{ width: 14, height: 14 }} />
+            </Box>
+          </Box>
+        </Box>
 
-      {/* Main Copy */}
-      <div className="max-w-md space-y-1.5">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            {description}
-          </p>
-        )}
-        {suggestion && (
-          <p className="text-[11px] font-mono text-cyan-600 dark:text-cyan-400 pt-1">
-            Tip: {suggestion}
-          </p>
-        )}
-      </div>
+        {/* Main Copy */}
+        <Box sx={{ maxWidth: 440, mb: action || secondaryAction ? 3 : 0 }}>
+          <Typography
+            variant="h6"
+            component="h3"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              letterSpacing: '-0.01em',
+              mb: 0.5,
+              fontSize: '1.125rem',
+            }}
+          >
+            {title}
+          </Typography>
+          {description && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                lineHeight: 1.6,
+              }}
+            >
+              {description}
+            </Typography>
+          )}
+          {suggestion && (
+            <Box
+              sx={{
+                mt: 1.5,
+                p: 1.5,
+                borderRadius: '12px',
+                bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(2, 132, 199, 0.1)' : 'rgba(2, 132, 199, 0.05)'),
+                border: '1px solid rgba(2, 132, 199, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#0284c7', fontSize: '0.75rem' }}>
+                💡 <strong>Tip:</strong> {suggestion}
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
-      {/* Actions */}
-      {(action || secondaryAction) && (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {action}
-          {secondaryAction}
-        </div>
-      )}
+        {/* Action Buttons */}
+        {(action || secondaryAction) && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1.5,
+              flexWrap: 'wrap',
+            }}
+            onClick={() => sound.playClick()}
+          >
+            {action}
+            {secondaryAction}
+          </Box>
+        )}
+      </Box>
     </motion.div>
   );
 }
