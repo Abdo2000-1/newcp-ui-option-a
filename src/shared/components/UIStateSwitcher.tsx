@@ -1,6 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Activity, Inbox, AlertTriangle, CheckCircle2, RotateCcw } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import ButtonBase from '@mui/material/ButtonBase';
+import { Activity, Inbox, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { sound } from '@/shared/utils/sound';
 
 export type UIStateType = 'normal' | 'loading' | 'empty' | 'error';
@@ -18,70 +20,114 @@ export function UIStateSwitcher({
   className = '',
   label = 'Simulate View State'
 }: UIStateSwitcherProps) {
-  const options: { id: UIStateType; label: string; shortLabel: string; icon: React.ReactNode; activeClass: string }[] = [
+  const options: { id: UIStateType; label: string; shortLabel: string; icon: React.ReactNode; activeBg: string; activeColor: string }[] = [
     {
       id: 'normal',
       label: 'Normal Live',
       shortLabel: 'Live',
       icon: <CheckCircle2 size={13} />,
-      activeClass: 'bg-emerald-500 text-white shadow-xs',
+      activeBg: '#059669',
+      activeColor: '#ffffff',
     },
     {
       id: 'loading',
       label: 'Loading Status',
       shortLabel: 'Loading',
       icon: <Activity size={13} className="animate-pulse" />,
-      activeClass: 'bg-cyan-500 text-slate-950 font-bold shadow-xs',
+      activeBg: '#0284c7',
+      activeColor: '#ffffff',
     },
     {
       id: 'empty',
       label: 'Empty Status',
       shortLabel: 'Empty',
       icon: <Inbox size={13} />,
-      activeClass: 'bg-purple-600 text-white shadow-xs',
+      activeBg: '#9333ea',
+      activeColor: '#ffffff',
     },
     {
       id: 'error',
       label: 'Error Status',
       shortLabel: 'Error',
       icon: <AlertTriangle size={13} />,
-      activeClass: 'bg-rose-600 text-white shadow-xs',
+      activeBg: '#e11d48',
+      activeColor: '#ffffff',
     },
   ];
 
   return (
-    <div className={`inline-flex max-w-full items-center gap-1.5 p-1 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-2xs backdrop-blur-xs select-none overflow-x-auto ${className}`}>
+    <Box
+      className={className}
+      sx={{
+        display: 'inline-flex',
+        maxWidth: '100%',
+        alignItems: 'center',
+        gap: 0.75,
+        p: 0.5,
+        borderRadius: '12px',
+        bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)'),
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        backdropFilter: 'blur(8px)',
+        userSelect: 'none',
+        overflowX: 'auto',
+      }}
+    >
       {label && (
-        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 hidden md:inline shrink-0">
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: '0.625rem',
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: 'text.secondary',
+            px: 1,
+            display: { xs: 'none', md: 'inline' },
+            flexShrink: 0,
+          }}
+        >
           {label}:
-        </span>
+        </Typography>
       )}
 
-      <div className="flex items-center gap-1 shrink-0">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
         {options.map((opt) => {
           const isActive = state === opt.id;
           return (
-            <button
+            <ButtonBase
               key={opt.id}
-              type="button"
-              title={opt.label}
               onClick={() => {
                 sound.playClick();
                 onChange(opt.id);
               }}
-              className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer shrink-0 ${
-                isActive
-                  ? opt.activeClass
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 1.25,
+                py: 0.5,
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                transition: 'all 0.15s ease-out',
+                bgcolor: isActive ? opt.activeBg : 'transparent',
+                color: isActive ? opt.activeColor : 'text.secondary',
+                boxShadow: isActive ? '0 1px 3px 0 rgba(0, 0, 0, 0.1)' : 'none',
+                '&:hover': {
+                  bgcolor: isActive ? opt.activeBg : 'action.hover',
+                  color: isActive ? opt.activeColor : 'text.primary',
+                },
+              }}
             >
               {opt.icon}
-              <span className="hidden sm:inline">{opt.label}</span>
-              <span className="sm:hidden">{opt.shortLabel}</span>
-            </button>
+              <span>{opt.shortLabel}</span>
+            </ButtonBase>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
