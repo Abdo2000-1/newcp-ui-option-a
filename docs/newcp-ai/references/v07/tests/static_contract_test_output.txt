@@ -1,0 +1,17 @@
+test_ddl_mapping_verified (__main__.StaticChecks.test_ddl_mapping_verified) ... ok
+test_example_request_response_against_contract (__main__.StaticChecks.test_example_request_response_against_contract) ... /mnt/data/NewCP_V3_Contracts_and_Integration_Readiness_v0.7_2026-10-22/tests/test_static_contract.py:48: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+  resolver=jsonschema.RefResolver.from_schema(self.spec)
+ok
+test_form_source_coverage (__main__.StaticChecks.test_form_source_coverage) ... ok
+test_openapi_version_and_paths (__main__.StaticChecks.test_openapi_version_and_paths) ... ok
+test_partial_drizzle_source_columns (__main__.StaticChecks.test_partial_drizzle_source_columns) ... ok
+test_precharge_billed_party_not_falsely_mapped (__main__.StaticChecks.test_precharge_billed_party_not_falsely_mapped) ... ok
+test_reference_schema_shapes (__main__.StaticChecks.test_reference_schema_shapes) ... ok
+test_references_are_resolved (__main__.StaticChecks.test_references_are_resolved) ... ok
+test_safe_sql_only (__main__.StaticChecks.test_safe_sql_only) ... ok
+test_service_multiplicity_not_prevented_by_composite_unique (__main__.StaticChecks.test_service_multiplicity_not_prevented_by_composite_unique) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.062s
+
+OK

@@ -1,0 +1,99 @@
+{
+  "classification": "SYNTHETIC_CONTRACT_EXAMPLES_NOT_V3_SEED_DATA",
+  "notes": [
+    "No patient identifiers, client names, credentials or production pricing",
+    "Service option codes in real database must be resolved from tenant V3 catalog",
+    "Pricing demo values below are synthetic display placeholders not approved or observed prices",
+    "All statuses depend on selected workflow transition definitions"
+  ],
+  "order": {
+    "orderReference": "DEMO-SYN-001",
+    "tenantReference": "TENANT_SYN",
+    "currencyCode": "USD"
+  },
+  "forms": {
+    "conversion": {
+      "software": 1,
+      "format": 1,
+      "maxilla": 21,
+      "mandible": 20,
+      "typeMaxilla": 1,
+      "typeMandible": 1,
+      "portableVersion": 1,
+      "modelScan": 0,
+      "separateDoubleArchOrder": false,
+      "generalComment": "Synthetic conversion request"
+    },
+    "biomodel": {
+      "isDigitalDesign": false,
+      "customizationMaxilla": 1,
+      "customizationMandible": 0,
+      "colorMaxilla": 0,
+      "colorMandible": 0,
+      "rxNote": "Synthetic biomodel request",
+      "rush": 0,
+      "hasRequiredFiles": false
+    },
+    "biomodel_digital": {
+      "isDigitalDesign": true,
+      "customizationMaxilla": 1,
+      "customizationMandible": 0,
+      "colorMaxilla": 0,
+      "colorMandible": 0,
+      "rxNote": "Synthetic digital biomodel",
+      "nestingDesign": false,
+      "deliverablesgroup": {
+        "stl": true,
+        "softwareFile": false,
+        "softwareDesign": -1
+      },
+      "printerGroup": {
+        "printerBrand": 0,
+        "printerModel": 0,
+        "printerResin": ""
+      },
+      "rush": 0,
+      "hasRequiredFiles": false
+    },
+    "implant_analog_model": {
+      "ImpantAnalogDDS": false,
+      "ImpantAnalogArches": 0,
+      "ImpantAnalogRxNote": "Synthetic analog model request",
+      "implantSystem": "",
+      "rush": 0,
+      "hasRequiredFiles": false
+    }
+  },
+  "negativeExamples": [
+    {
+      "service": "biomodel",
+      "patch": {
+        "customizationMaxilla": 0,
+        "customizationMandible": 0
+      },
+      "expected": "group atLeastOne validation error"
+    },
+    {
+      "service": "conversion",
+      "patch": {
+        "maxilla": 20,
+        "mandible": 20
+      },
+      "expected": "frontend arch error; server rejection TBD"
+    },
+    {
+      "service": "conversion",
+      "patch": {
+        "modelScan": 1
+      },
+      "expected": "oral must be supplied"
+    },
+    {
+      "service": "implant_analog_model",
+      "patch": {
+        "ImpantAnalogArches": null
+      },
+      "expected": "required control error"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# AGENTS.md — New CP backend (merge with existing repo guidance)
+
+- Repo purpose: shared Node.js / Express / TypeScript / Drizzle / Zod backend for **two** React alternatives, PostgreSQL V3; OpenAPI 3.0.3 is the canonical *approved* contract once decisions are closed.
+- Read `docs/newcp-ai/policy/STATUS_AND_DECISIONS.md` when working on Models, Conversion, forms, pricing, workflow or tenant security. See `docs/newcp-ai/references/v04` for CP actor/action source evidence and `docs/newcp-ai/references/v06` for source-observed form rules and `docs/newcp-ai/references/v07` for **provisional** contract/Drizzle/V3 mappings and runnable static tests. Do not treat a draft as deployed truth.
+- Connect Add/Create forms establish the customer-side **creation fields**; internal CP code establishes **clerk edit/pricing/redo/status** behavior. Existing backend/config supplies enforcement and side effects. Preserve explicit New CP changes.
+- Services are independent `orders.order_items` instances: allow multiple same-type items on one order; updates/history/fees must address one distinct instance. No blanket duplicate-type rejection.
+- Establish tenant identity server-side and scoped V3 RLS transaction context; never trust client-provided tenant ID. Enforce permissions on the server. Never change V3 DDL, migrate DB or invent catalog IDs/transition codes without approval.
+- **F07 service-level Bill To target model** is now defined by supplied V204: `orders.order_items.billed_to_contact_id` + server-owned `billed_party_origin`. Use `docs/newcp-ai/references/f07/integration/` F07 contract/Drizzle/client for code generation. Verify deployed V204, approved exact-dump policy and stage90 before enabling real financial writes; never equate proposed code to migration signoff. See `policy/F07_DECISION_AND_RELEASE_GATES.md`.
+- Reuse existing modules and POCs; avoid new architecture for an existing implementation. Don't expose PHI/secrets in AI prompts, fixtures, errors, telemetry or git.
+- Before edits inspect repo scripts, existing conventions and relevant code; summarize intended files, applicable evidence, unverified items and tests. Make scoped changes; run applicable checks and distinguish PASS/FAIL/NOT RUN. No automatic commits, pushes or deployments.
+
+- **F07 target contract wins over V0.7 archival Bill To blocker.** All live persisted payer claims require evidence; details at `docs/newcp-ai/policy/F07_DECISION_AND_RELEASE_GATES.md`.

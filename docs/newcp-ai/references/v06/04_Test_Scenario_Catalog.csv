@@ -1,0 +1,18 @@
+﻿ID,Service,Topic,Expected_or_Needed_Test
+T01,conversion,Required control,Remove software or format where visible; reject invalid client-side / server-side if submitted
+T02,conversion,Arch selection,Standalone conversion with maxilla=20 and mandible=20 must show frontend error; confirm actual submit blocking
+T03,conversion,Format dependency,"Software 3 -> format choice 8 or 9; Software 6 -> format hidden, internal code 13; do not send stale format"
+T04,conversion,Model scan,Model Scan Yes -> oral required; No -> oral absent; oral=2 prompts later upload notice
+T05,biomodel,At least one arch,customizationMaxilla=0 and customizationMandible=0 rejected by attached custom validator
+T06,biomodel,Conditional digital fields,Switch to Digital -> nested deliverables/printer/nesting; switch back -> not submitted
+T07,implant_analog_model,Required arch,"Select 0/1/2, including numeric zero as valid; verify external preselection"
+T08,implant_analog_model,Nested fields,Software and printer dependencies rendered with Digital; do not assume commented validators enforce
+T09,all,Pricing integrity,"Create with validated amount; if zero new V3 item, approved reason required; total matches V3 formula"
+T10,all,Billed item financial immutability,Attempt changes to financial columns after billing.charges exists -> V3 prevents
+T11,all,Multiple same-type instances,Create two same sellable item types under same order with distinct UUID/line_number
+T12,all,Independent lifecycle,Edit B then transition A; verify B unchanged and per-instance history
+T13,all,Tenant security,Denied read/edit from unauthorized tenant and app role
+T14,all,Workflow transition,Choose permitted transition from effective workflow; prohibited transition rejected and no manual bypass
+T15,all,Billing recipient mapping,Do not finalize Bill-to write until mapped V3 behavior resolved; demonstrate display with clearly sourced payer
+T16,all,Equivalent UIs,Run same valid/invalid business results through React option A and B
+T17,all,Idempotent retry,Repeat same request ID without duplicate network retry; distinct intentional create still allowed

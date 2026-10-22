@@ -1,0 +1,6 @@
+﻿Artifact,Archive,SHA256,Use,Limitations
+Connect frontend,new-connect-v3-CR_DDS_V2.zip,03741d2807c95cd8c1a4f5df49b0a3ba2fa16ae53389a58f731daed85fa42a15,"Angular legacy creation forms, 2023 comments and archived source",Static source only; no live runtime assertions
+CP source,CP-master 2.zip,29549b7f40a139252341c7e797e4011b922068b267fe018698b38939e64910e4,"Internal staff editing, billing, status",Static source only; no live runtime assertions
+ServiceAPI,ServiceAPI-master.zip,654167188136791643e1243a3e6311e040128edb10b79c9529bdb4f3741bdb43,Legacy server API routes and business behavior,Static source only; no live runtime assertions
+ConnectBackEnd,ConnectBackEnd-master.zip,32cc875c0ecd91ce76fbce5f452a881d4b1c3b99d8caa52fd342f5a75b69d4a5,Legacy conversion/order backend,Static source only; no live runtime assertions
+V3 sanitized SQL,Aya_PostgreSQL_V3_Technical_Review_Package_2026-10-17.zip,e64f9c6ce3de97d97aa258f8bb9919c44bf218e7451bedb8ad718118404cb476,"Reviewed sanitized V3 migration DDL baseline, NOT live DB verification",Static source only; no live runtime assertions
