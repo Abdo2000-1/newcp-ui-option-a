@@ -191,5 +191,35 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
       expect(screen.queryByText(/PRIMARY SERVICE HOOK/i)).not.toBeInTheDocument();
       expect(screen.getByText('Order Not Found')).toBeInTheDocument();
     });
+
+    it('uses explicit neutral values when clinical fields are missing and never invents fictional entities', () => {
+      const minimalOrder = store.createOrder({
+        orderNumber: 'ORD-MINIMAL-001',
+        patientName: '',
+        doctorName: '',
+        clinicName: '',
+        scanCenterName: '',
+        billTo: '',
+        amount: undefined,
+        restoration: '',
+      });
+
+      render(
+        <MemoryRouter initialEntries={[`/order-details?id=${minimalOrder.id}`]}>
+          <AppProviders>
+            <OrderDetailsPage />
+          </AppProviders>
+        </MemoryRouter>
+      );
+
+      // Must not invent fictional doctor, clinic, or diagnostic provider
+      expect(screen.queryByText(/Dr\. Allison Park/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/3DDX Boston Radiology Hub/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/California Diagnostics/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Patient Record/i)).not.toBeInTheDocument();
+
+      // Must display neutral fallbacks
+      expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
+    });
   });
 });

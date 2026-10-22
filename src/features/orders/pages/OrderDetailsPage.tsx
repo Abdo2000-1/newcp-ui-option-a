@@ -116,15 +116,24 @@ export default function OrderDetailsPage() {
       ) || store.getOrderById(paramId);
 
     if (stMatch) {
+      const scanCenterLabel = stMatch.scanCenterName || stMatch.clinicName || 'Not available';
+      const doctorLabel = stMatch.doctorName || 'Not available';
+      const patientLabel = stMatch.patientName || 'Not available';
+      const serviceTitle = stMatch.restoration
+        ? (stMatch.arch ? `${stMatch.restoration} (${stMatch.arch})` : stMatch.restoration)
+        : 'Service Item';
+      const billToLabel = stMatch.billTo || stMatch.clinicName || 'Not available';
+      const serviceAmount = typeof stMatch.amount === 'number' ? stMatch.amount : 0;
+
       return {
         id: stMatch.id,
         serial: 1,
         orderNum: stMatch.orderNumber || stMatch.id,
         source: 'Via CP',
-        scanCenter: stMatch.scanCenterName || stMatch.clinicName || '3DDX Boston Radiology Hub',
-        doctorName: stMatch.doctorName || 'Dr. Allison Park',
-        doctorSub: 'DDS',
-        patientName: stMatch.patientName || 'Patient Record',
+        scanCenter: scanCenterLabel,
+        doctorName: doctorLabel,
+        doctorSub: stMatch.doctorName ? 'DDS' : '',
+        patientName: patientLabel,
         patientSub: stMatch.patientId || '',
         isLocked: Boolean(stMatch.isLocked),
         notes: stMatch.notes || '',
@@ -132,22 +141,22 @@ export default function OrderDetailsPage() {
         services: [
           {
             id: `srv-${stMatch.id}`,
-            type: stMatch.restoration || 'Treatment Plan & Guide',
-            typeCode: (stMatch.restoration?.slice(0, 2) || 'TP').toUpperCase(),
-            title: `${stMatch.restoration || 'Treatment Plan'} (${stMatch.arch || 'Maxilla'})`,
-            subtitle: stMatch.format || 'STL Mesh',
-            billTo: stMatch.billTo || stMatch.clinicName || 'California Diagnostics',
+            type: stMatch.restoration || 'General Service',
+            typeCode: (stMatch.restoration ? stMatch.restoration.slice(0, 2) : 'SRV').toUpperCase(),
+            title: serviceTitle,
+            subtitle: stMatch.format || '',
+            billTo: billToLabel,
             maxilla: stMatch.arch === 'Maxilla' || stMatch.arch === 'Both' ? 'Yes' : 'No',
             mandible: stMatch.arch === 'Mandible' || stMatch.arch === 'Both' ? 'Yes' : 'No',
-            format: stMatch.format || 'coDiagnostiX',
-            amount: stMatch.amount || 200,
-            vouchers: String(stMatch.vouchers || 0),
+            format: stMatch.format || 'Standard',
+            amount: serviceAmount,
+            vouchers: stMatch.vouchers !== undefined ? String(stMatch.vouchers) : '0',
             receivedTime: stMatch.receivedAt || '',
             sentTime: stMatch.sentAt || '',
             updateTime: stMatch.updatedAt || '',
             chargedOn: stMatch.chargedAt || '',
             hasActionAlert: stMatch.priority === 'Urgent',
-            actionLabel: stMatch.status || 'In Progress',
+            actionLabel: stMatch.status || 'New',
             changeRequest: stMatch.changeRequest || 'None',
             csTask: {
               status: 'Assign',
@@ -162,29 +171,44 @@ export default function OrderDetailsPage() {
 
   // The primary service title serves as the main hook
   const primaryService = flowOrder?.services[0] || {
-    title: 'Treatment Plan & Surgical Guide',
-    format: 'coDiagnostiX',
-    typeCode: 'TP',
-    actionLabel: 'IN PROGRESS',
-    amount: 200,
-    billTo: 'California Diagnostics CC: Master, 9903'
+    id: 'srv-default',
+    type: 'General Service',
+    typeCode: 'SRV',
+    title: 'Service Item',
+    subtitle: '',
+    format: 'Standard',
+    actionLabel: 'New',
+    amount: 0,
+    billTo: 'Not available',
+    maxilla: 'No',
+    mandible: 'No',
+    vouchers: '0',
+    receivedTime: '',
+    sentTime: '',
+    updateTime: '',
+    chargedOn: '',
+    hasActionAlert: false,
+    changeRequest: 'None',
+    csTask: {
+      status: 'Assign' as const,
+    },
   };
 
   const [activeTab, setActiveTab] = useState<'prescription' | '3dviewer' | 'suborders'>('prescription');
-  const [orderStatus, setOrderStatus] = useState<string>(primaryService?.actionLabel || 'In Progress');
+  const [orderStatus, setOrderStatus] = useState<string>(primaryService?.actionLabel || 'New');
   const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
 
   // Core Form Fields
-  const [doctorName, setDoctorName] = useState<string>(flowOrder?.doctorName || 'Dr. Alex Mercer, DDS');
-  const [patientName, setPatientName] = useState<string>(flowOrder?.patientName || 'Sarah Jenkins');
-  const [scanCenter, setScanCenter] = useState<string>(flowOrder?.scanCenter || 'San Francisco Imaging Hub');
+  const [doctorName, setDoctorName] = useState<string>(flowOrder?.doctorName || 'Not available');
+  const [patientName, setPatientName] = useState<string>(flowOrder?.patientName || 'Not available');
+  const [scanCenter, setScanCenter] = useState<string>(flowOrder?.scanCenter || 'Not available');
 
   useEffect(() => {
     if (flowOrder) {
-      setDoctorName(flowOrder.doctorName || 'Dr. Alex Mercer, DDS');
-      setPatientName(flowOrder.patientName || 'Sarah Jenkins');
-      setScanCenter(flowOrder.scanCenter || 'San Francisco Imaging Hub');
-      setOrderStatus(flowOrder.services[0]?.actionLabel || 'In Progress');
+      setDoctorName(flowOrder.doctorName || 'Not available');
+      setPatientName(flowOrder.patientName || 'Not available');
+      setScanCenter(flowOrder.scanCenter || 'Not available');
+      setOrderStatus(flowOrder.services[0]?.actionLabel || 'New');
     }
   }, [flowOrder]);
   const [drSpecialRequest, setDrSpecialRequest] = useState<string>('Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.');
