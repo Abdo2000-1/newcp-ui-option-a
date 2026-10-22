@@ -1,0 +1,14 @@
+﻿ID,Priority,Decision_or_Evidence_Gap,Owner,Required_Evidence,Consequence
+G01,High,"Map actual selected tenant catalog IDs/codes for Biomodel, Conversion, optionally Implant Analog Model",BE intern,Real V3 app-role catalog row query in demo tenant,Block real writes; synthetic forms can proceed
+G02,High,Resolve actual field & options code mapping for all Connect controls including nested printer/software lists,BE intern,Joined catalog item_fields/fields/field_options + source fields,Block complete persistence for new forms
+G03,High,Determine actual V3 workflow initial and allowed transitions for each selected service,BE + full-time,Join catalog.workflow_code -> workflow definitions/states/transitions; authorized app role,Block permitted transition demo
+G04,High,Verify per-service billed account contact mapping for internal CP Bill To,Lead+BE+DB owner,Target relationship approved; cannot infer from order_items alone,Bill-to display possible; mutation blocked pending mapping
+G05,High,"Verify price calculation, charged field pricing, currency, zero cost reason codes",BE + full-time,Tenant pricing config + safe order fixture,No actual customer pricing should be invented
+G06,Medium,Confirm V3 catalog.item_field_rules conditional evaluator presence in deployed runtime,BE + full-time,Scoped read and app integration test,Implement app validation as necessary; not broad database review
+G07,Medium,Determine single-valued field overwrite strategy with nullable field_option_id,BE,Per-field schema semantics + integration test,Duplicate free text values possible without app guard
+G08,High,Define demo role/capabilities for internal editing and financial changes,Full-time + Lead,Auth/Casbin+IAM selected test role and negative checks,Access must fail closed
+G09,Medium,Determine whether the front-end arch error for Conversion actually blocks submission,FE + BE,Legacy submit handler/form status trace or safe runtime test,Do not overstate observed HTML error as backend rule
+G10,Medium,Resolve commented-out nested deliverable/printer custom validators,Lead+FE+BE,Decision: mirror actual historical enforcement or introduce improved validation,Not observed to be enforced in source
+G11,Medium,Select physical or digital Biomodel for main demo and optional Implant Analog inclusion,Lead,Demo case selection; both schemas available,Time scope and deterministic case
+G12,High,Prepare synthetic test V3 records with real catalog references (no customer/patient data),BE + data custodian,Sanitized fixture + documented ID mapping,Real integration tests need valid references
+G13,Medium,Ensure correct item-level status history writer with no duplicate events,BE + full-time,V3 workflow instance test and historic record test,Audit integrity

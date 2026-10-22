@@ -1,0 +1,16 @@
+{
+  "policy_version": "__SET_TO_APPROVED_DECISION_ID__",
+  "source_domain_sha256": "__GENERATED_BY_profile_billed_party.py__",
+  "tables": {
+    "__SOURCE_TABLE__": {
+      "column": "ToBeBilled",
+      "mode": "selector",
+      "values": {
+        "__RAW_VALUE__": "__REVIEW_REQUIRED__: doctor | scanning_center | order_default"
+      }
+    }
+  },
+  "profile": {
+    "__GENERATED_FROM_THE_AUTHORITATIVE_MYSQL_DUMP__": true
+  }
+}

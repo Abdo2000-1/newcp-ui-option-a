@@ -1,0 +1,129 @@
+{
+  "version": "v0.4",
+  "audience": "October New CP Implementation Team",
+  "rules": [
+    {
+      "ID": "RULE-MODELS-EDIT-CP",
+      "Actor": "Internal clerk",
+      "Action": "Edit selected Models instance",
+      "Evidence_IDs": [
+        "IC-07",
+        "IC-08",
+        "IC-09",
+        "IC-10",
+        "IC-14"
+      ],
+      "Known": [
+        "Broad editing supported in CP for OrderAppliance",
+        "Billed-state early return in these handlers",
+        "Selected status depends on intraoral branch"
+      ],
+      "Requires_before_AI_code": [
+        "Select exact legacy Models option/implementation path",
+        "Verify field option values/status matrix and current billing state",
+        "Map service identity to V3 Drizzle objects"
+      ],
+      "NewCP_override": [
+        "Permit multiple same-type items; target serviceInstanceId, not header ApplianceID"
+      ],
+      "Status": "CODE-SUPPORTED-PARTIAL"
+    },
+    {
+      "ID": "RULE-CONVERSION-ADD-EDIT-CP",
+      "Actor": "Internal clerk",
+      "Action": "Add/edit selected Conversion instance",
+      "Evidence_IDs": [
+        "IC-03",
+        "IC-05",
+        "IC-06",
+        "IC-11",
+        "IC-12",
+        "IC-13",
+        "IC-14"
+      ],
+      "Known": [
+        "CP creates Conversion on an existing order",
+        "CP edits conversion beyond customer-facing Connect endpoint",
+        "Billed-state early return for common edit flow",
+        "Zero-charge may depend on vouchers/redo"
+      ],
+      "Requires_before_AI_code": [
+        "Confirm selected service configuration and valid sanitized fixture",
+        "Verify role, status matrix and cost policy in scope",
+        "Map V3 item and history persistence"
+      ],
+      "NewCP_override": [
+        "Allow multiple independently targeted Conversion instances"
+      ],
+      "Status": "CODE-SUPPORTED-PARTIAL"
+    },
+    {
+      "ID": "RULE-OTHER-SERVICES-CP",
+      "Actor": "Internal clerk",
+      "Action": "Edit configurable service instance",
+      "Evidence_IDs": [
+        "IC-15",
+        "IC-16",
+        "IC-17",
+        "IC-18",
+        "IC-19"
+      ],
+      "Known": [
+        "Dynamic field metadata and status lists by mode",
+        "Invoice locks financial edits in examined path",
+        "Instance-specific service history"
+      ],
+      "Requires_before_AI_code": [
+        "Evidence chosen service is catalog Other Services not OrderAppliance/OrderSim",
+        "Retrieve sanitized current catalog/field metadata",
+        "Confirm transition and pricing rules"
+      ],
+      "NewCP_override": [
+        "Independent instances for same type under order"
+      ],
+      "Status": "CODE-SUPPORTED-CONFIG-PENDING"
+    },
+    {
+      "ID": "RULE-CONNECT-UPLOAD",
+      "Actor": "Customer",
+      "Action": "Upload required input files",
+      "Evidence_IDs": [
+        "IC-22",
+        "IC-23"
+      ],
+      "Known": [
+        "Ownership checks are part of customer upload path",
+        "Eligible file completion may advance status automatically"
+      ],
+      "Requires_before_AI_code": [
+        "Confirm upload is included in selected October demo",
+        "Provide required-file config and exact states"
+      ],
+      "NewCP_override": [
+        "Customer action does not give broad employee-style status-edit permission"
+      ],
+      "Status": "LEGACY-EVIDENCE-NOT-DEMO-REQUIRED"
+    },
+    {
+      "ID": "RULE-ORDER-REPETITION",
+      "Actor": "Authorized internal clerk",
+      "Action": "Create additional same-type service instance under an order",
+      "Evidence_IDs": [
+        "IC-02",
+        "IC-03",
+        "IC-25"
+      ],
+      "Known": [
+        "Explicit New CP cardinality overrides legacy fixed header links"
+      ],
+      "Requires_before_AI_code": [
+        "Verify app-side V3 Drizzle relation and transaction",
+        "Contract+fixtures and tests for independent updates"
+      ],
+      "NewCP_override": [
+        "Do not recreate uniqueness on (order, service type)"
+      ],
+      "Status": "CONFIRMED-NEW-CP-REQUIRES-IMPLEMENTATION"
+    }
+  ]
+}

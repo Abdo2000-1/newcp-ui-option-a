@@ -11,6 +11,10 @@ This repository contains the existing CP PRO MAX frontend plus the merged engine
 7. `docs/05_QUALITY/` — testing strategy, quality gates, and evidence procedures.
 8. `docs/90_PRODUCT_REFERENCE/` — original frontend product specifications and design references.
 
+## New CP AI handoff
+
+For work that depends on the October New CP handoff or F07 service-level billing, also read `docs/newcp-ai/REFERENCE_INDEX.md` and `docs/newcp-ai/INTEGRATION_WITH_REPOSITORY.md` before selecting a task. The handoff is integrated as source material and workflow guidance; it does not authorize backend, database, production, or unapproved application changes.
+
 ## AI workflow order
 
 Use the relevant skill in this order for implementation work:
