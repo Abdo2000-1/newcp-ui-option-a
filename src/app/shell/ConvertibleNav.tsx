@@ -70,6 +70,7 @@ export function ConvertibleNav({
   const [opsDropdownOpen, setOpsDropdownOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [posDropdownOpen, setPosDropdownOpen] = useState(false);
+  const isTier2DropdownOpen = ordersDropdownOpen || opsDropdownOpen;
 
   const langRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -461,7 +462,10 @@ export function ConvertibleNav({
             position === 'top' ? 'relative' : 'fixed bottom-14 left-0 right-0 border-t shadow-xl'
           }`}
         >
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+          <div
+            data-testid="tier2-nav-container"
+            className={`w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 ${isTier2DropdownOpen ? 'overflow-visible' : 'overflow-x-auto md:overflow-visible no-scrollbar'}`}
+          >
             
             {/* Categorized Spread Menus */}
             <div className="flex items-center gap-1 sm:gap-2 relative">
@@ -485,6 +489,8 @@ export function ConvertibleNav({
               <div className="relative" ref={ordersDropdownRef}>
                 <button
                   type="button"
+                  aria-expanded={ordersDropdownOpen}
+                  aria-haspopup="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setOrdersDropdownOpen(!ordersDropdownOpen);
@@ -502,7 +508,9 @@ export function ConvertibleNav({
                 </button>
 
                 {ordersDropdownOpen && (
-                  <div className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
+                  <div
+                    data-testid="orders-dropdown-menu"
+                    className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
                     <NavLink
                       to="/flow"
                       onClick={() => setOrdersDropdownOpen(false)}
@@ -546,6 +554,8 @@ export function ConvertibleNav({
               <div className="relative" ref={opsDropdownRef}>
                 <button
                   type="button"
+                  aria-expanded={opsDropdownOpen}
+                  aria-haspopup="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setOpsDropdownOpen(!opsDropdownOpen);
@@ -563,7 +573,9 @@ export function ConvertibleNav({
                 </button>
 
                 {opsDropdownOpen && (
-                  <div className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
+                  <div
+                    data-testid="ops-dropdown-menu"
+                    className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
                     <NavLink
                       to="/quarter-targets"
                       onClick={() => setOpsDropdownOpen(false)}
