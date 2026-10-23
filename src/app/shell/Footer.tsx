@@ -5,12 +5,21 @@ import {
 } from 'lucide-react';
 import { useAppConfig } from '@/app/providers/contexts/ConfigContext';
 
-export function Footer() {
+import type { NavPosition } from './ConvertibleNav';
+
+export interface FooterProps {
+  navPosition?: NavPosition;
+}
+
+export function Footer({ navPosition = 'top' }: FooterProps) {
   const { config } = useAppConfig();
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-sky-100/90 dark:bg-[#0a1b32]/92 backdrop-blur-md border-t border-sky-300/60 dark:border-sky-800/60 shadow-xs mt-auto py-5 px-4 sm:px-6 lg:px-8 text-xs select-none">
+    <footer
+      data-testid="shell-footer"
+      className="w-full bg-sky-100/90 dark:bg-[#0a1b32]/92 backdrop-blur-md border-t border-sky-300/60 dark:border-sky-800/60 shadow-xs mt-auto py-5 px-4 sm:px-6 lg:px-8 text-xs select-none relative z-10"
+    >
       <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Brand, Logo & Left Section */}

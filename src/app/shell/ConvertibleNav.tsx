@@ -339,7 +339,7 @@ export function ConvertibleNav({
                 </button>
 
                 {langDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-44 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up">
+                  <div className={`absolute right-0 ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} w-44 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up`}>
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                       Select Language
                     </div>
@@ -404,7 +404,7 @@ export function ConvertibleNav({
                 </button>
 
                 {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 animate-slide-up space-y-1">
+                  <div className={`absolute right-0 ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 animate-slide-up space-y-1`}>
                     <div className="p-2 border-b border-slate-100 dark:border-slate-800/80 mb-1">
                       <div className="font-extrabold text-xs text-slate-900 dark:text-white">
                         {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
@@ -461,7 +461,7 @@ export function ConvertibleNav({
             position === 'top' ? 'relative' : 'fixed bottom-14 left-0 right-0 border-t shadow-xl'
           }`}
         >
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4">
+          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
             
             {/* Categorized Spread Menus */}
             <div className="flex items-center gap-1 sm:gap-2 relative">
@@ -502,7 +502,7 @@ export function ConvertibleNav({
                 </button>
 
                 {ordersDropdownOpen && (
-                  <div className={`absolute ${position === 'bottom' ? 'bottom-10' : 'top-10'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
+                  <div className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
                     <NavLink
                       to="/flow"
                       onClick={() => setOrdersDropdownOpen(false)}
@@ -563,7 +563,7 @@ export function ConvertibleNav({
                 </button>
 
                 {opsDropdownOpen && (
-                  <div className={`absolute ${position === 'bottom' ? 'bottom-10' : 'top-10'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
+                  <div className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
                     <NavLink
                       to="/quarter-targets"
                       onClick={() => setOpsDropdownOpen(false)}
