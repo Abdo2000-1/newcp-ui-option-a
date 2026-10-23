@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/shared/hooks/useStore';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
-import { useLanguage, LANGUAGES } from '@/app/providers/contexts/LanguageContext';
+import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { sound } from '@/shared/utils/sound';
 
 export default function Profile() {
@@ -374,7 +374,7 @@ export default function Profile() {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{l.flag}</span>
+                    <LanguageFlag code={l.code} className="w-5 h-3.5 rounded-xs object-cover shadow-2xs shrink-0" />
                     <span>{l.nativeName}</span>
                   </div>
                   {language === l.code && <Check size={14} className="text-[#0284c7]" />}

@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
+import { useLanguage, LANGUAGES, LanguageFlag, type LanguageCode } from '@/app/providers/contexts/LanguageContext';
 import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
 import { sound } from '@/shared/utils/sound';
@@ -43,6 +44,7 @@ import { sound } from '@/shared/utils/sound';
 export default function Settings() {
   const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'notifications' | 'language' | 'security' | 'organization'>('appearance');
   const { theme, setTheme } = useThemeContext();
+  const { language, setLanguage, currentOption } = useLanguage();
   const profile = useStore(s => s.getProfile());
 
   // Profile Form State
@@ -77,8 +79,7 @@ export default function Settings() {
   });
   const [testNotifSent, setTestNotifSent] = useState(false);
 
-  // Language & Region State
-  const [language, setLanguage] = useState('en-US');
+  // Language & Region State (Bound to global LanguageContext)
   const [timezone, setTimezone] = useState('America/New_York');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [currency, setCurrency] = useState('USD');
@@ -937,18 +938,27 @@ export default function Settings() {
               {/* Locale Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Studio Language</label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="settings-studio-language" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Studio Language
+                    </label>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                      <LanguageFlag code={language} />
+                      <span>{currentOption.nativeName}</span>
+                    </div>
+                  </div>
                   <select 
+                    id="settings-studio-language"
+                    aria-label="Studio Language"
                     value={language} 
-                    onChange={e => setLanguage(e.target.value)}
+                    onChange={e => setLanguage(e.target.value as LanguageCode)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   >
-                    <option value="en-US">English (United States)</option>
-                    <option value="en-GB">English (United Kingdom)</option>
-                    <option value="ar-SA">العربية (Arabic - المملكة العربية السعودية)</option>
-                    <option value="es-ES">Español (Spanish)</option>
-                    <option value="fr-FR">Français (French)</option>
-                    <option value="de-DE">Deutsch (German)</option>
+                    {LANGUAGES.map(opt => (
+                      <option key={opt.code} value={opt.code}>
+                        {opt.nativeName} ({opt.label})
+                      </option>
+                    ))}
                   </select>
                 </div>
 
