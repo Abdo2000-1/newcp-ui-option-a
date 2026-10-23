@@ -1,0 +1,9 @@
+ID,Dependency,Status,Evidence needed,Gate,Owner
+R04-F07-DESIGN,Per-item billed party,TARGET DESIGN RESOLVED,V204 `orders.order_items.billed_to_contact_id` + `billed_party_origin`; source package attached,No need to invent another schema column,Backend
+F07-01,V204 deployed on target V3,UNVERIFIED,DB owner migration log + read-only information_schema checks,BLOCK enabled live Bill To write if absent,DB owner
+F07-02,Exact legacy payer encodings approved,UNVERIFIED,profile_billed_party.py output + reviewer-approved decision/domain hash,BLOCK authoritative ETL,ETL owner
+F07-03,Full stage30→90 reconciliation,UNVERIFIED,stage90 log zero unresolved/mismatched; payer NOT NULL + schema evidence,BLOCK migration signoff/financial live traffic,ETL owner
+F07-04,Finance integration uses item payer,UNVERIFIED,pricing/voucher/charge/invoice line tests + code review,BLOCK real finance ops,Backend/finance owner
+F07-05,Two React apps and real API integration,UNVERIFIED,"Real repo availability, browser tests and redacted results",BLOCK live E2E PASS claims,FE owners
+R01/R02,Selected tenant catalog and form options,UNVERIFIED,Read-only tenant scoped catalog queries,BLOCK valid runtime fixture assertions,BE
+R03/R06,Allowed transitions/permissions,UNVERIFIED,Actual V3 workflow/Casbin rows and guarded tests,BLOCK live status mutation,BE

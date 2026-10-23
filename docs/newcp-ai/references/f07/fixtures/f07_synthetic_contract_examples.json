@@ -1,0 +1,78 @@
+{
+  "classification": "SYNTHETIC_ONLY; NO REAL IDENTIFIERS OR ACTUAL V3 DATA",
+  "orderUuid": "00000000-0000-0000-0000-000000000001",
+  "doctorContactUuid": "00000000-0000-0000-0000-000000000011",
+  "scanningCenterContactUuid": "00000000-0000-0000-0000-000000000012",
+  "billedPartyChoices": [
+    {
+      "contactUuid": "00000000-0000-0000-0000-000000000011",
+      "role": "doctor",
+      "label": "Synthetic Doctor"
+    },
+    {
+      "contactUuid": "00000000-0000-0000-0000-000000000012",
+      "role": "scanning_center",
+      "label": "Synthetic Scanning Center"
+    }
+  ],
+  "sampleCreateRequest": {
+    "sellableItemUuid": "00000000-0000-0000-0000-000000000003",
+    "answers": [],
+    "isRedo": false,
+    "billedToContactUuid": "00000000-0000-0000-0000-000000000011"
+  },
+  "samplePatchPayerRequest": {
+    "billedToContactUuid": "00000000-0000-0000-0000-000000000012"
+  },
+  "sampleCreatedService": {
+    "uuid": "00000000-0000-0000-0000-000000000014",
+    "orderUuid": "00000000-0000-0000-0000-000000000001",
+    "sellableItemUuid": "00000000-0000-0000-0000-000000000003",
+    "status": "synthetic_status_not_runtime",
+    "answers": [],
+    "billedToContactUuid": "00000000-0000-0000-0000-000000000011",
+    "billedPartyOrigin": "user_selected",
+    "canEditBilledParty": true
+  },
+  "sameTypeInstancesDifferentPayers": [
+    {
+      "uuid": "00000000-0000-0000-0000-000000000014",
+      "billedToContactUuid": "00000000-0000-0000-0000-000000000011"
+    },
+    {
+      "uuid": "00000000-0000-0000-0000-000000000015",
+      "billedToContactUuid": "00000000-0000-0000-0000-000000000012"
+    }
+  ],
+  "negativeCases": [
+    {
+      "name": "payer_from_other_tenant",
+      "expected": "4xx; no change"
+    },
+    {
+      "name": "payer_not_in_order_eligible_contacts",
+      "expected": "4xx; no change"
+    },
+    {
+      "name": "payer_change_after_charge_or_invoice",
+      "expected": "409/appropriate documented error; no change"
+    },
+    {
+      "name": "unresolved_legacy_item_attempt_charge",
+      "expected": "blocked pending ETL reconciliation"
+    },
+    {
+      "name": "mixed_payer_invoice",
+      "expected": "rejected by F07 invoice-line guards"
+    },
+    {
+      "name": "retry_create_same_idempotency_key",
+      "expected": "same result under reviewed policy; no duplicate"
+    },
+    {
+      "name": "two_intentional_same_type_creates",
+      "expected": "distinct service items and payer selections"
+    }
+  ],
+  "warning": "No use as real patient/order/contact/staging dataset. All UUIDs and example statuses are fabricated to exercise draft contract."
+}

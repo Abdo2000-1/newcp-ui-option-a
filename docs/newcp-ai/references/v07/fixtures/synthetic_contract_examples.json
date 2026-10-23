@@ -1,0 +1,39 @@
+{
+  "classification": "SYNTHETIC_ONLY; NO LIVE V3 IDENTIFIERS",
+  "serviceCandidates": [
+    "conversion",
+    "biomodel",
+    "implant_analog_model"
+  ],
+  "syntheticOrderUuid": "00000000-0000-0000-0000-000000000001",
+  "syntheticServiceCatalog": {
+    "conversion": "00000000-0000-0000-0000-000000000002",
+    "biomodel": "00000000-0000-0000-0000-000000000003",
+    "implant_analog_model": "00000000-0000-0000-0000-000000000004"
+  },
+  "sampleCreatedService": {
+    "uuid": "00000000-0000-0000-0000-000000000014",
+    "orderUuid": "00000000-0000-0000-0000-000000000001",
+    "sellableItemUuid": "00000000-0000-0000-0000-000000000003",
+    "lineNumber": 1,
+    "status": "draft",
+    "isRedo": false,
+    "isInvoiced": false,
+    "currencyCode": "USD",
+    "unitPrice": "0.0000",
+    "lineTotal": "0.0000",
+    "answers": []
+  },
+  "sampleCreateRequest": {
+    "sellableItemUuid": "00000000-0000-0000-0000-000000000003",
+    "answers": [],
+    "isRedo": false
+  },
+  "sampleTransition": {
+    "serviceItemUuid": "00000000-0000-0000-0000-000000000014",
+    "fromCode": "draft",
+    "toCode": "submitted",
+    "changedAt": "2026-10-22T00:00:00Z"
+  },
+  "warning": "Sample status transition is illustrative only; it MUST NOT be used as an allowed runtime transition until workflow config is resolved."
+}

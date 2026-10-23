@@ -1,0 +1,10 @@
+﻿Actor,Action,Primary_reference,Evidence_caveat
+Clerk,View order / service details,CP,Business evidence; permission matrix still open
+Clerk,Add Models or Conversion to existing order,CP taskAddToThis,Path verified; specific authorization not proven
+Clerk,Edit Models/Conversion fields,CP taskEditCase + editCasePHP,Broad edit path with billed-state restrictions
+Clerk,Change allowed status or pending state,CP editCasePHP / quick-edit,Allowed transition matrix not fully verified
+Clerk,Edit configurable Other Service,CP taskOtherServicesQuickEdit,Varies by digital/manufacturing and invoicing
+Customer,Create/retrieve owned orders,Connect,Customer-facing scope only
+Customer,Upload required input file,Connect OrderUpdateStatus,Specific action can trigger automatic status advance
+Customer,Arbitrary service status edit,No evidence for a general capability,Do not infer from action-triggered effects
+Admin or supervisor,Override billing/financial restrictions,Not established,Require business/authorization confirmation

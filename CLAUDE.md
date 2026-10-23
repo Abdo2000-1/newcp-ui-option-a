@@ -15,6 +15,8 @@ This repository contains the CP PRO MAX frontend and its project-specific AI-ass
 9. `.claude/rules/business-domain.md` before any product-behavior work
 10. Any official source files explicitly listed as available by `docs/00_SOURCE_INVENTORY.md`.
 
+For work covered by the integrated New CP V0.9 handoff, also read `docs/newcp-ai/REFERENCE_INDEX.md`, `docs/newcp-ai/INTEGRATION_WITH_REPOSITORY.md`, and the applicable task under `docs/newcp-ai/tasks/`. The handoff is source material and a controlled workflow reference; it does not authorize backend, database, production, or unapproved application changes.
+
 Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `implement-task`, `code-review-task`, and `finalize-task`. Use specialist subagents only for the bounded read-only analysis described in `.claude/agents/`.
 
 ## Source of truth and scope
@@ -31,6 +33,8 @@ Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `impl
 
 - Preserve the existing application source and repository conventions until an approved implementation task authorizes a change. Organizational files may guide work, but they do not authorize feature implementation.
 - New CP API work must be OpenAPI-first, tenant-safe, instance-identified, and compatible with the approved PostgreSQL V3 baseline. Legacy Swagger is historical reference only.
+- Treat `docs/newcp-ai/references/f07/integration/newcp-demo-f07.openapi.yaml` as a provisional design source unless live deployment and release-gate evidence is available.
+- Use `MOCK`, `INTEGRATED`, `BLOCKED`, and `NOT VERIFIED` status labels accurately; synthetic fixtures never prove live integration.
 - Do not add database access to a frontend, change the V3 schema, use a superuser to claim tenant-isolation proof, or invent authentication behavior.
 - Never place secrets, tokens, PHI, customer data, or production dumps in the repository, AI prompts, logs, telemetry, screenshots, or evidence.
 

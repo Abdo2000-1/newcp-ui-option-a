@@ -1,0 +1,483 @@
+{
+  "schema_version": "0.6",
+  "form_key": "conversion",
+  "metadata": {
+    "display_name": "Conversion",
+    "selection": "Dedicated Conversion form in legacy Connect",
+    "demo_priority": "Primary",
+    "legacy_family": "OrderSim/Conversion",
+    "status": "Source-based option selected; V3 catalog identity remains unverified"
+  },
+  "rule_authority": [
+    "approved New CP changes",
+    "evidenced legacy UI validation",
+    "legacy backend & V3 constraints"
+  ],
+  "fields": [
+    {
+      "service": "conversion",
+      "field": "software",
+      "label": "Software",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "Simplant"
+        },
+        {
+          "value": 3,
+          "label": "coDiagnostiX"
+        },
+        {
+          "value": 6,
+          "label": "BSB"
+        }
+      ],
+      "default": 1,
+      "visibility": "Normal conversion path; hidden when Express software mode",
+      "frontend_validation": "Validators.required; software change selects dependent format",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:4-29; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.ts:103-123",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "format",
+      "label": "Format",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "Planner"
+        },
+        {
+          "value": 2,
+          "label": "Pro"
+        },
+        {
+          "value": 3,
+          "label": "Viewer"
+        },
+        {
+          "value": 4,
+          "label": "Master"
+        },
+        {
+          "value": 5,
+          "label": "OneShot"
+        },
+        {
+          "value": 8,
+          "label": "CaseXchange"
+        },
+        {
+          "value": 9,
+          "label": "3DDXConnect"
+        }
+      ],
+      "default": 1,
+      "visibility": "Visible when software != 6; 1-5 for Simplant; 8-9 for coDiagnostiX",
+      "frontend_validation": "Validators.required in parent; reset to 1 for Simplant, 8 for coDiagnostiX, 13 (internal) for BSB",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:31-68; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.ts:104-113; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": "Value 13 for BSB set in TS but not selectable in HTML; do not erase as invalid without backend check"
+    },
+    {
+      "service": "conversion",
+      "field": "maxilla",
+      "label": "Maxilla",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 20,
+          "label": "None"
+        },
+        {
+          "value": 21,
+          "label": "Full Arch"
+        },
+        {
+          "value": 22,
+          "label": "Left Quad"
+        },
+        {
+          "value": 23,
+          "label": "Right Quad"
+        },
+        {
+          "value": 24,
+          "label": "Anterior Sextant"
+        }
+      ],
+      "default": 20,
+      "visibility": "Only if arch selection shown; hidden/forced None for related SG/TP contexts",
+      "frontend_validation": "Validators.required; combined arch selection must not leave both 20 in standalone path",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:70-112; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.ts:66-91",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "mandible",
+      "label": "Mandible",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 20,
+          "label": "None"
+        },
+        {
+          "value": 21,
+          "label": "Full Arch"
+        },
+        {
+          "value": 22,
+          "label": "Left Quad"
+        },
+        {
+          "value": 23,
+          "label": "Right Quad"
+        },
+        {
+          "value": 24,
+          "label": "Anterior Sextant"
+        }
+      ],
+      "default": 20,
+      "visibility": "Only if arch selection shown",
+      "frontend_validation": "Validators.required; combined arch selection must not leave both 20 in standalone path",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:133-158; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.ts:66-91",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "typeMaxilla",
+      "label": "Maxilla segmentation",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "Custom"
+        },
+        {
+          "value": 2,
+          "label": "Basic"
+        }
+      ],
+      "default": 1,
+      "visibility": "Show when maxilla selected (or linked teeth-chart context)",
+      "frontend_validation": "Validators.required initially; relevant only when arch non-None",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:112-129; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "typeMandible",
+      "label": "Mandible segmentation",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "Custom"
+        },
+        {
+          "value": 2,
+          "label": "Basic"
+        }
+      ],
+      "default": 1,
+      "visibility": "Show when mandible selected (or linked teeth-chart context)",
+      "frontend_validation": "Validators.required initially; relevant only when arch non-None",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:160-179; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "separateDoubleArchOrder",
+      "label": "Deliver each arch in a separate file?",
+      "input_type": "checkbox",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Visible if maxilla != 20 and modelScan != 1 in source template",
+      "frontend_validation": "No attached required validator; source mapper may force true on submission for other conditions",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:181-190; projects/connect/src/app/Pages/ConnectModules/connect-pages/add-order-pages/utils/mappers/create-conversion-data.util.ts:7-24",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "portableVersion",
+      "label": "Portable Version",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "No"
+        },
+        {
+          "value": 2,
+          "label": "Yes"
+        }
+      ],
+      "default": 1,
+      "visibility": "Always on Conversion component",
+      "frontend_validation": "Validators.required",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:194-213; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "modelScan",
+      "label": "Model Scan",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 0,
+          "label": "No"
+        },
+        {
+          "value": 1,
+          "label": "Yes"
+        }
+      ],
+      "default": 0,
+      "visibility": "Hidden when Surgical Guide selected",
+      "frontend_validation": "Validators.required",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:216-235; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "oral",
+      "label": "Have intraoral scan for patient?",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 1,
+          "label": "No"
+        },
+        {
+          "value": 2,
+          "label": "Yes"
+        }
+      ],
+      "default": null,
+      "visibility": "Added dynamically only when modelScan == 1",
+      "frontend_validation": "Validators.required added when modelScan=1; removed otherwise",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:239-258; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.ts:164-178",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "generalComment",
+      "label": "RX Note / General Comment",
+      "input_type": "textarea",
+      "options": [],
+      "default": "",
+      "visibility": "Always",
+      "frontend_validation": "No validator in createConversionForm",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/conversion-form/conversion-form.component.html:265-280; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2116-2128",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "conversion",
+      "field": "internal.isRedo",
+      "label": "Redo",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:278-282",
+      "v3_target": "V3 orders.order_items.is_redo",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.status",
+      "label": "Service / sub-order Status",
+      "input_type": "select",
+      "options": "Options from effective workflow",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:291-309",
+      "v3_target": "V3 orders.order_items.status (summary) + workflow.workflow_instances",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.pending",
+      "label": "Pending",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:229-398",
+      "v3_target": "V3 order_items.pending_reason / hold_type/status - mapping needs current workflow decision",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.pendingReason",
+      "label": "Pending Reason",
+      "input_type": "text",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:303-309",
+      "v3_target": "V3 orders.order_items.pending_reason",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.cost",
+      "label": "Service Cost",
+      "input_type": "money",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:378-397",
+      "v3_target": "V3 orders.order_items.unit_price or line_total; derive according to pricing engine",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.zeroChargeReason",
+      "label": "Zero-charge Reason",
+      "input_type": "select",
+      "options": "Configured code list",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Required when line total is zero for newly-created non-migrated V3 items (unless server derived behavior validates otherwise)",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:229-398",
+      "v3_target": "V3 orders.order_items.zero_charge_reason_id",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.zeroChargeOther",
+      "label": "Zero-charge Other Detail",
+      "input_type": "text",
+      "options": [],
+      "default": null,
+      "visibility": "Only when zero-charge reason is Other",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:229-398",
+      "v3_target": "V3 orders.order_items.zero_charge_note",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.billTo",
+      "label": "Bill to Doctor or Scanning Center",
+      "input_type": "radio",
+      "options": "Account-specific IDs",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:229-234",
+      "v3_target": "No direct per-item billed-party ID in inspected V3 order_items; reconcile billing.charges.contact_id",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.currency",
+      "label": "Currency",
+      "input_type": "select",
+      "options": "Legacy currency list",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:66-105; CP-master/newcp/pages/editCasePHP.php:766-772",
+      "v3_target": "V3 orders.order_items.currency_code",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "conversion",
+      "field": "internal.rush",
+      "label": "Rush",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/subConvForEdit.php:229-398",
+      "v3_target": "V3 orders.order_items.rush_type_id (mapping to actual reference)",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    }
+  ],
+  "unresolved": [
+    "Resolve V3 sellable_item and catalog field codes against actual scoped tenant data",
+    "Verify workflow status choices and capabilities from V3 runtime rows",
+    "Validate selected pricing formula, bill-to routing, and charge account in staging",
+    "Do not copy old one-service-per-type restriction"
+  ]
+}

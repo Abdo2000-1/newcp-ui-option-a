@@ -1,0 +1,482 @@
+{
+  "schema_version": "0.6",
+  "form_key": "implant_analog_model",
+  "metadata": {
+    "display_name": "Implant Analog Model",
+    "selection": "Other Services > Implant Analog Model",
+    "demo_priority": "Additional Models-compatible form, included to satisfy all observed model form fields; not committed as second live workflow",
+    "legacy_family": "Other Services / configurable",
+    "status": "Source-verified display name; V3 code awaits matching"
+  },
+  "rule_authority": [
+    "approved New CP changes",
+    "evidenced legacy UI validation",
+    "legacy backend & V3 constraints"
+  ],
+  "fields": [
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogDDS",
+      "label": "Is This Digital Design Only?",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Always",
+      "frontend_validation": "Validators.required (false passes)",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.ts:81-106; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:1-31",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": "Legacy spelling Impant retained as source alias; recommended normalized new API property"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogArches",
+      "label": "Arches",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 0,
+          "label": "Upper"
+        },
+        {
+          "value": 1,
+          "label": "Lower"
+        },
+        {
+          "value": 2,
+          "label": "Both"
+        }
+      ],
+      "default": null,
+      "visibility": "Always; may be forced/disabled by preselected OrderArchType",
+      "frontend_validation": "Validators.required (value 0 passes)",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.ts:81-89; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:72-88",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "implantSystem",
+      "label": "Implant System",
+      "input_type": "text",
+      "options": [],
+      "default": "",
+      "visibility": "Always",
+      "frontend_validation": "No Validators.required attached in inspected component",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.ts:84-89; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:90-106",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogRxNote",
+      "label": "RX Note",
+      "input_type": "textarea",
+      "options": [],
+      "default": "",
+      "visibility": "Always",
+      "frontend_validation": "No explicit validator",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.ts:84-89; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:109-115",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogNest",
+      "label": "Nest design",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Only if ImpantAnalogDDS==true",
+      "frontend_validation": "No explicit validator; dynamically added",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.ts:93-120; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:35-55",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogdeliverablesgroup.stl",
+      "label": "Deliver as STL",
+      "input_type": "checkbox",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": true,
+      "visibility": "Only digital design",
+      "frontend_validation": "Common validator function requires STL or softwareFile, but attachment of validator is commented out",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.ts:50-100; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.html:11-30; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:60-66",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": "Potential validation gap: function is defined, addValidators line commented"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogdeliverablesgroup.softwareFile",
+      "label": "Deliver as software file",
+      "input_type": "checkbox",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Only digital design",
+      "frontend_validation": "Same custom validator is declared but not attached",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.ts:50-105; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.html:30-46",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogdeliverablesgroup.softwareDesign",
+      "label": "Software for delivery",
+      "input_type": "select",
+      "options": "From runtime softwareList",
+      "default": -1,
+      "visibility": "Only digital design and softwareFile true",
+      "frontend_validation": "Custom function flags softwareFile true with softwareDesign == -1; not attached in inspected component",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.ts:50-103; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-deliver-as/custom-deliver-as.component.html:48-63",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogprinterGroup.printerBrand",
+      "label": "3D Printer Brand",
+      "input_type": "select",
+      "options": "From runtime printersList",
+      "default": 0,
+      "visibility": "Only digital design",
+      "frontend_validation": "No validator attached; candidate custom validator declared but not installed",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.ts:45-110; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.html:1-28; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/digital design services/other-services/implant-analog-model/implant-analog-model.component.html:66-71",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogprinterGroup.printerModel",
+      "label": "3D Printer Model",
+      "input_type": "select",
+      "options": "Dependent on selected printerBrand",
+      "default": 0,
+      "visibility": "Only digital design; disabled until brand is selected unless allModels",
+      "frontend_validation": "No validator attached; reset to 0 upon brand change",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.ts:50-106; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.html:30-51",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "ImpantAnalogprinterGroup.printerResin",
+      "label": "Printer Resin",
+      "input_type": "text",
+      "options": [],
+      "default": "",
+      "visibility": "Only digital design",
+      "frontend_validation": "No explicit validator attached",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.ts:45-59; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/custom-printer-form/custom-printer-form.component.html:53-77",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": ""
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "rush",
+      "label": "Rush if possible",
+      "input_type": "radio",
+      "options": [
+        {
+          "value": 0,
+          "label": "No"
+        },
+        {
+          "value": 1,
+          "label": "Yes"
+        }
+      ],
+      "default": 0,
+      "visibility": "Shared Other Services parent section",
+      "frontend_validation": "No explicit field validator attached; source UI surcharge is not verified tenant price",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/other-services-form/other-services-form.component.html:1-40; new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2248-2255",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": "Legacy label mentions +$20, NOT an authoritative price"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "hasRequiredFiles",
+      "label": "Has required files",
+      "input_type": "checkbox",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Parent Other Services form; actual visual placement must be checked",
+      "frontend_validation": "No explicit required validator in parent form",
+      "source": "new-connect-v3-CR_DDS_V2/shared/shared-components/shared-forms/add-order-form/add-order-form.component.ts:2248-2255",
+      "v3_target": "catalog item field/value (catalog code must be matched)",
+      "evidence_status": "UI_OBSERVED",
+      "notes": "Parent control; not equivalent to completed upload verification"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.isRedo",
+      "label": "Redo",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:104-108,303-307",
+      "v3_target": "V3 orders.order_items.is_redo",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.status",
+      "label": "Service / sub-order Status",
+      "input_type": "select",
+      "options": "Options from effective workflow",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:454-478,630-642",
+      "v3_target": "V3 orders.order_items.status (summary) + workflow.workflow_instances",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.pending",
+      "label": "Pending",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "V3 order_items.pending_reason / hold_type/status - mapping needs current workflow decision",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.pendingReason",
+      "label": "Pending Reason",
+      "input_type": "text",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:629-639",
+      "v3_target": "V3 orders.order_items.pending_reason",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.cost",
+      "label": "Service Cost",
+      "input_type": "money",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:881-887",
+      "v3_target": "V3 orders.order_items.unit_price or line_total; derive according to pricing engine",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.zeroChargeReason",
+      "label": "Zero-charge Reason",
+      "input_type": "select",
+      "options": "Configured code list",
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Required when line total is zero for newly-created non-migrated V3 items (unless server derived behavior validates otherwise)",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "V3 orders.order_items.zero_charge_reason_id",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.zeroChargeOther",
+      "label": "Zero-charge Other Detail",
+      "input_type": "text",
+      "options": [],
+      "default": null,
+      "visibility": "Only when zero-charge reason is Other",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "V3 orders.order_items.zero_charge_note",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.isDigital",
+      "label": "Digital Design",
+      "input_type": "boolean",
+      "options": [
+        {
+          "value": false,
+          "label": "No"
+        },
+        {
+          "value": true,
+          "label": "Yes"
+        }
+      ],
+      "default": false,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "V3 orders.order_items.is_digital",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.fieldCharges",
+      "label": "Per-field pricing/charges",
+      "input_type": "money-map",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "Backend/V3 authority: do not change frozen financial fields after charged/invoiced; status follows allowed workflow transitions",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:483-544,870-887",
+      "v3_target": "V3 orders.order_item_field_values.charged_amount",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.pouringCost",
+      "label": "Pouring Cost",
+      "input_type": "money",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "Candidate item field charged_amount; legacy source fieldId=95",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.shippingCost",
+      "label": "Shipping Cost",
+      "input_type": "money",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "Candidate item field charged_amount; legacy source fieldId=96",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.rushCost",
+      "label": "Rush Cost",
+      "input_type": "money",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "Candidate item field charged_amount; legacy source fieldId=94",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    },
+    {
+      "service": "implant_analog_model",
+      "field": "internal.internalComment",
+      "label": "Internal Comment",
+      "input_type": "textarea",
+      "options": [],
+      "default": null,
+      "visibility": "Clerk edit only; contextual",
+      "frontend_validation": "No universal frontend validator proven; specific controls depend on selected service and state",
+      "source": "CP-master/newcp/pages/taskOtherServicesQuickEdit.php:600-907",
+      "v3_target": "V3 orders.order_comments or audit; confirm selected domain",
+      "evidence_status": "LEGACY_CP_OBSERVED_V3_MAPPING_CANDIDATE",
+      "notes": "Display/metadata and mutation policy must be distinguished; legacy CP edit path differs between Conversion and Other Services"
+    }
+  ],
+  "unresolved": [
+    "Resolve V3 sellable_item and catalog field codes against actual scoped tenant data",
+    "Verify workflow status choices and capabilities from V3 runtime rows",
+    "Validate selected pricing formula, bill-to routing, and charge account in staging",
+    "Do not copy old one-service-per-type restriction"
+  ]
+}
