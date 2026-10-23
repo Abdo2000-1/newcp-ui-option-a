@@ -123,7 +123,7 @@ export default function OrderDetailsPage() {
         ? (stMatch.arch ? `${stMatch.restoration} (${stMatch.arch})` : stMatch.restoration)
         : 'Not available';
       const billToLabel = stMatch.billTo || stMatch.clinicName || 'Not available';
-      const serviceAmount = typeof stMatch.amount === 'number' ? stMatch.amount : (null as any);
+      const serviceAmount: number | null = typeof stMatch.amount === 'number' ? stMatch.amount : null;
 
       return {
         id: stMatch.id,
@@ -159,7 +159,7 @@ export default function OrderDetailsPage() {
             actionLabel: stMatch.status || 'Not available',
             changeRequest: stMatch.changeRequest || 'Not available',
             csTask: {
-              status: 'Assign',
+              status: stMatch.csTask ? 'Assigned' : 'Unassigned',
               assignee: stMatch.csTask || undefined,
             },
           },
@@ -201,7 +201,7 @@ export default function OrderDetailsPage() {
   ];
 
   // The primary service title serves as the main hook
-  const primaryService = flowOrder?.services[0] || {
+  const primaryService: SubServiceItem = flowOrder?.services[0] || {
     id: 'srv-default',
     type: 'Not available',
     typeCode: 'N/A',
@@ -209,7 +209,7 @@ export default function OrderDetailsPage() {
     subtitle: '',
     format: 'Not available',
     actionLabel: 'Not available',
-    amount: null as any,
+    amount: null,
     billTo: 'Not available',
     maxilla: 'No',
     mandible: 'No',
@@ -221,7 +221,7 @@ export default function OrderDetailsPage() {
     hasActionAlert: false,
     changeRequest: 'Not available',
     csTask: {
-      status: 'Assign' as const,
+      status: 'Unassigned',
     },
   };
 
@@ -238,12 +238,14 @@ export default function OrderDetailsPage() {
   const [drSpecialRequest, setDrSpecialRequest] = useState<string>(
     isInitialDemo ? 'Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.' : (flowOrder?.notes || '')
   );
-  const [scSpecialRequest, setScSpecialRequest] = useState<string>(isInitialDemo ? 'General' : 'None');
-  const [scSpecialValue, setScSpecialValue] = useState<string>('0');
+  const [scSpecialRequest, setScSpecialRequest] = useState<string>(isInitialDemo ? 'General' : 'Not available');
+  const [scSpecialValue, setScSpecialValue] = useState<string>(isInitialDemo ? '0' : '');
   const [clientNote, setClientNote] = useState<string>(
     isInitialDemo ? 'Please send digital STL plan approval link before milling guide.' : ''
   );
-  const [registrationType, setRegistrationType] = useState<'option1' | 'option2'>('option1');
+  const [registrationType, setRegistrationType] = useState<'option1' | 'option2' | null>(
+    isInitialDemo ? 'option1' : null
+  );
   const [specialPreShippingOld, setSpecialPreShippingOld] = useState<string>(
     isInitialDemo ? 'Standard courier delivery to main clinic address. Signature required on receipt.' : ''
   );
@@ -264,13 +266,15 @@ export default function OrderDetailsPage() {
         setDrSpecialRequest('Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.');
         setScSpecialRequest('General');
         setScSpecialValue('0');
+        setRegistrationType('option1');
         setClientNote('Please send digital STL plan approval link before milling guide.');
         setSpecialPreShippingOld('Standard courier delivery to main clinic address. Signature required on receipt.');
         setOldNotes(DEMO_504901_OLD_NOTES);
       } else {
         setDrSpecialRequest(flowOrder.notes || '');
-        setScSpecialRequest('None');
-        setScSpecialValue('0');
+        setScSpecialRequest('Not available');
+        setScSpecialValue('');
+        setRegistrationType(null);
         setClientNote('');
         setSpecialPreShippingOld('');
         setOldNotes([]);
@@ -460,7 +464,7 @@ Patient: ${patientName}
 Scanning Center: ${scanCenter}
 Dr. Special Request: ${drSpecialRequest || 'Not available'}
 Client Note: ${clientNote || 'Not available'}
-Registration Type: ${registrationType.toUpperCase()}
+Registration Type: ${registrationType ? registrationType.toUpperCase() : 'Not available'}
 Shipping Instructions: ${specialPreShippingOld || 'Not available'}
 Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} (${typeof s.amount === 'number' ? `$${s.amount}` : 'Not available'})`).join(', ')}
 Total Value: ${activeOrder.services.some(s => typeof s.amount === 'number') ? `$${activeOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
@@ -845,6 +849,7 @@ Generated on: ${new Date().toLocaleString()}
                     }}
                     className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
                   >
+                    <option value="Not available">Not available</option>
                     <option value="None">None</option>
                     <option value="General">General</option>
                     <option value="Urgent Pre-Check">Urgent Pre-Check</option>
@@ -1208,9 +1213,16 @@ Generated on: ${new Date().toLocaleString()}
 
           {/* E. Registration Type (Option 1 / Option 2) */}
           <div className="border border-slate-300 dark:border-slate-800 rounded-2xl p-4 bg-white dark:bg-[#0b101d] shadow-sm text-xs space-y-2">
-            <span className="font-extrabold text-slate-700 dark:text-slate-300 block">
-              Registration Type :
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-slate-700 dark:text-slate-300 block">
+                Registration Type :
+              </span>
+              {registrationType === null && (
+                <span className="text-[11px] font-mono text-slate-400">
+                  (Not available / Unselected)
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"

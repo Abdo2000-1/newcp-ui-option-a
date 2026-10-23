@@ -8,7 +8,7 @@ export interface SubServiceItem {
   maxilla: string;
   mandible: string;
   format: string;
-  amount: number;
+  amount: number | null;
   vouchers: string;
   receivedTime: string;
   sentTime: string;
@@ -19,7 +19,7 @@ export interface SubServiceItem {
   actionButtonText?: string;
   changeRequest: string;
   csTask: {
-    status: 'Assign' | 'Assigned';
+    status: 'Assign' | 'Assigned' | 'Unassigned';
     assignee?: string;
     time?: string;
   };

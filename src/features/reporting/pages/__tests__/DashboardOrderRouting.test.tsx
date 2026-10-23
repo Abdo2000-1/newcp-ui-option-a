@@ -235,6 +235,15 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
       // Must render explicit neutral empty state for historical notes
       expect(screen.getByText('No historical notes recorded for this order.')).toBeInTheDocument();
 
+      // Must display neutral registration type and Sc. Special Request defaults
+      expect(screen.getByText('(Not available / Unselected)')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Not available')).toBeInTheDocument();
+
+      // In Sub Orders tab, CS task reflects unassigned status
+      const subOrdersTab = screen.getByRole('button', { name: /sub-orders/i });
+      fireEvent.click(subOrdersTab);
+      expect(screen.getByText(/CS Task: Unassigned/i)).toBeInTheDocument();
+
       // Must display explicit neutral fallbacks
       expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
     });

@@ -683,7 +683,7 @@ export default function Flow() {
           case 'format':
             return prim?.format || '';
           case 'amount':
-            return order.services.reduce((acc, s) => acc + s.amount, 0);
+            return order.services.reduce((acc, s) => acc + (s.amount ?? 0), 0);
           case 'vouch':
             return prim?.vouchers || '';
           case 'received':
@@ -1223,7 +1223,7 @@ export default function Flow() {
                   const isExpanded = expandedOrders.has(order.id);
                   const tpCount = order.services.filter((s) => s.typeCode === 'TP').length;
                   const hasActionAlert = order.services.some((s) => s.hasActionAlert);
-                  const totalCaseAmount = order.services.reduce((acc, s) => acc + s.amount, 0);
+                  const totalCaseAmount = order.services.reduce((acc, s) => acc + (s.amount ?? 0), 0);
                   const primaryService = order.services[0];
                   const alertService = order.services.find((s) => s.hasActionAlert);
 
