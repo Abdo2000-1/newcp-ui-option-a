@@ -218,7 +218,24 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
       expect(screen.queryByText(/California Diagnostics/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/Patient Record/i)).not.toBeInTheDocument();
 
-      // Must display neutral fallbacks
+      // Must not invent clinical notes, shipping instructions, or historical logs
+      expect(screen.queryByText(/Immediate implant placement/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/CBCT DICOM series aligned/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Standard courier delivery/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/office working hours/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/shrouk/i)).not.toBeInTheDocument();
+
+      // Must not invent fictional service semantics or fees
+      expect(screen.queryByText('General Service')).not.toBeInTheDocument();
+      expect(screen.queryByText('Standard')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00 USD')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00')).not.toBeInTheDocument();
+
+      // Must render explicit neutral empty state for historical notes
+      expect(screen.getByText('No historical notes recorded for this order.')).toBeInTheDocument();
+
+      // Must display explicit neutral fallbacks
       expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
     });
   });

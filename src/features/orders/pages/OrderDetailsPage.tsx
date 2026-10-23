@@ -121,9 +121,9 @@ export default function OrderDetailsPage() {
       const patientLabel = stMatch.patientName || 'Not available';
       const serviceTitle = stMatch.restoration
         ? (stMatch.arch ? `${stMatch.restoration} (${stMatch.arch})` : stMatch.restoration)
-        : 'Service Item';
+        : 'Not available';
       const billToLabel = stMatch.billTo || stMatch.clinicName || 'Not available';
-      const serviceAmount = typeof stMatch.amount === 'number' ? stMatch.amount : 0;
+      const serviceAmount = typeof stMatch.amount === 'number' ? stMatch.amount : (null as any);
 
       return {
         id: stMatch.id,
@@ -141,14 +141,14 @@ export default function OrderDetailsPage() {
         services: [
           {
             id: `srv-${stMatch.id}`,
-            type: stMatch.restoration || 'General Service',
-            typeCode: (stMatch.restoration ? stMatch.restoration.slice(0, 2) : 'SRV').toUpperCase(),
+            type: stMatch.restoration || 'Not available',
+            typeCode: (stMatch.restoration ? stMatch.restoration.slice(0, 2) : 'N/A').toUpperCase(),
             title: serviceTitle,
             subtitle: stMatch.format || '',
             billTo: billToLabel,
             maxilla: stMatch.arch === 'Maxilla' || stMatch.arch === 'Both' ? 'Yes' : 'No',
             mandible: stMatch.arch === 'Mandible' || stMatch.arch === 'Both' ? 'Yes' : 'No',
-            format: stMatch.format || 'Standard',
+            format: stMatch.format || 'Not available',
             amount: serviceAmount,
             vouchers: stMatch.vouchers !== undefined ? String(stMatch.vouchers) : '0',
             receivedTime: stMatch.receivedAt || '',
@@ -156,10 +156,11 @@ export default function OrderDetailsPage() {
             updateTime: stMatch.updatedAt || '',
             chargedOn: stMatch.chargedAt || '',
             hasActionAlert: stMatch.priority === 'Urgent',
-            actionLabel: stMatch.status || 'New',
-            changeRequest: stMatch.changeRequest || 'None',
+            actionLabel: stMatch.status || 'Not available',
+            changeRequest: stMatch.changeRequest || 'Not available',
             csTask: {
               status: 'Assign',
+              assignee: stMatch.csTask || undefined,
             },
           },
         ],
@@ -169,58 +170,8 @@ export default function OrderDetailsPage() {
     return undefined;
   }, [paramId, storeOrders]);
 
-  // The primary service title serves as the main hook
-  const primaryService = flowOrder?.services[0] || {
-    id: 'srv-default',
-    type: 'General Service',
-    typeCode: 'SRV',
-    title: 'Service Item',
-    subtitle: '',
-    format: 'Standard',
-    actionLabel: 'New',
-    amount: 0,
-    billTo: 'Not available',
-    maxilla: 'No',
-    mandible: 'No',
-    vouchers: '0',
-    receivedTime: '',
-    sentTime: '',
-    updateTime: '',
-    chargedOn: '',
-    hasActionAlert: false,
-    changeRequest: 'None',
-    csTask: {
-      status: 'Assign' as const,
-    },
-  };
-
-  const [activeTab, setActiveTab] = useState<'prescription' | '3dviewer' | 'suborders'>('prescription');
-  const [orderStatus, setOrderStatus] = useState<string>(primaryService?.actionLabel || 'New');
-  const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
-
-  // Core Form Fields
-  const [doctorName, setDoctorName] = useState<string>(flowOrder?.doctorName || 'Not available');
-  const [patientName, setPatientName] = useState<string>(flowOrder?.patientName || 'Not available');
-  const [scanCenter, setScanCenter] = useState<string>(flowOrder?.scanCenter || 'Not available');
-
-  useEffect(() => {
-    if (flowOrder) {
-      setDoctorName(flowOrder.doctorName || 'Not available');
-      setPatientName(flowOrder.patientName || 'Not available');
-      setScanCenter(flowOrder.scanCenter || 'Not available');
-      setOrderStatus(flowOrder.services[0]?.actionLabel || 'New');
-    }
-  }, [flowOrder]);
-  const [drSpecialRequest, setDrSpecialRequest] = useState<string>('Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.');
-  const [scSpecialRequest, setScSpecialRequest] = useState<string>('General');
-  const [scSpecialValue, setScSpecialValue] = useState<string>('0');
-  const [clientNote, setClientNote] = useState<string>('Please send digital STL plan approval link before milling guide.');
-  const [registrationType, setRegistrationType] = useState<'option1' | 'option2'>('option1');
-  const [specialPreShippingOld, setSpecialPreShippingOld] = useState<string>('Standard courier delivery to main clinic address. Signature required on receipt.');
-  const [specialPreShippingNew, setSpecialPreShippingNew] = useState<string>('');
-
-  // Internal Case Note (Old) Table Data (Exact Image 1 columns)
-  const [oldNotes, setOldNotes] = useState<CaseNoteItem[]>([
+  // Isolated MOCK demo notes for static demo case #504901
+  const DEMO_504901_OLD_NOTES: CaseNoteItem[] = [
     {
       id: 1,
       by: 'shrouk',
@@ -247,7 +198,85 @@ export default function OrderDetailsPage() {
       attach: 'View',
       attachContent: 'CAD Alignment Log:\nCBCT FOV: 8x8 cm\nVoxel size: 0.15 mm\nMesh Deviation: < 0.08 mm (Passed QMS validation).'
     }
-  ]);
+  ];
+
+  // The primary service title serves as the main hook
+  const primaryService = flowOrder?.services[0] || {
+    id: 'srv-default',
+    type: 'Not available',
+    typeCode: 'N/A',
+    title: 'Not available',
+    subtitle: '',
+    format: 'Not available',
+    actionLabel: 'Not available',
+    amount: null as any,
+    billTo: 'Not available',
+    maxilla: 'No',
+    mandible: 'No',
+    vouchers: '0',
+    receivedTime: '',
+    sentTime: '',
+    updateTime: '',
+    chargedOn: '',
+    hasActionAlert: false,
+    changeRequest: 'Not available',
+    csTask: {
+      status: 'Assign' as const,
+    },
+  };
+
+  const [activeTab, setActiveTab] = useState<'prescription' | '3dviewer' | 'suborders'>('prescription');
+  const [orderStatus, setOrderStatus] = useState<string>(primaryService?.actionLabel || 'Not available');
+  const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
+
+  // Core Form Fields
+  const [doctorName, setDoctorName] = useState<string>(flowOrder?.doctorName || 'Not available');
+  const [patientName, setPatientName] = useState<string>(flowOrder?.patientName || 'Not available');
+  const [scanCenter, setScanCenter] = useState<string>(flowOrder?.scanCenter || 'Not available');
+
+  const isInitialDemo = flowOrder?.orderNum === '504901' || flowOrder?.id === '504901';
+  const [drSpecialRequest, setDrSpecialRequest] = useState<string>(
+    isInitialDemo ? 'Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.' : (flowOrder?.notes || '')
+  );
+  const [scSpecialRequest, setScSpecialRequest] = useState<string>(isInitialDemo ? 'General' : 'None');
+  const [scSpecialValue, setScSpecialValue] = useState<string>('0');
+  const [clientNote, setClientNote] = useState<string>(
+    isInitialDemo ? 'Please send digital STL plan approval link before milling guide.' : ''
+  );
+  const [registrationType, setRegistrationType] = useState<'option1' | 'option2'>('option1');
+  const [specialPreShippingOld, setSpecialPreShippingOld] = useState<string>(
+    isInitialDemo ? 'Standard courier delivery to main clinic address. Signature required on receipt.' : ''
+  );
+  const [specialPreShippingNew, setSpecialPreShippingNew] = useState<string>('');
+  const [oldNotes, setOldNotes] = useState<CaseNoteItem[]>(
+    isInitialDemo ? DEMO_504901_OLD_NOTES : []
+  );
+
+  useEffect(() => {
+    if (flowOrder) {
+      setDoctorName(flowOrder.doctorName || 'Not available');
+      setPatientName(flowOrder.patientName || 'Not available');
+      setScanCenter(flowOrder.scanCenter || 'Not available');
+      setOrderStatus(flowOrder.services[0]?.actionLabel || 'Not available');
+
+      const isCurrentDemo = flowOrder.orderNum === '504901' || flowOrder.id === '504901';
+      if (isCurrentDemo) {
+        setDrSpecialRequest('Immediate implant placement planned on site #19. Ensure 2mm safety margin from mandibular canal.');
+        setScSpecialRequest('General');
+        setScSpecialValue('0');
+        setClientNote('Please send digital STL plan approval link before milling guide.');
+        setSpecialPreShippingOld('Standard courier delivery to main clinic address. Signature required on receipt.');
+        setOldNotes(DEMO_504901_OLD_NOTES);
+      } else {
+        setDrSpecialRequest(flowOrder.notes || '');
+        setScSpecialRequest('None');
+        setScSpecialValue('0');
+        setClientNote('');
+        setSpecialPreShippingOld('');
+        setOldNotes([]);
+      }
+    }
+  }, [flowOrder]);
 
   // Composer Form State for New Internal Case Note
   const [newInternalNote, setNewInternalNote] = useState<string>('');
@@ -425,16 +454,16 @@ export default function OrderDetailsPage() {
 =========================================
 Order ID: #${activeOrder.orderNum}
 Status: ${orderStatus}
-Primary Service: ${primaryService.title} (${primaryService.format})
+Primary Service: ${primaryService.title} (${primaryService.format || 'Not available'})
 Doctor: ${doctorName}
 Patient: ${patientName}
 Scanning Center: ${scanCenter}
-Dr. Special Request: ${drSpecialRequest}
-Client Note: ${clientNote}
+Dr. Special Request: ${drSpecialRequest || 'Not available'}
+Client Note: ${clientNote || 'Not available'}
 Registration Type: ${registrationType.toUpperCase()}
-Shipping Instructions: ${specialPreShippingOld}
-Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} ($${s.amount})`).join(', ')}
-Total Value: ${activeOrder.services.reduce((a, s) => a + s.amount, 0)}.00 USD
+Shipping Instructions: ${specialPreShippingOld || 'Not available'}
+Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} (${typeof s.amount === 'number' ? `$${s.amount}` : 'Not available'})`).join(', ')}
+Total Value: ${activeOrder.services.some(s => typeof s.amount === 'number') ? `$${activeOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
 Generated on: ${new Date().toLocaleString()}
 `;
     const blob = new Blob([summary], { type: 'text/plain' });
@@ -546,9 +575,11 @@ Generated on: ${new Date().toLocaleString()}
             {/* Giant Service Name Hook */}
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-baseline gap-2 flex-wrap">
               <span>{primaryService.title}</span>
-              <span className="text-sky-600 dark:text-sky-400 font-bold text-lg sm:text-xl">
-                ({primaryService.format || 'coDiagnostiX™'})
-              </span>
+              {primaryService.format && primaryService.format !== 'Not available' ? (
+                <span className="text-sky-600 dark:text-sky-400 font-bold text-lg sm:text-xl">
+                  ({primaryService.format})
+                </span>
+              ) : null}
             </h1>
 
             {/* Sub-services pills row */}
@@ -558,12 +589,12 @@ Generated on: ${new Date().toLocaleString()}
                 <button
                   key={sub.id || sIdx}
                   type="button"
-                  onClick={() => triggerToast(`Module: ${sub.title} | Format: ${sub.format} | Fee: $${sub.amount}`)}
+                  onClick={() => triggerToast(`Module: ${sub.title} | Format: ${sub.format || 'Not available'} | Fee: ${typeof sub.amount === 'number' ? `$${sub.amount}` : 'Not available'}`)}
                   className="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 shadow-xs hover:border-sky-400 dark:hover:border-sky-500 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <span className="text-sky-600 dark:text-sky-400 font-mono font-black text-[10px]">{sub.typeCode}</span>
                   <span>{sub.title}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-extrabold">${sub.amount}.00</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-extrabold">{typeof sub.amount === 'number' ? `$${sub.amount}.00` : 'Not available'}</span>
                 </button>
               ))}
             </div>
@@ -814,6 +845,7 @@ Generated on: ${new Date().toLocaleString()}
                     }}
                     className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
                   >
+                    <option value="None">None</option>
                     <option value="General">General</option>
                     <option value="Urgent Pre-Check">Urgent Pre-Check</option>
                     <option value="High Density Mesh">High Density Mesh</option>
@@ -880,7 +912,14 @@ Generated on: ${new Date().toLocaleString()}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs font-medium">
-                  {oldNotes.map((n) => (
+                  {oldNotes.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-4 px-3 text-center text-slate-500 dark:text-slate-400">
+                        No historical notes recorded for this order.
+                      </td>
+                    </tr>
+                  ) : (
+                    oldNotes.map((n) => (
                     <tr key={n.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                       <td className="py-2 px-3 font-bold text-slate-900 dark:text-white">{n.by}</td>
                       <td className="py-2 px-3 font-mono font-bold text-sky-700 dark:text-sky-400">{n.to}</td>
@@ -907,7 +946,7 @@ Generated on: ${new Date().toLocaleString()}
                         )}
                       </td>
                     </tr>
-                  ))}
+                  )))}
                 </tbody>
               </table>
             </div>
@@ -1139,7 +1178,7 @@ Generated on: ${new Date().toLocaleString()}
                 Special Pre Shipping Instruction (Old) :
               </div>
               <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/40 mt-1 font-mono leading-relaxed">
-                {specialPreShippingOld}
+                {specialPreShippingOld || 'Not available'}
               </div>
             </div>
 
@@ -1353,7 +1392,7 @@ Generated on: ${new Date().toLocaleString()}
               <p className="text-xs text-slate-400">All services billed and tracked under this master order</p>
             </div>
             <span className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400">
-              Total: ${flowOrder.services.reduce((a, s) => a + s.amount, 0)}.00 USD
+              Total: {flowOrder.services.some(s => typeof s.amount === 'number') ? `$${flowOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
             </span>
           </div>
 
@@ -1373,7 +1412,7 @@ Generated on: ${new Date().toLocaleString()}
                     </span>
                   </div>
                   <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                    ${sub.amount}.00
+                    {typeof sub.amount === 'number' ? `$${sub.amount}.00` : 'Not available'}
                   </span>
                 </div>
 
