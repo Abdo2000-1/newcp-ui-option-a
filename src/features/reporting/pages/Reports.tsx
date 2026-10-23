@@ -8,6 +8,7 @@ import { formatCurrency } from '@/shared/utils/format';
 import { api } from '@/shared/services/api';
 import { useFetch } from '@/shared/hooks/useFetch';
 import { useStore } from '@/shared/hooks/useStore';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { 
   TrendingUp, DollarSign, Award, Clock, Activity, Download, 
   Calendar, CheckCircle2, ArrowUpRight, Filter, Search, ChevronLeft, 
@@ -90,6 +91,7 @@ const GROUPED_WEEKLY_BAR_DATA = [
 import { sound } from '@/shared/utils/sound';
 
 export default function Reports() {
+  const { t } = useLanguage();
   const [selectedWeek, setSelectedWeek] = useState('Week 4');
   const [calendarMonth, setCalendarMonth] = useState('January 2026');
   const [searchQuery, setSearchQuery] = useState('');
@@ -195,7 +197,7 @@ export default function Reports() {
             className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
           >
             <Download size={14} className="text-cyan-500" />
-            <span>Export CSV</span>
+            <span>{t('reports.exportCsv', 'Export CSV')}</span>
           </button>
 
           {/* Search widget */}

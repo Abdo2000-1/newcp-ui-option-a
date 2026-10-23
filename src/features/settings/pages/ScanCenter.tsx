@@ -11,6 +11,7 @@ import { useFetch } from '@/shared/hooks/useFetch';
 import { useStore } from '@/shared/hooks/useStore';
 import { TableTools, SortTh } from '@/shared/components/TableTools';
 import { useAdvancedTable } from '@/shared/hooks/useAdvancedTable';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 const SCAN_STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
@@ -32,6 +33,7 @@ const SCAN_COLUMNS = [
 ];
 
 export default function ScanCenter() {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const { data: centersData, loading: centersLoading } = useFetch(api.getScanCenters);
   const orders = useStore(s => s.getOrders());
@@ -68,7 +70,7 @@ export default function ScanCenter() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full min-w-0">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Scan Center</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('nav.scanCenters', 'Scan Center')}</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Manage scan centers, devices, and incoming digital impressions</p>
       </div>
 

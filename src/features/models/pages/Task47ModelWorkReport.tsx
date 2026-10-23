@@ -18,6 +18,7 @@ import { UIStateSwitcher, type UIStateType } from '@/shared/components/UIStateSw
 import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 interface Task47Row {
   serial: number;
@@ -46,6 +47,7 @@ const SAMPLE_TASK47_ROWS: Task47Row[] = [
 ];
 
 export default function Task47ModelWorkReport() {
+  const { t } = useLanguage();
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
   const [selectedOperator, setSelectedOperator] = useState<string>('-1');
   const [fromDate, setFromDate] = useState('2026-09-01');

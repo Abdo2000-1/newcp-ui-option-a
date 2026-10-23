@@ -228,7 +228,7 @@ export default function QuarterTargetsReport() {
 
   return (
     <div className="space-y-4 w-full min-w-0">
-      
+
       {/* 1. Header with Clean, Non-Overlapping Title and Badge */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         <div>
@@ -238,7 +238,7 @@ export default function QuarterTargetsReport() {
                 <TrendingUp size={18} />
               </span>
               <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                3DDX Quarter Targets & Power BI Intelligence
+                {t('report.quarterTargets', '3DDX Quarter Targets & Power BI Intelligence')}
               </h1>
             </div>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 text-[#0284c7] dark:text-sky-400 border border-[#0284c7]/25 shrink-0">
@@ -258,7 +258,7 @@ export default function QuarterTargetsReport() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0284c7] hover:bg-sky-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
           >
             <Printer size={13} />
-            <span>Print Report</span>
+            <span>{t('action.print', 'Print Report')}</span>
           </button>
         </div>
       </div>
@@ -302,7 +302,7 @@ export default function QuarterTargetsReport() {
       {/* Normal Live State */}
       {uiState === 'normal' && (
         <div className="space-y-4">
-          
+
           {/* Executive Mode Navigation Bar */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-[#0b101d] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
             <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl text-xs font-bold flex-wrap">
@@ -387,7 +387,7 @@ export default function QuarterTargetsReport() {
           {/* VIEW 1: POWER BI LIVE INTERACTIVE DASHBOARD (DEFAULT - ALWAYS WORKS FLAWLESSLY) */}
           {activeView === 'dashboard' && (
             <div className="space-y-4">
-              
+
               {/* Power BI DAX & Slicers Toolbar */}
               <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0b101d] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -395,7 +395,7 @@ export default function QuarterTargetsReport() {
                     <Filter size={13} className="text-[#0284c7]" />
                     Slicers:
                   </span>
-                  
+
                   {/* Fiscal Quarter Slicer */}
                   <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
                     {(['all', 'Q1', 'Q2', 'Q3', 'Q4'] as const).map((q) => (
@@ -468,7 +468,7 @@ export default function QuarterTargetsReport() {
 
               {/* Power BI Interactive Charts Row */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                
+
                 {/* Visual 1: Target vs Achieved Cases (Bar Chart) */}
                 <div className="lg:col-span-2 bg-white dark:bg-[#0b101d] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3">
                   <div className="flex justify-between items-center">
@@ -583,7 +583,7 @@ export default function QuarterTargetsReport() {
           {/* VIEW 2: 3DDX DOCTOR & REVENUE MATRIX (from reports.json) */}
           {activeView === 'matrix' && (
             <div className="space-y-4">
-              
+
               {/* Doctor Accounts Table */}
               <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50">
@@ -659,7 +659,7 @@ export default function QuarterTargetsReport() {
           {/* VIEW 3: POWER BI WEB CANVAS & POWER DESIGNER (100% FUNCTIONAL & INTERACTIVE) */}
           {activeView === 'powerbi' && (
             <div className="space-y-4">
-              
+
               {/* Power BI Web Canvas Header Ribbon */}
               <div className="p-3 rounded-2xl bg-slate-900 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-3">
@@ -705,10 +705,10 @@ export default function QuarterTargetsReport() {
 
               {/* Power BI Canvas Main Container (With Visualizations & Fields Side Panes) */}
               <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-                
+
                 {/* 3 Columns: Active Interactive Canvas */}
                 <div className="xl:col-span-3 space-y-4">
-                  
+
                   {/* Canvas Toolbar & Slicers */}
                   <div className="p-3 bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -901,7 +901,7 @@ export default function QuarterTargetsReport() {
 
                 {/* 1 Column: Power BI Designer Side Panes (Visualizations & Fields) */}
                 <div className="space-y-4">
-                  
+
                   {/* Visualizations Pane */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-[#0b101d] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">

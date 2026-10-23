@@ -6,6 +6,7 @@ import Collapse from '@mui/material/Collapse';
 import { RefreshCw, Terminal, ChevronDown, ChevronUp, ShieldAlert, WifiOff } from 'lucide-react';
 import { Button } from './Button';
 import { sound } from '@/shared/utils/sound';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 interface ErrorStateProps {
   title?: string;
@@ -15,13 +16,16 @@ interface ErrorStateProps {
   fullHeight?: boolean;
 }
 
-export function ErrorState({ 
-  title = 'Service Synchronization Interrupted',
-  message = 'Unable to establish secure handshake with the Dental CAD PACS cloud server. Please verify your connection or retry.',
+export function ErrorState({
+  title,
+  message,
   code = 'ERR_CAD_SYNC_503',
   onRetry,
   fullHeight = false
 }: ErrorStateProps) {
+  const { t } = useLanguage();
+  const displayTitle = title ?? t('error.syncInterrupted', 'Service Synchronization Interrupted');
+  const displayMessage = message ?? t('error.syncMessage', 'Unable to establish secure handshake with the Dental CAD PACS cloud server. Please verify your connection or retry.');
   const [retrying, setRetrying] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -35,7 +39,7 @@ export function ErrorState({
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -112,7 +116,7 @@ export function ErrorState({
               fontSize: '1.125rem',
             }}
           >
-            {title}
+            {displayTitle}
           </Typography>
           <Typography
             variant="body2"
@@ -122,7 +126,7 @@ export function ErrorState({
               lineHeight: 1.6,
             }}
           >
-            {message}
+            {displayMessage}
           </Typography>
         </Box>
 

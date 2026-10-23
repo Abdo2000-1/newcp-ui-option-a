@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { PriorityBadge } from '@/shared/components/PriorityBadge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
-import { 
-  Lock, 
-  AlertTriangle, 
-  AlertCircle, 
-  CheckCircle2, 
-  ArrowRight, 
-  Layers, 
+import {
+  Lock,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
+  Layers,
   ChevronRight,
   Filter,
   Check,
@@ -21,6 +21,7 @@ import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
 import { formatDate } from '@/shared/utils/format';
 import { sound } from '@/shared/utils/sound';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 const STAGES: { id: OrderStatus; label: string; color: string; badgeColor: string }[] = [
   { id: 'New', label: 'New Intake', color: 'border-slate-400 bg-slate-500', badgeColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
@@ -33,6 +34,7 @@ const STAGES: { id: OrderStatus; label: string; color: string; badgeColor: strin
 ];
 
 export default function WorkflowBoard() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const orders = useStore((s) => s.getOrders());
   const [selectedStage, setSelectedStage] = useState<string>('all');
@@ -92,7 +94,7 @@ export default function WorkflowBoard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Workflow Production Hub</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('workflow.title', 'Workflow Production Hub')}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {activeCount} active cases in progress across the production pipeline
           </p>
@@ -183,7 +185,7 @@ export default function WorkflowBoard() {
                 >
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <Link 
+                      <Link
                         to={`/orders/${order.id}`}
                         className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                       >
@@ -318,7 +320,7 @@ export default function WorkflowBoard() {
 
                           <div className="mt-2.5 pt-2 border-t border-gray-200/60 dark:border-gray-700/40 flex justify-between items-center text-[10px] text-gray-400">
                             <span className="truncate max-w-[120px]">{order.doctorName?.replace('Dr. ', '')}</span>
-                            
+
                             {/* Quick stage mover */}
                             <select
                               value={order.status}

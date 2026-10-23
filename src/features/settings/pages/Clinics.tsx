@@ -9,8 +9,10 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { api } from '@/shared/services/api';
 import { useFetch } from '@/shared/hooks/useFetch';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 export default function Clinics() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const { data: clinicsData, loading: isLoading } = useFetch(api.getClinics);

@@ -20,6 +20,7 @@ import { UIStateSwitcher, type UIStateType } from '@/shared/components/UIStateSw
 import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 interface StaffTargetRow {
   id: number;
@@ -47,6 +48,7 @@ const SAMPLE_STAFF: StaffTargetRow[] = [
 ];
 
 export default function Task31StaffTargets() {
+  const { t } = useLanguage();
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
   const [selectedDept, setSelectedDept] = useState<string>('ALL');
   const [selectedQuarter, setSelectedQuarter] = useState<string>('Q3 (Jul - Sep)');

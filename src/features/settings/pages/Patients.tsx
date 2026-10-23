@@ -12,6 +12,7 @@ import { formatDate } from '@/shared/utils/format';
 import { api } from '@/shared/services/api';
 import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { TableTools, SortTh } from '@/shared/components/TableTools';
 import { useAdvancedTable } from '@/shared/hooks/useAdvancedTable';
 
@@ -38,6 +39,7 @@ const PATIENT_COLUMNS = [
 ];
 
 export default function Patients() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const allPatients = useStore(s => s.getPatients());
