@@ -33,7 +33,7 @@ import {
   Move
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
-import { useLanguage, LANGUAGES } from '@/app/providers/contexts/LanguageContext';
+import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { useStore } from '@/shared/hooks/useStore';
 import { ProfileModal } from './ProfileModal';
 import { GlobalSearchModal } from './GlobalSearchModal';
@@ -333,7 +333,7 @@ export function ConvertibleNav({
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
                   title="Change System Language"
                 >
-                  <span className="text-sm">{currentOption.flag}</span>
+                  <LanguageFlag code={currentOption.code} />
                   <span className="font-extrabold text-[11px] uppercase">{currentOption.code}</span>
                   <ChevronDown size={12} className="text-slate-400" />
                 </button>
@@ -357,7 +357,7 @@ export function ConvertibleNav({
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">{lang.flag}</span>
+                          <LanguageFlag code={lang.code} />
                           <span>{lang.nativeName}</span>
                         </div>
                         {language === lang.code && <Check size={13} className="text-[#0284c7]" />}
@@ -783,7 +783,7 @@ export function ConvertibleNav({
               className="flex items-center gap-1 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 text-[11px] font-black cursor-pointer"
               title={`Language: ${currentOption.nativeName}`}
             >
-              <span>{currentOption.flag}</span>
+              <LanguageFlag code={currentOption.code} />
               {!collapsed && <span>{currentOption.code.toUpperCase()}</span>}
             </button>
 
