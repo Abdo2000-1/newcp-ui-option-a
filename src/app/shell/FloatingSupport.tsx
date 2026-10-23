@@ -14,8 +14,13 @@ import {
   FileQuestion
 } from 'lucide-react';
 import { useAppConfig } from '@/app/providers/contexts/ConfigContext';
+import type { NavPosition } from './ConvertibleNav';
 
-export function FloatingSupport() {
+export interface FloatingSupportProps {
+  navPosition?: NavPosition;
+}
+
+export function FloatingSupport({ navPosition = 'top' }: FloatingSupportProps) {
   const { config } = useAppConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -37,8 +42,10 @@ export function FloatingSupport() {
 
   return (
     <>
-      {/* Sleek, Non-intrusive Floating Support FAB at bottom-right */}
-      <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 select-none">
+      {/* Sleek, Non-intrusive Floating Support FAB at bottom-right (Offset when bottom docked) */}
+      <div className={`fixed right-4 sm:right-5 z-40 select-none transition-all duration-200 ${
+        navPosition === 'bottom' ? 'bottom-[116px]' : 'bottom-4 sm:bottom-5'
+      }`}>
         <motion.button
           type="button"
           onClick={() => setIsOpen(!isOpen)}

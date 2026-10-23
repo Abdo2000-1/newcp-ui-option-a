@@ -155,20 +155,28 @@ export function Layout() {
         )}
       </AnimatePresence>
 
-      {/* 3. Main Workspace Container - Optimized for 22" (1920x1080) Screens & Responsive */}
-      <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
+      {/* 3. Main Workspace Container - Responsive Scroll Flow with Footer Accessibility */}
+      <div className="flex flex-1 flex-col min-w-0 min-h-screen overflow-x-hidden overflow-y-auto custom-scrollbar">
         {/* Content Outlet - Full wide width without horizontal scroll */}
-        <main className={`flex-1 w-full overflow-x-hidden overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar ${navPosition === 'bottom' ? 'pb-28' : ''}`}>
+        <main className="flex-1 w-full p-3 sm:p-5 lg:p-6">
           <div className="w-full max-w-[1920px] mx-auto min-w-0">
             <Outlet />
           </div>
         </main>
         {/* Footer with dynamic version, branding, and links */}
-        <Footer />
+        <Footer navPosition={navPosition} />
+        {/* Dedicated bottom clearance spacer when docked at bottom (Tier 1 56px + Tier 2 44px + 8px margin) */}
+        {navPosition === 'bottom' && (
+          <div
+            data-testid="bottom-dock-spacer"
+            className="h-[108px] w-full shrink-0 select-none pointer-events-none"
+            aria-hidden="true"
+          />
+        )}
       </div>
 
-      {/* 4. Non-intrusive Floating Support FAB & Modal (Bottom-Right) */}
-      <FloatingSupport />
+      {/* 4. Non-intrusive Floating Support FAB & Modal (Bottom-Right, offset when dock is bottom) */}
+      <FloatingSupport navPosition={navPosition} />
 
     </div>
   );
