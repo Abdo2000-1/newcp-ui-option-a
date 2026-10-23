@@ -22,10 +22,12 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { store } from '@/shared/services/store';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 export default function EditCasePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // URL Target: task=EditCase&thisID=523486&rep=1&mod=1&conv=1&tp=1&sg=1...
   const thisID = searchParams.get('thisID') || '523486';
@@ -83,7 +85,7 @@ export default function EditCasePage() {
                 <FileEdit size={18} />
               </span>
               <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Edit Case #{thisID}
+                {t('editCase.title', 'Edit Case')} #{thisID}
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/25">
                 ?task=EditCase&thisID={thisID}
@@ -109,7 +111,7 @@ export default function EditCasePage() {
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs shadow-md shadow-emerald-500/20 cursor-pointer"
           >
             <Save size={14} />
-            <span>Save Modifications</span>
+            <span>{t('editCase.saveChanges', 'Save Modifications')}</span>
           </button>
         </div>
       </div>

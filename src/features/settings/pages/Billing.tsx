@@ -24,6 +24,7 @@ import { useTableState } from '@/shared/hooks/useTableState';
 import type { BillingRecord } from '@/shared/types';
 import { TableTools, SortTh } from '@/shared/components/TableTools';
 import { useAdvancedTable, ColumnConfig } from '@/shared/hooks/useAdvancedTable';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 const BILLING_COLUMNS: ColumnConfig[] = [
   { id: 'orderNumber', label: 'Order #' },
@@ -46,6 +47,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Billing() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);

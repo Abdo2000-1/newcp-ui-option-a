@@ -129,7 +129,7 @@ export default function Login() {
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <span className="font-extrabold text-[11px]">Lab Director</span>
+            <span className="font-extrabold text-[11px]">{t('login.roleDirector', 'Lab Director')}</span>
             <span className="text-[10px] text-slate-400 font-normal">Jessica Ruiz</span>
           </button>
 
@@ -142,7 +142,7 @@ export default function Login() {
                 : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <span className="font-extrabold text-[11px]">Treating Clinician</span>
+            <span className="font-extrabold text-[11px]">{t('login.roleClinician', 'Treating Clinician')}</span>
             <span className="text-[10px] text-slate-400 font-normal">Dr. Marcus Vance</span>
           </button>
         </div>
@@ -151,7 +151,7 @@ export default function Login() {
         <form onSubmit={handleLogin} className="space-y-4 text-xs">
           <div>
             <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">
-              3DDX Clinician ID / Email
+              {t('login.emailLabel', '3DDX Clinician ID / Email')}
             </label>
             <div className="relative">
               <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -169,7 +169,7 @@ export default function Login() {
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="text-slate-700 dark:text-slate-300 font-bold">
-                Security Password
+                {t('login.passwordLabel', 'Security Password')}
               </label>
               <button
                 type="button"

@@ -492,13 +492,13 @@ Generated on: ${new Date().toLocaleString()}
             <ArrowLeft size={16} />
           </Button>
           <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-            Order Details
+            {t('order.title', 'Order Details')}
           </h1>
         </div>
 
         <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
           <EmptyState
-            title="Order Not Found"
+            title={t('order.notFoundTitle', 'Order Not Found')}
             description={
               paramId
                 ? `No clinical order or case could be found matching identifier "${paramId}".`
@@ -510,7 +510,7 @@ Generated on: ${new Date().toLocaleString()}
                 variant="primary"
                 onClick={() => navigate('/dashboard')}
               >
-                Return to Dashboard
+                {t('order.returnDashboard', 'Return to Dashboard')}
               </Button>
             }
           />
@@ -540,7 +540,7 @@ Generated on: ${new Date().toLocaleString()}
 
               {/* Working Status Pill Selector */}
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Status:</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{t('action.status', 'Status')}:</span>
                 <select
                   value={orderStatus}
                   onChange={(e) => {
@@ -572,7 +572,7 @@ Generated on: ${new Date().toLocaleString()}
                 title="Click to toggle urgent rush status"
               >
                 <Zap size={11} className={isRushTask ? 'text-rose-600 dark:text-rose-400 fill-current' : ''} />
-                <span>{isRushTask ? '⚡ RUSH ORDER' : 'Normal Priority'}</span>
+                <span>{isRushTask ? ('⚡ ' + t('order.rush', 'RUSH ORDER')) : t('order.normal', 'Normal Priority')}</span>
               </button>
             </div>
 
@@ -607,7 +607,7 @@ Generated on: ${new Date().toLocaleString()}
           {/* Quick Order ID & Clinician Actions */}
           <div className="flex flex-row lg:flex-col items-end justify-between lg:justify-center gap-2 shrink-0">
             <div className="text-right flex items-center lg:items-end gap-2 lg:gap-0 lg:flex-col">
-              <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Order Reference</div>
+              <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">{t('order.orderNumber', 'Order Reference')}</div>
               <div className="flex items-center gap-1.5">
                 <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-500">
                   #{flowOrder.orderNum}
@@ -616,7 +616,7 @@ Generated on: ${new Date().toLocaleString()}
                   type="button"
                   onClick={copyOrderId}
                   className="p-1 rounded-lg text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                  title="Copy Order ID"
+                  title={t('order.copyId', 'Copy Order ID')}
                 >
                   {isCopiedId ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                 </button>
@@ -629,20 +629,20 @@ Generated on: ${new Date().toLocaleString()}
                 type="button"
                 onClick={() => window.print()}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-sky-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title="Print Clinical Prescription"
+                title={t('order.printPrescription', 'Print Clinical Prescription')}
               >
                 <Printer size={13} />
-                <span className="hidden sm:inline">Print</span>
+                <span className="hidden sm:inline">{t('action.print', 'Print')}</span>
               </button>
 
               <button
                 type="button"
                 onClick={exportCaseSummary}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title="Download Summary File"
+                title={t('action.download', 'Download Summary File')}
               >
                 <Download size={13} />
-                <span className="hidden sm:inline">Export</span>
+                <span className="hidden sm:inline">{t('action.export', 'Export')}</span>
               </button>
 
               <button
@@ -697,7 +697,7 @@ Generated on: ${new Date().toLocaleString()}
           }`}
         >
           <FileText size={15} />
-          <span>Official Prescription & Case Dispatch</span>
+          <span>{t('order.overview', 'Official Prescription & Case Dispatch')}</span>
         </button>
 
         <button
@@ -710,7 +710,7 @@ Generated on: ${new Date().toLocaleString()}
           }`}
         >
           <Box size={15} />
-          <span>3D DICOM CAD & Co-Diagnostix™ Viewport</span>
+          <span>{t('order.viewer3d', '3D DICOM CAD & Co-Diagnostix™ Viewport')}</span>
         </button>
 
         <button
@@ -723,7 +723,7 @@ Generated on: ${new Date().toLocaleString()}
           }`}
         >
           <Layers size={15} />
-          <span>Sub-Orders Matrix ({flowOrder.services.length})</span>
+          <span>{t('order.suborders', 'Sub-Orders Matrix')} ({flowOrder.services.length})</span>
         </button>
       </div>
 

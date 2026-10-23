@@ -11,6 +11,7 @@ import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
 import { TableTools, SortTh } from '@/shared/components/TableTools';
 import { useAdvancedTable } from '@/shared/hooks/useAdvancedTable';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },
@@ -39,6 +40,7 @@ const DOCTOR_COLUMNS = [
 ];
 
 export default function Doctors() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const allDoctors = useStore(s => s.getDoctors());

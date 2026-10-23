@@ -259,6 +259,30 @@ export interface ColumnDefinition {
   align?: 'left' | 'center' | 'right';
 }
 
+export const COLUMN_I18N_MAP: Record<string, string> = {
+  tl: 'col.serial',
+  scanCenter: 'col.scanCenter',
+  doctor: 'col.doctor',
+  patientName: 'col.patientName',
+  isLocked: 'col.isLocked',
+  notes: 'col.notes',
+  archiveDate: 'col.archiveDate',
+  order: 'col.order',
+  billTo: 'col.billTo',
+  max: 'col.max',
+  mand: 'col.mand',
+  format: 'col.format',
+  amountBilled: 'col.amountBilled',
+  vouchers: 'col.vouchers',
+  receivedTime: 'col.receivedTime',
+  sentTime: 'col.sentTime',
+  updateTime: 'col.updateTime',
+  chargedOn: 'col.chargedOn',
+  action: 'col.action',
+  changeRequest: 'col.changeRequest',
+  csTask: 'col.csTask',
+};
+
 export const ALL_COLUMNS: ColumnDefinition[] = [
   { key: 'tl', label: '# tl', baseWidth: 7.5, category: 'Core', align: 'center' },
   { key: 'scanCenter', label: 'Scan Center', baseWidth: 9.0, category: 'Clinician' },
@@ -355,6 +379,11 @@ const SERVICE_GROUPS = [
 export default function Flow() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  const getColLabel = (col: ColumnDefinition): string => {
+    const i18nKey = COLUMN_I18N_MAP[col.key];
+    return i18nKey ? t(i18nKey, col.label) : col.label;
+  };
   const rawOrders = useStore((s) => s.getOrders());
 
   // Search & Filter state
@@ -727,7 +756,7 @@ export default function Flow() {
 
   return (
     <div className="space-y-4 w-full min-w-0">
-      
+
       {/* 1. Refined Minimalist Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         <div className="flex items-center gap-2.5">
@@ -1006,10 +1035,10 @@ export default function Flow() {
 
       {/* 4. MASTER FLOW TABLE */}
       <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
-        
+
         {/* Table Toolbar: Expand All & Column Visibility Selector */}
         <div className="p-3 bg-slate-100/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-          
+
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -1035,7 +1064,7 @@ export default function Flow() {
           </div>
 
           <div className="flex items-center gap-2 relative" ref={columnPickerRef}>
-            
+
             {/* COLUMN VISIBILITY SELECTOR DROPDOWN */}
             <div className="relative">
               <button
@@ -1185,7 +1214,7 @@ export default function Flow() {
                     title={`Click to sort by ${col.label} (Ascending/Descending) • Drag right border to resize`}
                   >
                     <div className={`inline-flex items-center gap-1 ${col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'} w-full min-w-0 overflow-hidden`}>
-                      <span className="truncate">{col.label}</span>
+                      <span className="truncate">{getColLabel(col)}</span>
                       <span className="shrink-0 inline-flex">
                         {sortCol === col.key ? (
                           sortDir === 'asc' ? (
@@ -1487,7 +1516,7 @@ export default function Flow() {
                                 className="overflow-hidden"
                               >
                                 <div className="p-3.5 space-y-3 bg-slate-50/30 dark:bg-slate-900/30 border-l-4 border-l-sky-500">
-                                  
+
                                   {/* Sub-orders Header */}
                                   <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200 dark:border-slate-800">
                                     <div className="flex items-center gap-2">

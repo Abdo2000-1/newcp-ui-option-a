@@ -21,6 +21,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { TeethChart, type DentalServiceId, type RestorationType } from '@/shared/components/TeethChart';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { UIStateSwitcher, type UIStateType } from '@/shared/components/UIStateSwitcher';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -31,6 +32,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 
 export default function AddCase() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
 
@@ -268,10 +270,10 @@ export default function AddCase() {
               <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { num: 1, title: 'Clinician & Patient' },
-                    { num: 2, title: 'Services & Guide Specs' },
-                    { num: 3, title: 'Teeth Chart (1-32)' },
-                    { num: 4, title: 'Scans & Internal Notes' },
+                    { num: 1, title: t('addCase.step1', 'Clinician & Patient') },
+                    { num: 2, title: t('addCase.step2', 'Services & Guide Specs') },
+                    { num: 3, title: t('addCase.step3', 'Teeth Chart (1-32)') },
+                    { num: 4, title: t('addCase.step4', 'Scans & Internal Notes') },
                   ].map((s) => (
                     <button
                       key={s.num}
@@ -380,7 +382,7 @@ export default function AddCase() {
                         />
                         {showErrors && !patientFirstName.trim() && (
                           <FormHelperText error id="patientFirstName-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
-                            First name is required
+                            {t('validation.firstNameRequired', 'First name is required')}
                           </FormHelperText>
                         )}
                       </div>
@@ -408,7 +410,7 @@ export default function AddCase() {
                         />
                         {showErrors && !patientLastName.trim() && (
                           <FormHelperText error id="patientLastName-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
-                            Last name is required
+                            {t('validation.lastNameRequired', 'Last name is required')}
                           </FormHelperText>
                         )}
                       </div>
@@ -436,7 +438,7 @@ export default function AddCase() {
                         />
                         {showErrors && !patientChartId.trim() && (
                           <FormHelperText error id="patientChartId-error" role="alert" sx={{ mx: 0, mt: 0.5 }}>
-                            Patient Chart ID / PACS ID is required
+                            {t('validation.chartIdRequired', 'Patient Chart ID / PACS ID is required')}
                           </FormHelperText>
                         )}
                       </div>
@@ -740,7 +742,7 @@ export default function AddCase() {
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                     >
                       <ArrowLeft size={14} />
-                      <span>Previous Step</span>
+                      <span>{t('addCase.previous', 'Previous Step')}</span>
                     </button>
                   ) : <div />}
 
@@ -756,7 +758,7 @@ export default function AddCase() {
                       }}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0284c7] hover:bg-sky-600 text-white font-bold text-xs shadow-md shadow-sky-500/20 cursor-pointer"
                     >
-                      <span>Continue</span>
+                      <span>{t('addCase.continue', 'Continue')}</span>
                       <ArrowRight size={14} />
                     </button>
                   ) : (
@@ -767,7 +769,7 @@ export default function AddCase() {
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                     >
                       <Save size={15} />
-                      <span>{submitting ? 'Transmitting to 3DDX PACS...' : 'Submit & Transmit Case'}</span>
+                      <span>{submitting ? 'Transmitting to 3DDX PACS...' : t('addCase.submit', 'Submit & Transmit Case')}</span>
                     </button>
                   )}
                 </div>

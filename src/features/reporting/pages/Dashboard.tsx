@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell 
+import {
+  BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell
 } from 'recharts';
-import { 
-  Calendar, AlertCircle, FileText, ClipboardList, CheckCircle2, 
+import {
+  Calendar, AlertCircle, FileText, ClipboardList, CheckCircle2,
   Activity, ArrowUpRight, DollarSign, Clock, RefreshCw, ChevronRight, ChevronLeft, Bell,
   TrendingUp, BarChart3, LineChart as LineChartIcon, ScanLine, ShieldAlert, Sparkles,
   Layers, Filter, Download, ExternalLink, Maximize2, Minimize2, Check, Target, PieChart,
@@ -264,17 +264,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 w-full min-w-0 select-none">
-      
+
       {/* Top Header: Clean, Refined, Minimalist */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-[#070b14] p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Command Center
+              {t('dashboard.commandCenter', 'Command Center')}
             </h1>
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-              Live Analytics
+              {t('dashboard.liveAnalytics', 'Live Analytics')}
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center">
@@ -296,7 +296,7 @@ export default function Dashboard() {
               }`}
             >
               <BarChart3 size={14} />
-              <span>Power BI Analytics</span>
+              <span>{t('powerbi.hub', 'Power BI Analytics')}</span>
             </button>
             <button
               onClick={() => setActiveTab('telemetry')}
@@ -307,14 +307,14 @@ export default function Dashboard() {
               }`}
             >
               <Activity size={14} />
-              <span>Production Queue</span>
+              <span>{t('dashboard.productionQueue', 'Production Queue')}</span>
             </button>
           </div>
 
           <button
             onClick={handleRefresh}
             className="p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors cursor-pointer"
-            title="Refresh Power BI Metrics"
+            title={t('powerbi.refresh', 'Refresh Power BI Metrics')}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-sky-500' : ''}`} />
           </button>
@@ -327,7 +327,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 shrink-0">
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              {urgentOrders.length} Urgent Rush
+              {urgentOrders.length} {t('dashboard.urgentRush', 'Urgent Rush')}
             </span>
           </div>
 
@@ -347,7 +347,7 @@ export default function Dashboard() {
                 <span className="text-slate-300 dark:text-slate-600">•</span>
                 <span className="truncate max-w-[110px]">{order.patientName}</span>
                 <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-bold">
-                  Due {formatDate(order.dueDate)}
+                  {t('dashboard.due', 'Due')} {formatDate(order.dueDate)}
                 </span>
               </button>
             ))}
@@ -375,7 +375,7 @@ export default function Dashboard() {
       {/* ========================================================= */}
       {activeTab === 'powerbi' && (
         <div className="space-y-6">
-          
+
           {/* Sleek Power BI Control Bar (Light Frosted Glassmorphism - Replaced Heavy Black Bar) */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/90 dark:bg-[#0c1222]/90 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
             <div className="flex items-center gap-2.5">
@@ -385,7 +385,7 @@ export default function Dashboard() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-xs text-slate-900 dark:text-white">
-                    Power BI Executive Telemetry • {currentQData.name}
+                    {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} • {currentQData.name}
                   </span>
                   <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     Live DirectQuery
@@ -421,7 +421,7 @@ export default function Dashboard() {
 
           {/* 4 Core Power BI DAX KPI Tiles (Dynamic with selectedQuarter) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
+
             {/* KPI 1: Quarter Revenue Target Attainment */}
             <div className="bg-white dark:bg-[#070b14] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
               <div className="flex justify-between items-start">
@@ -553,7 +553,7 @@ export default function Dashboard() {
 
           {/* Main Power BI Analytical Charts (Area & Target Comparison) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* Left 2 Cols: Monthly Target vs Actual Revenue Breakdown */}
             <div className="lg:col-span-2 bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
@@ -685,7 +685,7 @@ export default function Dashboard() {
                 onClick={() => navigate('/quarter-targets')}
                 className="w-full mt-4 py-2.5 rounded-2xl bg-[#0284c7]/10 hover:bg-[#0284c7]/20 border border-[#0284c7]/40 text-[#0284c7] dark:text-sky-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
-                <span>Open Full Quarter Targets Matrix</span>
+                <span>{t('dashboard.openQuarterTargets', 'Open Full Quarter Targets Matrix')}</span>
                 <ChevronRight size={14} />
               </button>
             </div>
@@ -698,7 +698,7 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <Database className="text-[#0284c7]" size={18} />
-                  <span>Regional Diagnostic Hubs Attainment</span>
+                  <span>{t('powerbi.regionalHubs', 'Regional Diagnostic Hubs Attainment')}</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                   Direct production quotas assigned to 3DDX Scan Centers
@@ -774,12 +774,12 @@ export default function Dashboard() {
       {/* ========================================================= */}
       {activeTab === 'telemetry' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           {/* Left Column: Recent Orders Table */}
           <div className="lg:col-span-2 bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-white">Live Intake Orders</h2>
+                <h2 className="text-base font-black text-slate-900 dark:text-white">{t('dashboard.liveIntakeOrders', 'Live Intake Orders')}</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                   Cases queued across scan hubs
                 </p>
@@ -788,7 +788,7 @@ export default function Dashboard() {
                 onClick={() => navigate('/flow')}
                 className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1"
               >
-                <span>Open Master Flow Matrix</span>
+                <span>{t('dashboard.openFlowMatrix', 'Open Master Flow Matrix')}</span>
                 <ChevronRight size={14} />
               </button>
             </div>
@@ -797,11 +797,11 @@ export default function Dashboard() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold text-[11px] pb-2">
-                    <th className="py-2 px-3">Order #</th>
-                    <th className="py-2 px-3">Patient</th>
-                    <th className="py-2 px-3">Service</th>
-                    <th className="py-2 px-3">Status</th>
-                    <th className="py-2 px-3 text-right">Updated</th>
+                    <th className="py-2 px-3">{t('col.order', 'Order #')}</th>
+                    <th className="py-2 px-3">{t('col.patientName', 'Patient')}</th>
+                    <th className="py-2 px-3">{t('col.format', 'Service')}</th>
+                    <th className="py-2 px-3">{t('action.status', 'Status')}</th>
+                    <th className="py-2 px-3 text-right">{t('col.updateTime', 'Updated')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
@@ -840,7 +840,7 @@ export default function Dashboard() {
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Bell size={18} className="text-[#ea580c]" />
-                <span>PACS Audit Activity</span>
+                <span>{t('dashboard.pacsActivity', 'PACS Audit Activity')}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                 Real-time doctor approvals & DICOM sync
@@ -863,7 +863,7 @@ export default function Dashboard() {
               onClick={() => navigate('/flow')}
               className="w-full mt-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white font-bold text-xs shadow-md hover:shadow-lg transition-all"
             >
-              Inspect Active Cases
+              {t('dashboard.inspectActiveCases', 'Inspect Active Cases')}
             </button>
           </div>
 
