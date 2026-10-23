@@ -191,5 +191,61 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
       expect(screen.queryByText(/PRIMARY SERVICE HOOK/i)).not.toBeInTheDocument();
       expect(screen.getByText('Order Not Found')).toBeInTheDocument();
     });
+
+    it('uses explicit neutral values when clinical fields are missing and never invents fictional entities', () => {
+      const minimalOrder = store.createOrder({
+        orderNumber: 'ORD-MINIMAL-001',
+        patientName: '',
+        doctorName: '',
+        clinicName: '',
+        scanCenterName: '',
+        billTo: '',
+        amount: undefined,
+        restoration: '',
+      });
+
+      render(
+        <MemoryRouter initialEntries={[`/order-details?id=${minimalOrder.id}`]}>
+          <AppProviders>
+            <OrderDetailsPage />
+          </AppProviders>
+        </MemoryRouter>
+      );
+
+      // Must not invent fictional doctor, clinic, or diagnostic provider
+      expect(screen.queryByText(/Dr\. Allison Park/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/3DDX Boston Radiology Hub/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/California Diagnostics/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Patient Record/i)).not.toBeInTheDocument();
+
+      // Must not invent clinical notes, shipping instructions, or historical logs
+      expect(screen.queryByText(/Immediate implant placement/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/CBCT DICOM series aligned/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Standard courier delivery/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/office working hours/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/shrouk/i)).not.toBeInTheDocument();
+
+      // Must not invent fictional service semantics or fees
+      expect(screen.queryByText('General Service')).not.toBeInTheDocument();
+      expect(screen.queryByText('Standard')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00 USD')).not.toBeInTheDocument();
+      expect(screen.queryByText('.00')).not.toBeInTheDocument();
+
+      // Must render explicit neutral empty state for historical notes
+      expect(screen.getByText('No historical notes recorded for this order.')).toBeInTheDocument();
+
+      // Must display neutral registration type and Sc. Special Request defaults
+      expect(screen.getByText('(Not available / Unselected)')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Not available')).toBeInTheDocument();
+
+      // In Sub Orders tab, CS task reflects unassigned status
+      const subOrdersTab = screen.getByRole('button', { name: /sub-orders/i });
+      fireEvent.click(subOrdersTab);
+      expect(screen.getByText(/CS Task: Unassigned/i)).toBeInTheDocument();
+
+      // Must display explicit neutral fallbacks
+      expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
+    });
   });
 });
