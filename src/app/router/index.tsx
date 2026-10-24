@@ -117,8 +117,8 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
         <Route path="/" element={<Layout />}>
-          {/* Default landing: 3DDX CP PRO MAX Login */}
-          <Route index element={<Navigate to="/login" replace />} />
+          {/* Default landing: 3DDX CP Dashboard (UIUX-REQ-006) */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
           
           {/* 8 Target Modernized Pages */}
           <Route path="flow" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
