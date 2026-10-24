@@ -200,3 +200,34 @@ export interface IHoldTransitionMockAdapter {
   reset(seedItems?: ServiceItem[]): void;
   getItem(serviceItemUuid: string): Promise<WithVersion<ServiceItem>>;
 }
+
+
+// ============================================================================
+// Service-Instance Pricing & Override Mock Types (V0.9.2.2 / Q-B10 Offline MOCK)
+// Note: In-memory test double types for price overrides and zero-charge checks.
+// ============================================================================
+
+export interface PriceOverrideRequest {
+  unitPrice: string;
+  isAuthorized: boolean;
+  zeroChargeReasonCode?: string | null;
+  zeroChargeNote?: string | null;
+  quantity?: number;
+}
+
+export interface PriceOverrideResult {
+  item: ServiceItem;
+  etag: string;
+  overrideApplied: boolean;
+  syntheticBaseUnitPrice?: string;
+}
+
+export interface IServiceItemPricingMockAdapter {
+  getItem(serviceItemUuid: string): Promise<WithVersion<ServiceItem>>;
+  overridePrice(
+    serviceItemUuid: string,
+    request: PriceOverrideRequest,
+    ifMatch?: string
+  ): Promise<PriceOverrideResult>;
+  reset(seedItems?: ServiceItem[]): void;
+}
