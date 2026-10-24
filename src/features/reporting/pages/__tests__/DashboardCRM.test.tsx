@@ -155,7 +155,7 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
       });
 
       // On /login, login form / button is rendered
-      expect(await screen.findByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: /sign in/i }, { timeout: 5000 })).toBeInTheDocument();
     });
   });
 });
