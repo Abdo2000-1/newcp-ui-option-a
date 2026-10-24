@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
 import {
   Mail,
   Lock,
@@ -14,23 +26,41 @@ import {
   Globe,
   Sun,
   Moon,
-  Sparkles
+  Sparkles,
+  X,
+  Key,
+  Info,
 } from 'lucide-react';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { useTheme } from '@/shared/hooks/useTheme';
+import type { MockAuthRole } from '@/features/auth/types';
+
+/**
+ * UNINTEGRATED BOUNDARY NOTICE: Google Login / OAuth 2.0
+ * Per UIUX-REQ-005, Google OAuth is intentionally NOT implemented in this
+ * offline demonstration environment. No third-party OAuth dependencies, client IDs,
+ * secrets, callback handlers, or scopes are configured.
+ */
 
 export default function Login() {
   const [email, setEmail] = useState('jessica.ruiz@3ddx.com');
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'director' | 'clinician'>('director');
+  const [selectedRole, setSelectedRole] = useState<MockAuthRole>('director');
+
+  // Forgot Password Modal State (MOCK / NOT_INTEGRATED)
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [isSubmittingForgot, setIsSubmittingForgot] = useState(false);
   
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
-  const handleRoleSelect = (role: 'director' | 'clinician') => {
+  const handleRoleSelect = (role: MockAuthRole) => {
     setSelectedRole(role);
     if (role === 'director') {
       setEmail('jessica.ruiz@3ddx.com');
@@ -49,6 +79,47 @@ export default function Login() {
       setIsLoading(false);
       navigate('/flow');
     }, 600);
+  };
+
+  // Forgot Password Handlers
+  const handleOpenForgotModal = () => {
+    setForgotEmail(email || '');
+    setForgotError(null);
+    setForgotSuccess(false);
+    setIsSubmittingForgot(false);
+    setIsForgotOpen(true);
+  };
+
+  const handleCloseForgotModal = () => {
+    setIsForgotOpen(false);
+    setForgotError(null);
+    setForgotSuccess(false);
+    setIsSubmittingForgot(false);
+  };
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = forgotEmail.trim();
+
+    if (!trimmed) {
+      setForgotError(t('login.emailRequiredError', 'Email address is required.'));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      setForgotError(t('login.emailInvalidError', 'Please enter a valid email address (e.g., name@3ddx.com).'));
+      return;
+    }
+
+    setForgotError(null);
+    setIsSubmittingForgot(true);
+
+    // MOCK / NOT_INTEGRATED: offline simulation without network dispatch
+    setTimeout(() => {
+      setIsSubmittingForgot(false);
+      setForgotSuccess(true);
+    }, 300);
   };
 
   return (
@@ -173,9 +244,11 @@ export default function Login() {
               </label>
               <button
                 type="button"
-                className="text-[11px] text-[#0284c7] hover:underline"
+                onClick={handleOpenForgotModal}
+                className="text-[11px] text-[#0284c7] hover:underline cursor-pointer"
+                aria-haspopup="dialog"
               >
-                Forgot password?
+                {t('login.forgotPassword', 'Forgot password?')}
               </button>
             </div>
             <div className="relative">
@@ -190,6 +263,8 @@ export default function Login() {
               />
               <button
                 type="button"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1"
               >
@@ -237,6 +312,212 @@ export default function Login() {
           <p className="font-mono text-slate-400">HIPAA & GDPR Compliant Medical Diagnostic Gateway</p>
         </div>
       </motion.div>
+
+      {/* ================================================================= */}
+      {/* FORGOT PASSWORD MODAL (MOCK / NOT_INTEGRATED)                      */}
+      {/* Uses MUI Dialog & components; zero backend / network dispatch.     */}
+      {/* ================================================================= */}
+      {isForgotOpen && (
+        <Dialog
+          open={isForgotOpen}
+          onClose={handleCloseForgotModal}
+          maxWidth="xs"
+          fullWidth
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: 3,
+                p: 1,
+                bgcolor: 'background.paper',
+                backgroundImage: 'none',
+                border: '1px solid',
+                borderColor: 'divider',
+              },
+            },
+          }}
+          aria-labelledby="forgot-password-title"
+        >
+          <DialogTitle
+            id="forgot-password-title"
+            component="div"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              pb: 1,
+            }}
+          >
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(2, 132, 199, 0.1)',
+                  color: '#0284c7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Key size={16} />
+              </Box>
+              <Box>
+                <Typography variant="subtitle1" component="span" sx={{ fontWeight: 800, color: 'text.primary', lineHeight: 1.2, display: 'block' }}>
+                  {t('login.resetPasswordTitle', 'Reset Password')}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                  Mock Password Recovery
+                </Typography>
+              </Box>
+            </Stack>
+            <IconButton
+              size="small"
+              aria-label="Close dialog"
+              onClick={handleCloseForgotModal}
+              sx={{ color: 'text.secondary' }}
+            >
+              <X size={18} />
+            </IconButton>
+          </DialogTitle>
+
+          <form onSubmit={handleForgotSubmit} noValidate>
+            <DialogContent sx={{ pt: 1, pb: 2 }}>
+              <Alert
+                severity="info"
+                icon={<Info size={16} />}
+                sx={{
+                  mb: 2,
+                  fontSize: '0.72rem',
+                  py: 0.5,
+                  borderRadius: 2,
+                  border: '1px solid rgba(2, 132, 199, 0.2)',
+                  bgcolor: 'rgba(2, 132, 199, 0.06)',
+                  color: 'text.primary',
+                }}
+              >
+                <strong>MOCK SIMULATION:</strong> This offline environment simulates recovery without dispatching live emails or contacting authentication servers.
+              </Alert>
+
+              {forgotSuccess ? (
+                <Box sx={{ py: 1 }}>
+                  <Alert
+                    severity="success"
+                    icon={<CheckCircle2 size={18} />}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 1.5,
+                      fontSize: '0.78rem',
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      Demo Recovery Token Generated
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                      A simulated password reset authorization has been recorded for{' '}
+                      <strong style={{ color: '#0284c7' }}>{forgotEmail}</strong>.
+                    </Typography>
+                  </Alert>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', fontStyle: 'italic', fontSize: '0.7rem' }}>
+                    No real email or external request was dispatched. In production, this initiates HIPAA-compliant tokenized verification.
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={2} sx={{ mt: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.78rem' }}>
+                    Enter your clinician ID or registered email address. We will simulate sending instructions to reset your password.
+                  </Typography>
+                  <TextField
+                    autoFocus
+                    fullWidth
+                    size="small"
+                    label={t('login.emailLabel', 'Workstation Identity / Email')}
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => {
+                      setForgotEmail(e.target.value);
+                      if (forgotError) setForgotError(null);
+                    }}
+                    error={Boolean(forgotError)}
+                    helperText={forgotError || 'Enter the email associated with your 3DDX provider account'}
+                    disabled={isSubmittingForgot}
+                    slotProps={{
+                      htmlInput: {
+                        'aria-label': 'Forgot password email input',
+                      },
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        fontSize: '0.8rem',
+                      },
+                    }}
+                  />
+                </Stack>
+              )}
+            </DialogContent>
+
+            <DialogActions sx={{ px: 3, pb: 2.5, pt: 0 }}>
+              {forgotSuccess ? (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleCloseForgotModal}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    borderRadius: 2,
+                    py: 1,
+                    bgcolor: '#0284c7',
+                    '&:hover': { bgcolor: '#0369a1' },
+                  }}
+                >
+                  Done
+                </Button>
+              ) : (
+                <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'flex-end' }}>
+                  <Button
+                    onClick={handleCloseForgotModal}
+                    disabled={isSubmittingForgot}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.78rem',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={isSubmittingForgot}
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.78rem',
+                      borderRadius: 2,
+                      px: 2,
+                      bgcolor: '#0284c7',
+                      '&:hover': { bgcolor: '#0369a1' },
+                    }}
+                  >
+                    {isSubmittingForgot ? (
+                      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                        <CircularProgress size={14} color="inherit" />
+                        <span>Simulating...</span>
+                      </Stack>
+                    ) : (
+                      'Send Reset Link (MOCK)'
+                    )}
+                  </Button>
+                </Stack>
+              )}
+            </DialogActions>
+          </form>
+        </Dialog>
+      )}
 
     </div>
   );
