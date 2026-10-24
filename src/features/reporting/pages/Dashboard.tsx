@@ -1,96 +1,172 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell
+  BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip,
+  ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import {
-  Calendar, AlertCircle, FileText, ClipboardList, CheckCircle2,
-  Activity, ArrowUpRight, DollarSign, Clock, RefreshCw, ChevronRight, ChevronLeft, Bell,
-  TrendingUp, BarChart3, LineChart as LineChartIcon, ScanLine, ShieldAlert, Sparkles,
-  Layers, Filter, Download, ExternalLink, Maximize2, Minimize2, Check, Target, PieChart,
-  SlidersHorizontal, Database
+  Calendar, Activity, ArrowUpRight, Clock, RefreshCw, ChevronRight, ChevronLeft, Bell,
+  TrendingUp, BarChart3, ClipboardList, Target, PieChart, Database,
 } from 'lucide-react';
+
+// MUI Material Components
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import { useTheme as useMuiTheme } from '@mui/material/styles';
+
 import { useStore } from '@/shared/hooks/useStore';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { formatDate, formatCurrency, timeAgo } from '@/shared/utils/format';
 import { sound } from '@/shared/utils/sound';
+import { EmptyState } from '@/shared/components/EmptyState';
+import { ErrorState } from '@/shared/components/ErrorState';
 
-// 3DDX Strictly Brand Colors
+// 3DDX Canonical Brand Colors
 const BRAND_BLUE = '#0284c7';
 const BRAND_ORANGE = '#ea580c';
-const BRAND_ORANGE_LIGHT = '#f97316';
-const BRAND_BLUE_LIGHT = '#38bdf8';
 
-// Custom Power BI / 3DDX Glassmorphic Tooltip
-const BrandChartTooltip = ({ active, payload, label }: any) => {
+// Custom 3DDX Glassmorphic Chart Tooltip using MUI styling
+interface ChartTooltipEntry {
+  name: string;
+  value: number;
+  color?: string;
+  fill?: string;
+}
+
+interface BrandChartTooltipProps {
+  active?: boolean;
+  payload?: ChartTooltipEntry[];
+  label?: string;
+}
+
+function BrandChartTooltip({ active, payload, label }: BrandChartTooltipProps) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 dark:bg-black/95 text-white p-3 rounded-2xl shadow-2xl backdrop-blur-md border border-slate-700/80 text-xs min-w-[170px] space-y-1.5 select-none">
-        <div className="flex justify-between items-center pb-1 border-b border-slate-800">
-          <span className="font-extrabold text-slate-200">{label}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#0284c7]/20 text-sky-400 font-mono font-bold">
-            Power BI
-          </span>
-        </div>
-        {payload.map((entry: any, index: number) => (
-          <div key={`item-${index}`} className="flex justify-between items-center gap-3">
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
-              <span className="font-semibold">{entry.name}:</span>
-            </span>
-            <span className="font-bold font-mono text-white text-xs">
+      <Box
+        sx={{
+          bgcolor: 'rgba(15, 23, 42, 0.95)',
+          color: '#ffffff',
+          p: 1.5,
+          borderRadius: 2,
+          boxShadow: 4,
+          border: '1px solid rgba(51, 65, 85, 0.8)',
+          minWidth: 170,
+          userSelect: 'none',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pb: 0.75,
+            mb: 0.75,
+            borderBottom: '1px solid rgba(51, 65, 85, 0.6)',
+          }}
+        >
+          <Typography variant="caption" sx={{ fontWeight: 800, color: '#e2e8f0' }}>
+            {label}
+          </Typography>
+          <Chip
+            size="small"
+            label="Power BI"
+            sx={{
+              height: 18,
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              bgcolor: 'rgba(2, 132, 199, 0.2)',
+              color: '#38bdf8',
+            }}
+          />
+        </Box>
+        {payload.map((entry, index) => (
+          <Box
+            key={`tooltip-entry-${index}`}
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5, my: 0.25 }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: entry.color || entry.fill || BRAND_BLUE,
+                }}
+              />
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                {entry.name}:
+              </Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700, fontFamily: 'monospace' }}>
               {typeof entry.value === 'number' && entry.name.toLowerCase().includes('revenue')
                 ? `$${entry.value.toLocaleString()}`
                 : entry.value.toLocaleString()}
-            </span>
-          </div>
+            </Typography>
+          </Box>
         ))}
-      </div>
+      </Box>
     );
   }
   return null;
-};
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const theme = useMuiTheme();
+  const shouldReduceMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<'powerbi' | 'telemetry'>('powerbi');
   const [selectedQuarter, setSelectedQuarter] = useState<'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL'>('Q4');
   const [chartView, setChartView] = useState<'area' | 'bar'>('area');
   const [refreshing, setRefreshing] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const urgentScrollRef = useRef<HTMLDivElement>(null);
 
   const allOrders = useStore((s) => s.getOrders());
-  const allCases = useStore((s) => s.getCases());
   const allNotifs = useStore((s) => s.getNotifications());
-  const changeRequests = useStore((s) => s.getChangeRequests());
 
   const handleRefresh = () => {
     setRefreshing(true);
     sound.playPop?.();
     setTimeout(() => {
       setRefreshing(false);
-    }, 700);
+    }, 600);
   };
 
   const scrollUrgent = (dir: 'left' | 'right') => {
     if (urgentScrollRef.current) {
       urgentScrollRef.current.scrollBy({
-        left: dir === 'left' ? -320 : 320,
-        behavior: 'smooth',
+        left: dir === 'left' ? -300 : 300,
+        behavior: shouldReduceMotion ? 'auto' : 'smooth',
       });
       sound.playClick?.();
     }
   };
 
   const urgentOrders = allOrders.filter((o) => o.priority === 'Urgent');
-  const recentOrders = [...allOrders]
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 6);
+  const recentOrders = useMemo(() => {
+    return [...allOrders]
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 6);
+  }, [allOrders]);
 
-  // Dynamic Power BI Quarterly Datasets with 100% reactive state & live telemetry
+  // Dynamic Power BI Quarterly Datasets
   const QUARTER_DATA_MAP = useMemo(() => ({
     Q1: {
       name: 'Q1 (Jan - Mar)',
@@ -110,7 +186,7 @@ export default function Dashboard() {
       chartData: [
         { month: 'Jan', actualRevenue: 220000, targetRevenue: 235000, guides: 920, plans: 490, attainment: 93.6 },
         { month: 'Feb', actualRevenue: 232000, targetRevenue: 238000, guides: 960, plans: 510, attainment: 97.4 },
-        { month: 'Mar', actualRevenue: 243000, targetRevenue: 245000, guides: 1010, plans: 540, attainment: 99.1 }
+        { month: 'Mar', actualRevenue: 243000, targetRevenue: 245000, guides: 1010, plans: 540, attainment: 99.1 },
       ],
       distribution: [
         { name: 'Surgical Guides (SG)', units: 2890, revenue: 346800, color: BRAND_BLUE, share: '46%' },
@@ -123,7 +199,7 @@ export default function Dashboard() {
         { hub: 'Align Chicago CAD Lab', target: 210000, actual: 205000, percent: 97.6, lead: 'Bishoy Mina' },
         { hub: 'Dallas Imaging & CAD Facility', target: 140000, actual: 132000, percent: 94.2, lead: 'Marcus Vance' },
         { hub: 'NYC Dental Diagnostics Hub', target: 118000, actual: 116000, percent: 98.3, lead: 'Elena Rostova' },
-      ]
+      ],
     },
     Q2: {
       name: 'Q2 (Apr - Jun)',
@@ -143,7 +219,7 @@ export default function Dashboard() {
       chartData: [
         { month: 'Apr', actualRevenue: 248000, targetRevenue: 245000, guides: 1020, plans: 550, attainment: 101.2 },
         { month: 'May', actualRevenue: 254000, targetRevenue: 252000, guides: 1060, plans: 575, attainment: 100.7 },
-        { month: 'Jun', actualRevenue: 263000, targetRevenue: 258000, guides: 1100, plans: 595, attainment: 101.9 }
+        { month: 'Jun', actualRevenue: 263000, targetRevenue: 258000, guides: 1100, plans: 595, attainment: 101.9 },
       ],
       distribution: [
         { name: 'Surgical Guides (SG)', units: 3180, revenue: 381600, color: BRAND_BLUE, share: '45%' },
@@ -156,7 +232,7 @@ export default function Dashboard() {
         { hub: 'Align Chicago CAD Lab', target: 225000, actual: 231000, percent: 102.6, lead: 'Bishoy Mina' },
         { hub: 'Dallas Imaging & CAD Facility', target: 145000, actual: 142000, percent: 97.9, lead: 'Marcus Vance' },
         { hub: 'NYC Dental Diagnostics Hub', target: 115000, actual: 117000, percent: 101.7, lead: 'Elena Rostova' },
-      ]
+      ],
     },
     Q3: {
       name: 'Q3 (Jul - Sep)',
@@ -176,7 +252,7 @@ export default function Dashboard() {
       chartData: [
         { month: 'Jul', actualRevenue: 265000, targetRevenue: 260000, guides: 1180, plans: 630, attainment: 101.9 },
         { month: 'Aug', actualRevenue: 272000, targetRevenue: 266000, guides: 1230, plans: 665, attainment: 102.2 },
-        { month: 'Sep', actualRevenue: 275000, targetRevenue: 269000, guides: 1260, plans: 685, attainment: 102.2 }
+        { month: 'Sep', actualRevenue: 275000, targetRevenue: 269000, guides: 1260, plans: 685, attainment: 102.2 },
       ],
       distribution: [
         { name: 'Surgical Guides (SG)', units: 3670, revenue: 440400, color: BRAND_BLUE, share: '46%' },
@@ -189,7 +265,7 @@ export default function Dashboard() {
         { hub: 'Align Chicago CAD Lab', target: 235000, actual: 241000, percent: 102.5, lead: 'Bishoy Mina' },
         { hub: 'Dallas Imaging & CAD Facility', target: 150000, actual: 153000, percent: 102.0, lead: 'Marcus Vance' },
         { hub: 'NYC Dental Diagnostics Hub', target: 120000, actual: 120000, percent: 100.0, lead: 'Elena Rostova' },
-      ]
+      ],
     },
     Q4: {
       name: 'Q4 (Oct - Dec)',
@@ -209,7 +285,7 @@ export default function Dashboard() {
       chartData: [
         { month: 'Oct', actualRevenue: 298000, targetRevenue: 305000, guides: 1390, plans: 740, attainment: 97.7 },
         { month: 'Nov (Proj)', actualRevenue: 315000, targetRevenue: 315000, guides: 1450, plans: 765, attainment: 100.0 },
-        { month: 'Dec (Proj)', actualRevenue: 327000, targetRevenue: 325000, guides: 1500, plans: 785, attainment: 100.6 }
+        { month: 'Dec (Proj)', actualRevenue: 327000, targetRevenue: 325000, guides: 1500, plans: 785, attainment: 100.6 },
       ],
       distribution: [
         { name: 'Surgical Guides (SG)', units: 4340, revenue: 520800, color: BRAND_BLUE, share: '47%' },
@@ -222,7 +298,7 @@ export default function Dashboard() {
         { hub: 'Align Chicago CAD Lab', target: 280000, actual: 289500, percent: 103.4, lead: 'Bishoy Mina' },
         { hub: 'Dallas Imaging & CAD Facility', target: 190000, actual: 181200, percent: 95.3, lead: 'Marcus Vance' },
         { hub: 'NYC Dental Diagnostics Hub', target: 150000, actual: 156800, percent: 104.5, lead: 'Elena Rostova' },
-      ]
+      ],
     },
     ALL: {
       name: 'FY2026 Full Year',
@@ -243,7 +319,7 @@ export default function Dashboard() {
         { month: 'Q1 (Jan-Mar)', actualRevenue: 695000, targetRevenue: 718000, guides: 2890, plans: 1540, attainment: 96.8 },
         { month: 'Q2 (Apr-Jun)', actualRevenue: 765000, targetRevenue: 755000, guides: 3180, plans: 1720, attainment: 101.4 },
         { month: 'Q3 (Jul-Sep)', actualRevenue: 812000, targetRevenue: 795000, guides: 3670, plans: 1980, attainment: 102.1 },
-        { month: 'Q4 (Oct-Dec)', actualRevenue: 940000, targetRevenue: 945000, guides: 4340, plans: 2290, attainment: 99.4 }
+        { month: 'Q4 (Oct-Dec)', actualRevenue: 940000, targetRevenue: 945000, guides: 4340, plans: 2290, attainment: 99.4 },
       ],
       distribution: [
         { name: 'Surgical Guides (SG)', units: 14080, revenue: 1689600, color: BRAND_BLUE, share: '46%' },
@@ -256,334 +332,643 @@ export default function Dashboard() {
         { hub: 'Align Chicago CAD Lab', target: 950000, actual: 966500, percent: 101.7, lead: 'Bishoy Mina' },
         { hub: 'Dallas Imaging & CAD Facility', target: 625000, actual: 608200, percent: 97.3, lead: 'Marcus Vance' },
         { hub: 'NYC Dental Diagnostics Hub', target: 503000, actual: 509800, percent: 101.3, lead: 'Elena Rostova' },
-      ]
-    }
+      ],
+    },
   }), []);
 
   const currentQData = QUARTER_DATA_MAP[selectedQuarter] || QUARTER_DATA_MAP.Q4;
 
+  if (hasError) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <ErrorState
+          title={t('error.syncInterrupted', 'Dashboard Service Synchronization Interrupted')}
+          message={t('error.syncMessage', 'Unable to retrieve live CAD/CAM telemetry metrics. Please retry.')}
+          onRetry={() => {
+            setHasError(false);
+            handleRefresh();
+          }}
+        />
+      </Box>
+    );
+  }
+
   return (
-    <div className="space-y-4 w-full min-w-0 select-none">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%', minWidth: 0, userSelect: 'none' }}>
 
-      {/* Top Header: Clean, Refined, Minimalist */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white dark:bg-[#070b14] p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {t('dashboard.commandCenter', 'Command Center')}
-            </h1>
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-              {t('dashboard.liveAnalytics', 'Live Analytics')}
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center">
-            <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-            {formatDate(new Date().toISOString())} • 3D Diagnostix Dental Intelligence
-          </p>
-        </div>
-
-        {/* View Mode & Power BI Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Studio Tab Switcher */}
-          <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-900 p-1 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab('powerbi')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                activeTab === 'powerbi'
-                  ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+      {/* Top Header / Control Bar (MUI Card) */}
+      <Card
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+          }}
+        >
+          {/* Title & Live Status */}
+          <Box>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
+                {t('dashboard.commandCenter', 'Command Center')}
+              </Typography>
+              <Chip
+                size="small"
+                label={t('dashboard.liveAnalytics', 'Live Analytics')}
+                color="secondary"
+                variant="outlined"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.72rem',
+                  height: 22,
+                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(2, 132, 199, 0.15)' : 'rgba(2, 132, 199, 0.08)',
+                }}
+              />
+            </Stack>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                mt: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
             >
-              <BarChart3 size={14} />
-              <span>{t('powerbi.hub', 'Power BI Analytics')}</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('telemetry')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                activeTab === 'telemetry'
-                  ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              <Calendar size={13} />
+              {formatDate(new Date().toISOString())} ÔÇó 3D Diagnostix Dental Intelligence
+            </Typography>
+          </Box>
+
+          {/* Studio Tab Switcher & Refresh Button */}
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                display: 'inline-flex',
+                p: 0.5,
+                borderRadius: 2,
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(241, 245, 249, 1)',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
             >
-              <Activity size={14} />
-              <span>{t('dashboard.productionQueue', 'Production Queue')}</span>
-            </button>
-          </div>
-
-          <button
-            onClick={handleRefresh}
-            className="p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors cursor-pointer"
-            title={t('powerbi.refresh', 'Refresh Power BI Metrics')}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-sky-500' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* SLEEK COMPACT URGENT TICKER (Best Practice: Subtle, Compact, Non-Intrusive) */}
-      {urgentOrders.length > 0 && (
-        <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-3 py-1.5 flex items-center justify-between gap-3 text-xs shadow-2xs">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              {urgentOrders.length} {t('dashboard.urgentRush', 'Urgent Rush')}
-            </span>
-          </div>
-
-          <div
-            ref={urgentScrollRef}
-            className="flex-1 flex items-center gap-2 overflow-x-auto scroll-smooth py-0.5"
-            style={{ scrollbarWidth: 'none' }}
-          >
-            {urgentOrders.map((order) => (
-              <button
-                key={order.id}
-                type="button"
-                onClick={() => navigate(`/order-details?id=${order.id}`)}
-                className="shrink-0 flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+              <Button
+                variant={activeTab === 'powerbi' ? 'contained' : 'text'}
+                color={activeTab === 'powerbi' ? 'secondary' : 'inherit'}
+                size="small"
+                onClick={() => setActiveTab('powerbi')}
+                startIcon={<BarChart3 size={15} />}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  px: 1.75,
+                  py: 0.75,
+                  borderRadius: 1.5,
+                  boxShadow: activeTab === 'powerbi' ? 1 : 'none',
+                  bgcolor: activeTab === 'powerbi' ? BRAND_BLUE : 'transparent',
+                  color: activeTab === 'powerbi' ? '#ffffff' : 'text.secondary',
+                  '&:hover': {
+                    bgcolor: activeTab === 'powerbi' ? BRAND_BLUE : 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
               >
-                <span className="font-mono text-sky-600 dark:text-sky-400 font-bold">{order.orderNumber}</span>
-                <span className="text-slate-300 dark:text-slate-600">•</span>
-                <span className="truncate max-w-[110px]">{order.patientName}</span>
-                <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-bold">
-                  {t('dashboard.due', 'Due')} {formatDate(order.dueDate)}
-                </span>
-              </button>
-            ))}
-          </div>
+                {t('powerbi.hub', 'Power BI Analytics')}
+              </Button>
+              <Button
+                variant={activeTab === 'telemetry' ? 'contained' : 'text'}
+                color={activeTab === 'telemetry' ? 'secondary' : 'inherit'}
+                size="small"
+                onClick={() => setActiveTab('telemetry')}
+                startIcon={<Activity size={15} />}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  px: 1.75,
+                  py: 0.75,
+                  borderRadius: 1.5,
+                  boxShadow: activeTab === 'telemetry' ? 1 : 'none',
+                  bgcolor: activeTab === 'telemetry' ? BRAND_ORANGE : 'transparent',
+                  color: activeTab === 'telemetry' ? '#ffffff' : 'text.secondary',
+                  '&:hover': {
+                    bgcolor: activeTab === 'telemetry' ? BRAND_ORANGE : 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                {t('dashboard.productionQueue', 'Production Queue')}
+              </Button>
+            </Box>
 
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => scrollUrgent('left')}
-              className="p-1 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+            <Tooltip title={t('powerbi.refresh', 'Refresh Power BI Metrics')}>
+              <IconButton
+                size="small"
+                onClick={handleRefresh}
+                sx={{
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  bgcolor: 'background.paper',
+                  p: 0.9,
+                  color: 'text.secondary',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <RefreshCw
+                  size={14}
+                  style={{
+                    animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                    color: refreshing ? BRAND_BLUE : undefined,
+                  }}
+                />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Stack>
+
+        {refreshing && (
+          <LinearProgress
+            sx={{
+              mt: 2,
+              height: 3,
+              borderRadius: 1.5,
+              bgcolor: 'action.hover',
+              '& .MuiLinearProgress-bar': { bgcolor: BRAND_BLUE },
+            }}
+          />
+        )}
+      </Card>
+
+      {/* Urgent Rush Orders Ticker */}
+      {urgentOrders.length > 0 && (
+        <Card
+          elevation={0}
+          role="status"
+          sx={{
+            py: 1,
+            px: 2,
+            borderRadius: 2.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+            <Chip
+              size="small"
+              label={`${urgentOrders.length} ${t('dashboard.urgentRush', 'Urgent Rush')}`}
+              sx={{
+                fontWeight: 800,
+                fontSize: '0.72rem',
+                bgcolor: 'rgba(225, 29, 72, 0.12)',
+                color: '#e11d48',
+                border: '1px solid rgba(225, 29, 72, 0.25)',
+                height: 24,
+                flexShrink: 0,
+              }}
+            />
+
+            <Box
+              ref={urgentScrollRef}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                overflowX: 'auto',
+                py: 0.5,
+                scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
+                flex: 1,
+              }}
             >
-              <ChevronLeft size={12} />
-            </button>
-            <button
-              onClick={() => scrollUrgent('right')}
-              className="p-1 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
-            >
-              <ChevronRight size={12} />
-            </button>
-          </div>
-        </div>
+              {urgentOrders.map((order) => (
+                <Button
+                  key={order.id}
+                  size="small"
+                  onClick={() => navigate(`/order-details?id=${order.id}`)}
+                  sx={{
+                    flexShrink: 0,
+                    textTransform: 'none',
+                    px: 1.5,
+                    py: 0.4,
+                    borderRadius: 1.5,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.6)' : 'rgba(248, 250, 252, 0.9)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    color: 'text.primary',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                      borderColor: BRAND_BLUE,
+                    },
+                  }}
+                >
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 800, color: BRAND_BLUE }}>
+                    {order.orderNumber}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>ÔÇó</Typography>
+                  <Typography variant="caption" noWrap sx={{ fontWeight: 600, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {order.patientName}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#e11d48', fontSize: '0.68rem' }}>
+                    {t('dashboard.due', 'Due')} {formatDate(order.dueDate)}
+                  </Typography>
+                </Button>
+              ))}
+            </Box>
+
+            <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+              <IconButton size="small" onClick={() => scrollUrgent('left')} sx={{ border: '1px solid', borderColor: 'divider', p: 0.5 }}>
+                <ChevronLeft size={13} />
+              </IconButton>
+              <IconButton size="small" onClick={() => scrollUrgent('right')} sx={{ border: '1px solid', borderColor: 'divider', p: 0.5 }}>
+                <ChevronRight size={13} />
+              </IconButton>
+            </Stack>
+          </Stack>
+        </Card>
       )}
 
       {/* ========================================================= */}
       {/* TAB 1: POWER BI ENTERPRISE ANALYTICS & QUARTER TARGETS    */}
       {/* ========================================================= */}
       {activeTab === 'powerbi' && (
-        <div className="space-y-6">
+        <Stack spacing={3}>
 
-          {/* Sleek Power BI Control Bar (Light Frosted Glassmorphism - Replaced Heavy Black Bar) */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/90 dark:bg-[#0c1222]/90 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-[#0284c7] to-[#ea580c] flex items-center justify-center font-black text-xs text-white shadow-sm">
-                PBI
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">
-                    {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} • {currentQData.name}
-                  </span>
-                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                    Live DirectQuery
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                  Dataset: [3DDX_DW].[TargetAttainment] • Real-time Sync Active
-                </span>
-              </div>
-            </div>
-
-            {/* Reactive Quarter Slicers with Instant Recalculation & Sound */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs font-bold self-end sm:self-auto">
-              {(['ALL', 'Q1', 'Q2', 'Q3', 'Q4'] as const).map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => {
-                    setSelectedQuarter(q);
-                    sound.playPop?.();
+          {/* Power BI Sub-bar with Quarter Slicers */}
+          <Card
+            elevation={0}
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              sx={{
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                justifyContent: 'space-between',
+              }}
+            >
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '0.75rem',
+                    color: '#ffffff',
+                    boxShadow: 1,
                   }}
-                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-bold ${
-                    selectedQuarter === q
-                      ? 'bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white shadow-sm scale-105'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
-                  }`}
                 >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
+                  PBI
+                </Box>
+                <Box>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
+                      {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} ÔÇó {currentQData.name}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label="Live DirectQuery"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.62rem',
+                        fontWeight: 800,
+                        bgcolor: 'rgba(5, 150, 105, 0.15)',
+                        color: '#059669',
+                      }}
+                    />
+                  </Stack>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: 'monospace' }}>
+                    Dataset: [3DDX_DW].[TargetAttainment] ÔÇó Real-time Sync Active
+                  </Typography>
+                </Box>
+              </Stack>
 
-          {/* 4 Core Power BI DAX KPI Tiles (Dynamic with selectedQuarter) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Quarter Slicers */}
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  p: 0.5,
+                  borderRadius: 2,
+                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(241, 245, 249, 1)',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  alignSelf: { xs: 'flex-end', sm: 'center' },
+                }}
+              >
+                {(['ALL', 'Q1', 'Q2', 'Q3', 'Q4'] as const).map((q) => (
+                  <Button
+                    key={q}
+                    size="small"
+                    onClick={() => {
+                      setSelectedQuarter(q);
+                      sound.playPop?.();
+                    }}
+                    sx={{
+                      minWidth: 44,
+                      px: 1.5,
+                      py: 0.4,
+                      borderRadius: 1.5,
+                      textTransform: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.72rem',
+                      background: selectedQuarter === q
+                        ? `linear-gradient(135deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`
+                        : 'transparent',
+                      color: selectedQuarter === q ? '#ffffff' : 'text.secondary',
+                      boxShadow: selectedQuarter === q ? 1 : 'none',
+                      '&:hover': {
+                        bgcolor: selectedQuarter === q ? undefined : 'action.hover',
+                      },
+                    }}
+                  >
+                    {q}
+                  </Button>
+                ))}
+              </Box>
+            </Stack>
+          </Card>
 
-            {/* KPI 1: Quarter Revenue Target Attainment */}
-            <div className="bg-white dark:bg-[#070b14] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          {/* 4 Core KPI Tiles (Responsive CSS Grid via Box) */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+              gap: 2,
+            }}
+          >
+            {/* KPI 1: Target Attainment */}
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {selectedQuarter === 'ALL' ? 'FY2026 Target' : `${selectedQuarter} Target Attainment`}
-                </span>
-                <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#0284c7]">
+                </Typography>
+                <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(2, 132, 199, 0.1)', color: BRAND_BLUE }}>
                   <Target size={18} />
-                </div>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 dark:text-white transition-all">
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
                   {currentQData.attainment}%
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
+                </Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center' }}>
                   <ArrowUpRight size={13} /> {currentQData.yoy} YoY
-                </span>
-              </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#0284c7] to-[#ea580c] rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, currentQData.percentNum)}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] font-mono text-slate-500 font-semibold">
-                  <span>Actual: {currentQData.actualRev}</span>
-                  <span>Target: {currentQData.targetRev}</span>
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, currentQData.percentNum)}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: 'action.hover',
+                    '& .MuiLinearProgress-bar': {
+                      background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`,
+                    },
+                  }}
+                />
+                <Stack direction="row" sx={{ justifyContent: 'space-between', mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    Actual: {currentQData.actualRev}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    Target: {currentQData.targetRev}
+                  </Typography>
+                </Stack>
+              </Box>
+            </Card>
 
             {/* KPI 2: Surgical Guides Quota */}
-            <div className="bg-white dark:bg-[#070b14] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Surgical Guides (SG)
-                </span>
-                <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#ea580c]">
+                </Typography>
+                <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(234, 88, 12, 0.1)', color: BRAND_ORANGE }}>
                   <ClipboardList size={18} />
-                </div>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 dark:text-white transition-all">
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
                   {currentQData.sgUnits}
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
+                </Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center' }}>
                   <ArrowUpRight size={13} /> {currentQData.sgPercent}%
-                </span>
-              </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#ea580c] rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, currentQData.sgPercent)}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] font-mono text-slate-500 font-semibold">
-                  <span>Quota: {currentQData.sgQuota}</span>
-                  <span>{currentQData.sgPercent >= 100 ? 'Quota Met' : 'In Progress'}</span>
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, currentQData.sgPercent)}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: 'action.hover',
+                    '& .MuiLinearProgress-bar': { bgcolor: BRAND_ORANGE },
+                  }}
+                />
+                <Stack direction="row" sx={{ justifyContent: 'space-between', mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    Quota: {currentQData.sgQuota}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: currentQData.sgPercent >= 100 ? '#059669' : BRAND_ORANGE }}>
+                    {currentQData.sgPercent >= 100 ? 'Quota Met' : 'In Progress'}
+                  </Typography>
+                </Stack>
+              </Box>
+            </Card>
 
-            {/* KPI 3: Co-Diagnostix Treatment Plans */}
-            <div className="bg-white dark:bg-[#070b14] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            {/* KPI 3: Treatment Plans */}
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Co-Dx Plans (TP)
-                </span>
-                <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#0284c7]">
+                </Typography>
+                <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(2, 132, 199, 0.1)', color: BRAND_BLUE }}>
                   <Activity size={18} />
-                </div>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 dark:text-white transition-all">
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
                   {currentQData.tpUnits}
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
+                </Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center' }}>
                   <ArrowUpRight size={13} /> {currentQData.tpPercent}%
-                </span>
-              </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#0284c7] rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, currentQData.tpPercent)}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[11px] font-mono text-slate-500 font-semibold">
-                  <span>Quota: {currentQData.tpQuota}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                </Typography>
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, currentQData.tpPercent)}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: 'action.hover',
+                    '& .MuiLinearProgress-bar': { bgcolor: BRAND_BLUE },
+                  }}
+                />
+                <Stack direction="row" sx={{ justifyContent: 'space-between', mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    Quota: {currentQData.tpQuota}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669' }}>
                     {currentQData.tpPercent >= 100 ? 'Target Met' : 'Active Batch'}
-                  </span>
-                </div>
-              </div>
-            </div>
+                  </Typography>
+                </Stack>
+              </Box>
+            </Card>
 
-            {/* KPI 4: Lab Turnaround Velocity */}
-            <div className="bg-white dark:bg-[#070b14] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            {/* KPI 4: Turnaround Velocity */}
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Avg. Turnaround Time
-                </span>
-                <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#ea580c]">
+                </Typography>
+                <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'rgba(234, 88, 12, 0.1)', color: BRAND_ORANGE }}>
                   <Clock size={18} />
-                </div>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900 dark:text-white transition-all">
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mt: 1.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
                   {currentQData.turnaround}
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
-                  <CheckCircle2 size={13} /> Within SLA
-                </span>
-              </div>
-              <div className="mt-3 space-y-1.5">
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#0284c7] to-[#ea580c] rounded-full" style={{ width: '88%' }} />
-                </div>
-                <div className="flex justify-between text-[11px] font-mono text-slate-500 font-semibold">
-                  <span>Target SLA: &lt; 2.5d</span>
-                  <span>QC Pass Rate: {currentQData.slaPass}</span>
-                </div>
-              </div>
-            </div>
+                </Typography>
+                <Chip
+                  size="small"
+                  label="Within SLA"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    bgcolor: 'rgba(5, 150, 105, 0.12)',
+                    color: '#059669',
+                  }}
+                />
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={88}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    bgcolor: 'action.hover',
+                    '& .MuiLinearProgress-bar': {
+                      background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`,
+                    },
+                  }}
+                />
+                <Stack direction="row" sx={{ justifyContent: 'space-between', mt: 1 }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    Target SLA: &lt; 2.5d
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                    QC Pass: {currentQData.slaPass}
+                  </Typography>
+                </Stack>
+              </Box>
+            </Card>
+          </Box>
 
-          </div>
-
-          {/* Main Power BI Analytical Charts (Area & Target Comparison) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* Left 2 Cols: Monthly Target vs Actual Revenue Breakdown */}
-            <div className="lg:col-span-2 bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-                <div>
-                  <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <TrendingUp className="text-[#0284c7]" size={18} />
-                    <span>Quarter Target vs Actual Billed Revenue</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+          {/* Charts Row (Responsive CSS Grid: 2 cols on lg, 1 on xs) */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+              gap: 3,
+            }}
+          >
+            {/* Revenue Trend Chart */}
+            <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                sx={{
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                  mb: 3,
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUp size={18} color={BRAND_BLUE} />
+                    Quarter Target vs Actual Billed Revenue
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                     Co-Diagnostix CAD/CAM Production Trajectory ($ USD)
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
 
-                <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-900 p-1 text-xs font-bold border border-slate-200 dark:border-slate-800">
-                  <button
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    p: 0.5,
+                    borderRadius: 2,
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(241, 245, 249, 1)',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Button
+                    size="small"
                     onClick={() => setChartView('area')}
-                    className={`px-3 py-1 rounded-lg transition-colors ${chartView === 'area' ? 'bg-white dark:bg-slate-800 text-[#0284c7] shadow-xs' : 'text-slate-500'}`}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      borderRadius: 1.5,
+                      px: 1.5,
+                      py: 0.3,
+                      bgcolor: chartView === 'area' ? 'background.paper' : 'transparent',
+                      color: chartView === 'area' ? BRAND_BLUE : 'text.secondary',
+                      boxShadow: chartView === 'area' ? 1 : 'none',
+                    }}
                   >
                     Smooth Area
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    size="small"
                     onClick={() => setChartView('bar')}
-                    className={`px-3 py-1 rounded-lg transition-colors ${chartView === 'bar' ? 'bg-white dark:bg-slate-800 text-[#ea580c] shadow-xs' : 'text-slate-500'}`}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      borderRadius: 1.5,
+                      px: 1.5,
+                      py: 0.3,
+                      bgcolor: chartView === 'bar' ? 'background.paper' : 'transparent',
+                      color: chartView === 'bar' ? BRAND_ORANGE : 'text.secondary',
+                      boxShadow: chartView === 'bar' ? 1 : 'none',
+                    }}
                   >
                     Target Bars
-                  </button>
-                </div>
-              </div>
+                  </Button>
+                </Box>
+              </Stack>
 
-              <div className="h-72 w-full">
+              <Box sx={{ height: 280, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartView === 'area' ? (
                     <AreaChart data={currentQData.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -597,279 +982,373 @@ export default function Dashboard() {
                           <stop offset="95%" stopColor={BRAND_ORANGE} stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} tickFormatter={(v) => `$${v/1000}k`} />
-                      <Tooltip content={<BrandChartTooltip />} />
-                      <Area
-                        type="monotone"
-                        dataKey="actualRevenue"
-                        name="Actual Revenue"
-                        stroke={BRAND_BLUE}
-                        strokeWidth={3}
-                        fill="url(#brandBlueGrad)"
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="targetRevenue"
-                        name="Target Quota"
-                        stroke={BRAND_ORANGE}
-                        strokeWidth={2.5}
-                        strokeDasharray="4 4"
-                        fill="url(#brandOrangeGrad)"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
+                      <RechartsTooltip content={<BrandChartTooltip />} />
+                      <Area type="monotone" dataKey="actualRevenue" name="Actual Revenue" stroke={BRAND_BLUE} strokeWidth={3} fill="url(#brandBlueGrad)" />
+                      <Area type="monotone" dataKey="targetRevenue" name="Target Quota" stroke={BRAND_ORANGE} strokeWidth={2} strokeDasharray="4 4" fill="url(#brandOrangeGrad)" />
                     </AreaChart>
                   ) : (
                     <BarChart data={currentQData.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} tickFormatter={(v) => `$${v/1000}k`} />
-                      <Tooltip content={<BrandChartTooltip />} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
+                      <RechartsTooltip content={<BrandChartTooltip />} />
                       <Bar dataKey="actualRevenue" name="Actual Revenue" fill={BRAND_BLUE} radius={[6, 6, 0, 0]} />
                       <Bar dataKey="targetRevenue" name="Target Quota" fill={BRAND_ORANGE} radius={[6, 6, 0, 0]} />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
-              </div>
+              </Box>
 
-              {/* Chart Legend */}
-              <div className="flex items-center justify-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs font-bold">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#0284c7]" />
-                  <span className="text-slate-700 dark:text-slate-300">Actual Revenue ($)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[#ea580c]" />
-                  <span className="text-slate-700 dark:text-slate-300">Quarter Target Quota ($)</span>
-                </div>
-              </div>
-            </div>
+              <Stack direction="row" spacing={3} sx={{ justifyContent: 'center', pt: 2, borderTop: '1px solid', borderColor: 'divider', mt: 2 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: BRAND_BLUE }} />
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                    Actual Revenue ($)
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: BRAND_ORANGE }} />
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                    Quarter Target Quota ($)
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Card>
 
-            {/* Right Column: Service Revenue Contribution Matrix */}
-            <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-              <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <PieChart className="text-[#ea580c]" size={18} />
-                  <span>Service Line Share</span>
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+            {/* Service Line Share Matrix */}
+            <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PieChart size={18} color={BRAND_ORANGE} />
+                  Service Line Share
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                   Production volume & yield by category
-                </p>
+                </Typography>
 
-                <div className="mt-5 space-y-3.5">
+                <Stack spacing={2} sx={{ mt: 2.5 }}>
                   {currentQData.distribution.map((item) => (
-                    <div key={item.name} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
-                      <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                        <span className="text-slate-800 dark:text-slate-200 truncate">{item.name}</span>
-                        <span className="font-mono font-black" style={{ color: item.color }}>
+                    <Box
+                      key={item.name}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.4)' : 'rgba(248, 250, 252, 0.8)',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                          {item.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 900, color: item.color, fontFamily: 'monospace' }}>
                           {item.share}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: item.share, backgroundColor: item.color }}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono mt-1">
-                        <span>{item.units} units fabricated</span>
-                        <span className="font-bold text-slate-600 dark:text-slate-300">{formatCurrency(item.revenue)}</span>
-                      </div>
-                    </div>
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={parseInt(item.share, 10)}
+                        sx={{
+                          height: 6,
+                          borderRadius: 3,
+                          bgcolor: 'action.hover',
+                          '& .MuiLinearProgress-bar': { bgcolor: item.color },
+                        }}
+                      />
+                      <Stack direction="row" sx={{ justifyContent: 'space-between', mt: 0.75 }}>
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                          {item.units} units fabricated
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 700, color: 'text.primary' }}>
+                          {formatCurrency(item.revenue)}
+                        </Typography>
+                      </Stack>
+                    </Box>
                   ))}
-                </div>
-              </div>
+                </Stack>
+              </Box>
 
-              <button
-                type="button"
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
                 onClick={() => navigate('/quarter-targets')}
-                className="w-full mt-4 py-2.5 rounded-2xl bg-[#0284c7]/10 hover:bg-[#0284c7]/20 border border-[#0284c7]/40 text-[#0284c7] dark:text-sky-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                endIcon={<ChevronRight size={14} />}
+                sx={{
+                  mt: 3,
+                  py: 1,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  bgcolor: 'rgba(2, 132, 199, 0.08)',
+                  borderColor: 'rgba(2, 132, 199, 0.3)',
+                  '&:hover': {
+                    bgcolor: 'rgba(2, 132, 199, 0.15)',
+                  },
+                }}
               >
-                <span>{t('dashboard.openQuarterTargets', 'Open Full Quarter Targets Matrix')}</span>
-                <ChevronRight size={14} />
-              </button>
-            </div>
+                {t('dashboard.openQuarterTargets', 'Open Full Quarter Targets Matrix')}
+              </Button>
+            </Card>
+          </Box>
 
-          </div>
-
-          {/* Regional Diagnostic Hubs & Quota Performance Table */}
-          <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <Database className="text-[#0284c7]" size={18} />
-                  <span>{t('powerbi.regionalHubs', 'Regional Diagnostic Hubs Attainment')}</span>
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+          {/* Regional Diagnostic Hubs Attainment Table */}
+          <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Database size={18} color={BRAND_BLUE} />
+                  {t('powerbi.regionalHubs', 'Regional Diagnostic Hubs Attainment')}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                   Direct production quotas assigned to 3DDX Scan Centers
-                </p>
-              </div>
-              <span className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-mono font-bold text-[#0284c7]">
-                Active Hubs: 4
-              </span>
-            </div>
+                </Typography>
+              </Box>
+              <Chip
+                size="small"
+                label="Active Hubs: 4"
+                sx={{ fontWeight: 800, fontSize: '0.7rem', bgcolor: 'rgba(2, 132, 199, 0.1)', color: BRAND_BLUE }}
+              />
+            </Stack>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold text-[11px] pb-2">
-                    <th className="py-2 px-3">Diagnostic Hub</th>
-                    <th className="py-2 px-3">Lead Clinician</th>
-                    <th className="py-2 px-3">Quarter Target</th>
-                    <th className="py-2 px-3">Actual Achieved</th>
-                    <th className="py-2 px-3">Attainment %</th>
-                    <th className="py-2 px-3 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-semibold text-slate-800 dark:text-slate-200">
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(248, 250, 252, 0.9)' }}>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Diagnostic Hub</TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Lead Clinician</TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Quarter Target</TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Actual Achieved</TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Attainment %</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {currentQData.regionalHubs.map((hub) => (
-                    <tr key={hub.hub} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                      <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                    <TableRow key={hub.hub} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableCell sx={{ fontWeight: 700, fontSize: '0.78rem', color: 'text.primary' }}>
                         {hub.hub}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 dark:text-slate-400 font-medium">
+                      </TableCell>
+                      <TableCell sx={{ color: 'text.secondary', fontSize: '0.78rem' }}>
                         {hub.lead}
-                      </td>
-                      <td className="py-3 px-3 font-mono">
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>
                         {formatCurrency(hub.target)}
-                      </td>
-                      <td className="py-3 px-3 font-mono font-bold text-[#0284c7] dark:text-sky-400">
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: BRAND_BLUE, fontSize: '0.78rem' }}>
                         {formatCurrency(hub.actual)}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-20 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(hub.percent, 100)}%`,
-                                backgroundColor: hub.percent >= 100 ? BRAND_ORANGE : BRAND_BLUE,
-                              }}
-                            />
-                          </div>
-                          <span className="font-mono font-bold text-xs">{hub.percent}%</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          hub.percent >= 100
-                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
-                        }`}>
-                          {hub.percent >= 100 ? 'Target Exceeded' : 'On Track'}
-                        </span>
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell sx={{ width: 180 }}>
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min(hub.percent, 100)}
+                            sx={{
+                              flex: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: 'action.hover',
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: hub.percent >= 100 ? BRAND_ORANGE : BRAND_BLUE,
+                              },
+                            }}
+                          />
+                          <Typography variant="caption" sx={{ fontWeight: 800, fontFamily: 'monospace' }}>
+                            {hub.percent}%
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Chip
+                          size="small"
+                          label={hub.percent >= 100 ? 'Target Exceeded' : 'On Track'}
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: '0.65rem',
+                            height: 20,
+                            bgcolor: hub.percent >= 100 ? 'rgba(5, 150, 105, 0.12)' : 'rgba(2, 132, 199, 0.12)',
+                            color: hub.percent >= 100 ? '#059669' : BRAND_BLUE,
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Card>
 
-        </div>
+        </Stack>
       )}
 
       {/* ========================================================= */}
       {/* TAB 2: CAD TELEMETRY & PRODUCTION QUEUE                   */}
       {/* ========================================================= */}
       {activeTab === 'telemetry' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Left Column: Recent Orders Table */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-white">{t('dashboard.liveIntakeOrders', 'Live Intake Orders')}</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 3,
+          }}
+        >
+          {/* Left Column: Recent Intake Orders Table */}
+          <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary' }}>
+                  {t('dashboard.liveIntakeOrders', 'Live Intake Orders')}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                   Cases queued across scan hubs
-                </p>
-              </div>
-              <button
+                </Typography>
+              </Box>
+              <Button
+                size="small"
                 onClick={() => navigate('/flow')}
-                className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1"
+                endIcon={<ChevronRight size={14} />}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  color: BRAND_BLUE,
+                }}
               >
-                <span>{t('dashboard.openFlowMatrix', 'Open Master Flow Matrix')}</span>
-                <ChevronRight size={14} />
-              </button>
-            </div>
+                {t('dashboard.openFlowMatrix', 'Open Master Flow Matrix')}
+              </Button>
+            </Stack>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold text-[11px] pb-2">
-                    <th className="py-2 px-3">{t('col.order', 'Order #')}</th>
-                    <th className="py-2 px-3">{t('col.patientName', 'Patient')}</th>
-                    <th className="py-2 px-3">{t('col.format', 'Service')}</th>
-                    <th className="py-2 px-3">{t('action.status', 'Status')}</th>
-                    <th className="py-2 px-3 text-right">{t('col.updateTime', 'Updated')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
-                  {recentOrders.map((o) => (
-                    <tr
-                      key={o.id}
-                      onClick={() => navigate(`/order-details?id=${o.id}`)}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-900/50 cursor-pointer transition-colors"
-                    >
-                      <td className="py-2.5 px-3 font-mono font-bold text-[#0284c7] dark:text-sky-400">
-                        {o.orderNumber}
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-900 dark:text-white truncate max-w-[120px]">
-                        {o.patientName}
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400">
-                        {o.restoration}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#0284c7]/10 text-[#0284c7] dark:text-sky-300">
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right text-slate-400 font-mono text-[11px]">
-                        {timeAgo(o.updatedAt)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            {recentOrders.length === 0 ? (
+              <EmptyState
+                title="No Intake Orders Available"
+                description="The production intake queue is currently clear across all diagnostic hubs."
+              />
+            ) : (
+              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.6)' : 'rgba(248, 250, 252, 0.9)' }}>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>{t('col.order', 'Order #')}</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>{t('col.patientName', 'Patient')}</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>{t('col.format', 'Service')}</TableCell>
+                      <TableCell sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>{t('action.status', 'Status')}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'text.secondary' }}>{t('col.updateTime', 'Updated')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {recentOrders.map((o) => (
+                      <TableRow
+                        key={o.id}
+                        hover
+                        onClick={() => navigate(`/order-details?id=${o.id}`)}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:last-child td, &:last-child th': { border: 0 },
+                        }}
+                      >
+                        <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: BRAND_BLUE, fontSize: '0.78rem' }}>
+                          {o.orderNumber}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.78rem', maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {o.patientName}
+                        </TableCell>
+                        <TableCell sx={{ color: 'text.secondary', fontSize: '0.78rem' }}>
+                          {o.restoration}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={o.status}
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: '0.65rem',
+                              height: 20,
+                              bgcolor: 'rgba(2, 132, 199, 0.1)',
+                              color: BRAND_BLUE,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontFamily: 'monospace', color: 'text.secondary', fontSize: '0.72rem' }}>
+                          {timeAgo(o.updatedAt)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Card>
 
           {/* Right Column: Workflow Activity Feed */}
-          <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-            <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <Bell size={18} className="text-[#ea580c]" />
-                <span>{t('dashboard.pacsActivity', 'PACS Audit Activity')}</span>
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+          <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Bell size={18} color={BRAND_ORANGE} />
+                {t('dashboard.pacsActivity', 'PACS Audit Activity')}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                 Real-time doctor approvals & DICOM sync
-              </p>
+              </Typography>
 
-              <div className="mt-4 space-y-3.5">
+              <Stack spacing={1.5} sx={{ mt: 2.5 }}>
                 {allNotifs.slice(0, 4).map((item) => (
-                  <div key={item.id} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 text-xs">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-slate-900 dark:text-white truncate">{item.title}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{timeAgo(item.createdAt)}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">{item.message}</p>
-                  </div>
+                  <Box
+                    key={item.id}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 41, 59, 0.4)' : 'rgba(248, 250, 252, 0.8)',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant="caption" noWrap sx={{ fontWeight: 800, color: 'text.primary', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.title}
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', fontFamily: 'monospace' }}>
+                        {timeAgo(item.createdAt)}
+                      </Typography>
+                    </Stack>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.72rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {item.message}
+                    </Typography>
+                  </Box>
                 ))}
-              </div>
-            </div>
+              </Stack>
+            </Box>
 
-            <button
+            <Button
+              variant="contained"
+              size="small"
               onClick={() => navigate('/flow')}
-              className="w-full mt-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white font-bold text-xs shadow-md hover:shadow-lg transition-all"
+              sx={{
+                mt: 3,
+                py: 1.1,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 800,
+                fontSize: '0.75rem',
+                background: `linear-gradient(135deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`,
+                color: '#ffffff',
+                boxShadow: 2,
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${BRAND_BLUE}, ${BRAND_ORANGE})`,
+                  boxShadow: 3,
+                },
+              }}
             >
               {t('dashboard.inspectActiveCases', 'Inspect Active Cases')}
-            </button>
-          </div>
-
-        </div>
+            </Button>
+          </Card>
+        </Box>
       )}
 
-    </div>
+    </Box>
   );
 }
