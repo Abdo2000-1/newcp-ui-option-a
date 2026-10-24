@@ -106,6 +106,8 @@ export interface ServiceItem {
   billedToContactUuid: string;
   billedPartyOrigin: BilledPartyOrigin;
   canEditBilledParty?: boolean;
+  holdType?: HoldType | null;
+  holdReasonCode?: string | null;
 }
 
 export interface CreateServiceItem {
@@ -144,12 +146,31 @@ export type BilledPartyChoice = {
 
 export type HoldType = 'customer' | 'internal';
 
-export type HoldReasonOption = {
+export interface HoldReasonOption {
   code: string;
   label: string;
   isTemporary: boolean;
-  holdType?: HoldType;
-};
+  holdType: HoldType;
+}
+
+export interface OnHoldTransitionRequest {
+  holdType: HoldType;
+  holdReasonCode: string;
+  comment?: string;
+}
+
+export interface HoldTransitionResult {
+  item: ServiceItem;
+  transition: {
+    toStatus: 'on_hold';
+    holdType: HoldType;
+    holdReasonCode: string;
+    isTemporary: true;
+    comment?: string;
+    transitionedAt: string;
+  };
+  etag: string;
+}
 
 export type TransitionRequest = {
   transitionId: number;
@@ -167,4 +188,15 @@ export interface IServiceInstanceMockAdapter {
   item(serviceItemUuid: string): Promise<WithVersion<ServiceItem>>;
   edit(serviceItemUuid: string, patch: PatchServiceItem, ifMatch: string): Promise<WithVersion<ServiceItem>>;
   reset(seedItems?: ServiceItem[]): void;
+}
+
+export interface IHoldTransitionMockAdapter {
+  getHoldReasons(holdType?: HoldType): HoldReasonOption[];
+  transitionToOnHold(
+    serviceItemUuid: string,
+    request: OnHoldTransitionRequest,
+    ifMatch?: string
+  ): Promise<HoldTransitionResult>;
+  reset(seedItems?: ServiceItem[]): void;
+  getItem(serviceItemUuid: string): Promise<WithVersion<ServiceItem>>;
 }
