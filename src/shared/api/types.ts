@@ -31,6 +31,11 @@ export interface PlanApprovalPayload {
   notes?: string;
 }
 
+export interface ApiClientOptions {
+  baseUrl?: string;
+  mockServiceInstances?: IServiceInstanceMockAdapter;
+}
+
 export interface IApiClient {
   cases: {
     list(params?: CaseQueryParams): Promise<PaginatedResult<Case>>;
@@ -47,6 +52,13 @@ export interface IApiClient {
   billing: {
     list(): Promise<BillingRecord[]>;
   };
+  /**
+   * EXPLICIT BOUNDARY: MOCK / NOT_INTEGRATED
+   * Offline mock test double boundary for service-instance read and edit operations (V0.9.2.2 / Q-B8).
+   * Strictly in-memory; contains no live network, database, or browser storage operations.
+   * F07 service-level payer persistence remains blocked pending database schema migration.
+   */
+  readonly offlineMockServiceInstances: IServiceInstanceMockAdapter;
 }
 
 // ============================================================================
