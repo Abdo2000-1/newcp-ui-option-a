@@ -3,11 +3,11 @@ export * from './errors';
 export * from './apiClient';
 export * from './httpTransport';
 export * from './catalogClient';
+export * from './serviceClient';
 export {
   ServiceInstanceMockAdapter,
   serviceInstanceMockAdapter,
-  ServiceInstanceMockError,
-  ServiceItemNotFoundError
+  ServiceInstanceMockError
 } from './serviceInstanceMockAdapter';
 
 export type {
