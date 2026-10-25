@@ -89,7 +89,18 @@ export default function QuarterTargetsReport() {
   const [activeView, setActiveView] = useState<'dashboard' | 'matrix' | 'powerbi' | 'embed' | 'config'>('dashboard');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedQuarter, setSelectedQuarter] = useState<'all' | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('all');
+    const [selectedQuarter, setSelectedQuarter] = useState<'all' | 'Q1' | 'Q2' | 'Q3' | 'Q4'>('all');
+  const [selectedModality, setSelectedModality] = useState<'all' | 'guides' | 'plans' | 'models'>('all');
+  const [selectedQuota, setSelectedQuota] = useState<'all' | 'above' | 'below'>('all');
+
+  const hasActiveSlicers = selectedQuarter !== 'all' || selectedModality !== 'all' || selectedQuota !== 'all' || searchQuery.trim() !== '';
+
+  const handleResetSlicers = () => {
+    setSelectedQuarter('all');
+    setSelectedModality('all');
+    setSelectedQuota('all');
+    setSearchQuery('');
+  };
 
   // Dynamically reactive data driving all charts, KPIs and progress gauges based on selectedQuarter
   const currentQuarterStats = useMemo(() => {
@@ -209,6 +220,14 @@ export default function QuarterTargetsReport() {
     }
   }, [selectedQuarter]);
 
+  const filteredModality = useMemo(() => {
+    if (selectedModality === 'all') return currentQuarterStats.modality;
+    if (selectedModality === 'guides') return currentQuarterStats.modality.filter(m => m.name.includes('Guides'));
+    if (selectedModality === 'plans') return currentQuarterStats.modality.filter(m => m.name.includes('Plans'));
+    if (selectedModality === 'models') return currentQuarterStats.modality.filter(m => m.name.includes('Models'));
+    return currentQuarterStats.modality;
+  }, [selectedModality, currentQuarterStats]);
+
   const { config } = useAppConfig();
   const [powerBiEmbedUrl, setPowerBiEmbedUrl] = useState(
     config.powerBi?.defaultEmbedUrl ||
@@ -222,9 +241,19 @@ export default function QuarterTargetsReport() {
     }, 600);
   };
 
-  const filteredClients = TOP_CLIENT_REPORTS.filter((c) =>
-    c.client.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const filteredClients = useMemo(() => {
+    return TOP_CLIENT_REPORTS.filter((c) => {
+      const matchSearch = c.client.toLowerCase().includes(searchQuery.toLowerCase());
+      const quotaVal = parseInt(c.quotaMet.replace(/[^0-9]/g, ''), 10);
+      const matchQuota =
+        selectedQuota === 'all'
+          ? true
+          : selectedQuota === 'above'
+          ? quotaVal >= 100
+          : quotaVal < 100;
+      return matchSearch && matchQuota;
+    });
+  }, [searchQuery, selectedQuota]);
 
   return (
     <div className="space-y-4 w-full min-w-0">
@@ -388,42 +417,109 @@ export default function QuarterTargetsReport() {
           {activeView === 'dashboard' && (
             <div className="space-y-4">
 
-              {/* Power BI DAX & Slicers Toolbar */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0b101d] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-slate-400 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                    <Filter size={13} className="text-[#0284c7]" />
-                    Slicers:
-                  </span>
+              {/* Power BI DAX & Dynamic Slicers Toolbar (UIUX-REQ-019) */}
+              <div className="p-4 rounded-2xl bg-white dark:bg-[#0b101d] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Filter size={13} className="text-[#0284c7]" />
+                      Slicers:
+                    </span>
 
-                  {/* Fiscal Quarter Slicer */}
-                  <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-                    {(['all', 'Q1', 'Q2', 'Q3', 'Q4'] as const).map((q) => (
-                      <button
-                        key={q}
-                        type="button"
-                        onClick={() => setSelectedQuarter(q)}
-                        className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
-                          selectedQuarter === q
-                            ? 'bg-[#0284c7] text-white shadow-xs'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        {q === 'all' ? 'Full FY2026' : q}
-                      </button>
-                    ))}
+                    {/* Fiscal Quarter Slicer */}
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+                      {(['all', 'Q1', 'Q2', 'Q3', 'Q4'] as const).map((q) => (
+                        <button
+                          key={q}
+                          type="button"
+                          onClick={() => setSelectedQuarter(q)}
+                          className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
+                            selectedQuarter === q
+                              ? 'bg-[#0284c7] text-white shadow-xs'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {q === 'all' ? 'Full FY2026' : q}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Modality Slicer */}
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+                      {[
+                        { id: 'all', label: 'All Modalities' },
+                        { id: 'guides', label: 'Guides' },
+                        { id: 'plans', label: 'TP Plans' },
+                        { id: 'models', label: 'Models' }
+                      ].map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setSelectedModality(m.id as any)}
+                          className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
+                            selectedModality === m.id
+                              ? 'bg-[#ea580c] text-white shadow-xs'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Quota Fulfillment Slicer */}
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+                      {[
+                        { id: 'all', label: 'All Quotas' },
+                        { id: 'above', label: '≥ 100%' },
+                        { id: 'below', label: '< 100%' }
+                      ].map((qu) => (
+                        <button
+                          key={qu.id}
+                          type="button"
+                          onClick={() => setSelectedQuota(qu.id as any)}
+                          className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-colors cursor-pointer ${
+                            selectedQuota === qu.id
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {qu.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Reset Slicers Button */}
+                    <button
+                      type="button"
+                      data-testid="reset-slicers-btn"
+                      disabled={!hasActiveSlicers}
+                      onClick={handleResetSlicers}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        hasActiveSlicers
+                          ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-800 hover:bg-rose-100'
+                          : 'opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700'
+                      }`}
+                    >
+                      <RefreshCw size={12} />
+                      <span>Reset Slicers</span>
+                    </button>
                   </div>
 
-                  <span className="text-slate-300 dark:text-slate-700">|</span>
-
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 flex items-center gap-1">
-                    <ShieldCheck size={12} />
-                    <span>DAX Measure Engine Live</span>
-                  </span>
+                  <div className="text-[11px] font-mono text-slate-400">
+                    Target Fulfillment: <strong className="text-emerald-600 dark:text-emerald-400 font-black">{currentQuarterStats.fulfillment}</strong>
+                  </div>
                 </div>
 
-                <div className="text-[11px] font-mono text-slate-400">
-                  Target Fulfillment: <strong className="text-emerald-600 dark:text-emerald-400 font-black">104.2%</strong>
+                {/* Power BI Canvas Mock Notice Banner */}
+                <div className="p-2.5 bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-900/50 rounded-xl flex items-center justify-between text-xs text-sky-800 dark:text-sky-300">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-[9.5px] px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-900 border border-sky-300 dark:border-sky-700">
+                      [PROTOTYPE MOCK / NOT_INTEGRATED]
+                    </span>
+                    <span className="text-[11px]">Power BI Canvas Emulation: Synthetic demonstration using local mock datasets only.</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">Fabric Gateway: Simulated</span>
                 </div>
               </div>
 
@@ -510,7 +606,7 @@ export default function QuarterTargetsReport() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={currentQuarterStats.modality}
+                          data={filteredModality}
                           cx="50%"
                           cy="50%"
                           innerRadius={50}
@@ -518,7 +614,7 @@ export default function QuarterTargetsReport() {
                           paddingAngle={4}
                           dataKey="value"
                         >
-                          {currentQuarterStats.modality.map((entry: any, index: number) => (
+                          {filteredModality.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -528,7 +624,7 @@ export default function QuarterTargetsReport() {
                   </div>
 
                   <div className="space-y-1.5 pt-1 text-xs">
-                    {currentQuarterStats.modality.map((item: any, idx: number) => (
+                    {filteredModality.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
@@ -606,7 +702,24 @@ export default function QuarterTargetsReport() {
                   </div>
                 </div>
 
-                <div className="w-full overflow-x-auto">
+                {filteredClients.length === 0 ? (
+                  <div
+                    data-testid="slicer-no-results"
+                    className="p-8 text-center space-y-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 my-4"
+                  >
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                      No client accounts match active slicers or search query: &ldquo;{searchQuery}&rdquo;
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResetSlicers}
+                      className="px-3.5 py-1.5 rounded-xl bg-[#0284c7] text-white text-xs font-bold hover:bg-sky-600 cursor-pointer"
+                    >
+                      Reset Slicers
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase select-none">
@@ -651,6 +764,7 @@ export default function QuarterTargetsReport() {
                     </tbody>
                   </table>
                 </div>
+                )}
               </div>
 
             </div>
