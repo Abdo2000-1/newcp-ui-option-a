@@ -1128,7 +1128,9 @@ export function ConvertibleNav({
           backdropFilter: 'blur(12px)',
           userSelect: 'none',
           transition: 'width 0.2s ease',
-          position: 'relative',
+          position: 'sticky',
+          top: 0,
+          alignSelf: 'flex-start',
           zIndex: 40,
           borderRight: position === 'left' ? `1px solid ${tier1Border}` : 'none',
           borderLeft: position === 'right' ? `1px solid ${tier1Border}` : 'none',
@@ -1149,24 +1151,18 @@ export function ConvertibleNav({
             flexShrink: 0,
           }}
         >
-          {!collapsed ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden' }}>
-              <img
-                src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
-                alt="3DDX"
-                style={{ height: 20, width: 'auto', objectFit: 'contain' }}
-              />
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', color: isDark ? '#f8fafc' : '#0f172a' }}>
-                CP PRO MAX
-              </Typography>
-            </Box>
-          ) : (
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 900, color: '#0284c7' }}>
-                3DDX
-              </Typography>
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', flex: 1, overflow: 'hidden' }}>
+            <img
+              src={`${import.meta.env.BASE_URL}${collapsed ? 'logo-3ddx.png' : 'logo-3ddx-full.png'}`}
+              alt="3DDX Brand Logo"
+              style={{
+                height: collapsed ? 28 : 22,
+                width: 'auto',
+                maxWidth: collapsed ? 36 : 140,
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
 
           {/* Drag Handle to dock anywhere */}
           <Tooltip title={t('action.dragHandle', 'Click & drag to dock at any edge')} arrow>
