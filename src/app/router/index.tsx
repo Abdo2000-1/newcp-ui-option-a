@@ -47,6 +47,10 @@ const Notifications = lazy(() => import('@/features/settings/pages/Notifications
 const Forms = lazy(() => import('@/features/settings/pages/Forms'));
 const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
+// System & Error Views (UIUX-REQ-021)
+const NotFoundPage = lazy(() => import('@/features/system/pages/NotFoundPage'));
+const Maintenance503Page = lazy(() => import('@/features/system/pages/Maintenance503Page'));
+
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
@@ -76,6 +80,8 @@ export const ROUTES = {
   SETTINGS: '/settings',
   GRID: '/grid',
   FORMS: '/forms',
+  NOT_FOUND: '/404',
+  MAINTENANCE: '/503',
 } as const;
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
@@ -158,8 +164,12 @@ export function AppRouter() {
           <Route path="scan-center" element={<SuspenseWrapper><ScanCenter /></SuspenseWrapper>} />
           <Route path="workflow-board" element={<SuspenseWrapper><WorkflowBoard /></SuspenseWrapper>} />
           <Route path="documents" element={<SuspenseWrapper><Documents /></SuspenseWrapper>} />
+          <Route path="503" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />
+          <Route path="maintenance" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />
+          <Route path="404" element={<SuspenseWrapper><NotFoundPage /></SuspenseWrapper>} />
+          <Route path="*" element={<SuspenseWrapper><NotFoundPage /></SuspenseWrapper>} />
         </Route>
-        <Route path="*" element={<Navigate to="/flow" replace />} />
+        <Route path="*" element={<SuspenseWrapper><NotFoundPage /></SuspenseWrapper>} />
       </Routes>
     </>
   );
