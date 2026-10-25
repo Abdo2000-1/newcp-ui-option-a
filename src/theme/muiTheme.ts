@@ -3,7 +3,6 @@ import { createTheme, type Theme } from '@mui/material/styles';
 /**
  * Custom 3DDX Clinical Engine MUI Theme
  * Matches the existing 3DDX Option A design tokens and color scheme.
- * Configured with smooth CSS theme transitions (UIUX-REQ-010).
  */
 export function getMuiTheme(mode: 'light' | 'dark'): Theme {
   const isDark = mode === 'dark';
@@ -67,34 +66,7 @@ export function getMuiTheme(mode: 'light' | 'dark'): Theme {
     shape: {
       borderRadius: 10,
     },
-    transitions: {
-      duration: {
-        shortest: 150,
-        shorter: 200,
-        short: 250,
-        standard: 300,
-        complex: 375,
-        enteringScreen: 225,
-        leavingScreen: 195,
-      },
-    },
     components: {
-      MuiCssBaseline: {
-        styleOverrides: {
-          html: {
-            transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          body: {
-            transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          '@media (prefers-reduced-motion: reduce)': {
-            'html, body, #root, *': {
-              transition: 'none !important',
-              animation: 'none !important',
-            },
-          },
-        },
-      },
       MuiButton: {
         styleOverrides: {
           root: {
@@ -114,14 +86,6 @@ export function getMuiTheme(mode: 'light' | 'dark'): Theme {
         styleOverrides: {
           root: {
             backgroundImage: 'none',
-            transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-        },
-      },
-      MuiAppBar: {
-        styleOverrides: {
-          root: {
-            transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
           },
         },
       },
@@ -130,7 +94,6 @@ export function getMuiTheme(mode: 'light' | 'dark'): Theme {
           paper: {
             borderRadius: 16,
             backgroundImage: 'none',
-            transition: 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
           },
         },
       },
