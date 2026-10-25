@@ -62,6 +62,17 @@ export class ProblemError extends ApiClientError {
   }
 }
 
+export class PermissionDeniedError extends ProblemError {
+  constructor(problem: Problem | string = 'Operation not permitted with current permissions') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'PERMISSION_DENIED', message: problem }
+      : problem;
+    super(403, p);
+    this.name = 'PermissionDeniedError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class PreconditionRequiredError extends ProblemError {
   constructor(problem: Problem | string = 'Mutation requires an If-Match header matching the current resource version') {
     const p: Problem = typeof problem === 'string'

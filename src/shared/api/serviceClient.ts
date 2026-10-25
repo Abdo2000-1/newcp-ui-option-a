@@ -239,6 +239,13 @@ export class ServiceClient implements IServiceClient {
     this.revisionCounter++;
     const rotatedEtag = `W/"srv-${serviceItemUuid}-rev${this.revisionCounter}"`;
 
+    const effectiveUnitPrice = patch.unitPrice !== undefined ? patch.unitPrice : entry.item.unitPrice;
+    const effectiveQuantity = patch.quantity !== undefined ? patch.quantity : entry.item.quantity;
+    let computedLineTotal = entry.item.lineTotal;
+    if (effectiveUnitPrice !== undefined && effectiveQuantity !== undefined) {
+      computedLineTotal = (parseFloat(effectiveUnitPrice) * effectiveQuantity).toFixed(2);
+    }
+
     const updated: ServiceItem = {
       ...entry.item,
       ...(patch.answers ? { answers: JSON.parse(JSON.stringify(patch.answers)) } : {}),
@@ -246,6 +253,7 @@ export class ServiceClient implements IServiceClient {
       ...(patch.billedToContactUuid ? { billedToContactUuid: patch.billedToContactUuid, billedPartyOrigin: 'user_selected' } : {}),
       ...(patch.unitPrice !== undefined ? { unitPrice: patch.unitPrice } : {}),
       ...(patch.quantity !== undefined ? { quantity: patch.quantity } : {}),
+      ...(computedLineTotal !== undefined ? { lineTotal: computedLineTotal } : {}),
       ...(patch.zeroChargeReasonCode !== undefined ? { zeroChargeReasonCode: patch.zeroChargeReasonCode } : {}),
       ...(patch.zeroChargeNote !== undefined ? { zeroChargeNote: patch.zeroChargeNote } : {}),
       ...(patch.serviceNotes !== undefined ? { serviceNotes: patch.serviceNotes } : {}),

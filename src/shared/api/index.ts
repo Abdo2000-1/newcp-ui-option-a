@@ -4,6 +4,9 @@ export * from './apiClient';
 export * from './httpTransport';
 export * from './catalogClient';
 export * from './serviceClient';
+export * from './workflowClient';
+export * from './pricingClient';
+export * from './payerClient';
 export * from './concurrencyManager';
 export * from './useServiceItemConcurrency';
 export {
