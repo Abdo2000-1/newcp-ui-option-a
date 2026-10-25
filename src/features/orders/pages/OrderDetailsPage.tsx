@@ -46,9 +46,12 @@ import {
   Save,
   FileUp,
   AlertCircle,
-  Phone
+  Phone,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { StatusBadge } from '@/shared/components/StatusBadge';
+import { DataTable, type Column } from '@/shared/components/DataTable';
 import { PriorityBadge } from '@/shared/components/PriorityBadge';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -294,6 +297,150 @@ export default function OrderDetailsPage() {
 
   // Preview Modal State
   const [activePreviewDoc, setActivePreviewDoc] = useState<{ title: string; content: string; type: string } | null>(null);
+  const [subOrdersViewMode, setSubOrdersViewMode] = useState<'matrix' | 'table'>('table');
+
+  const noteColumns: Column<CaseNoteItem>[] = useMemo(
+    () => [
+      {
+        key: 'by',
+        header: 'By',
+        sortable: true,
+        width: '15%',
+        render: (n) => <span className="font-bold text-slate-900 dark:text-white">{n.by}</span>,
+      },
+      {
+        key: 'to',
+        header: 'To',
+        sortable: true,
+        width: '12%',
+        render: (n) => <span className="font-mono font-bold text-sky-700 dark:text-sky-400">{n.to}</span>,
+      },
+      {
+        key: 'timeSent',
+        header: 'Time Sent',
+        sortable: true,
+        width: '22%',
+        render: (n) => <span className="font-mono text-slate-600 dark:text-slate-400 text-[11px]">{n.timeSent}</span>,
+      },
+      {
+        key: 'history',
+        header: 'History',
+        sortable: true,
+        width: '41%',
+        render: (n) => <span className="text-slate-800 dark:text-slate-200">{n.history}</span>,
+      },
+      {
+        key: 'attach',
+        header: 'Attach',
+        align: 'center',
+        width: '10%',
+        render: (n) =>
+          n.attach === 'View' ? (
+            <button
+              type="button"
+              onClick={() =>
+                setActivePreviewDoc({
+                  title: `Attachment for Note #${n.id} (Sent to ${n.to})`,
+                  content: n.attachContent || 'Standard surgical planning document attached.',
+                  type: 'Clinical Report',
+                })
+              }
+              className="px-2 py-0.5 rounded text-sky-700 dark:text-sky-400 font-extrabold hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer inline-flex items-center gap-1"
+            >
+              <Eye size={12} />
+              <span>View</span>
+            </button>
+          ) : (
+            <span className="text-slate-400">-</span>
+          ),
+      },
+    ],
+    []
+  );
+
+  const subOrderColumns: Column<SubServiceItem>[] = useMemo(
+    () => [
+      {
+        key: 'typeCode',
+        header: 'Code',
+        sortable: true,
+        width: '12%',
+        render: (sub) => (
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black border border-sky-400 dark:border-sky-500/50 text-sky-700 dark:text-sky-400 bg-transparent">
+            {sub.typeCode}
+          </span>
+        ),
+      },
+      {
+        key: 'title',
+        header: 'Service / Module',
+        sortable: true,
+        width: '24%',
+        render: (sub) => (
+          <span className="font-bold text-xs text-slate-900 dark:text-white">
+            {sub.title}
+          </span>
+        ),
+      },
+      {
+        key: 'format',
+        header: 'Format',
+        sortable: true,
+        width: '15%',
+        render: (sub) => (
+          <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+            {sub.format}
+          </span>
+        ),
+      },
+      {
+        key: 'jaws',
+        header: 'Anatomical Jaws',
+        sortable: false,
+        width: '18%',
+        render: (sub) => (
+          <span className="text-xs text-slate-600 dark:text-slate-400">
+            Max: <strong className="text-slate-800 dark:text-slate-200">{sub.maxilla}</strong> • Mand: <strong className="text-slate-800 dark:text-slate-200">{sub.mandible}</strong>
+          </span>
+        ),
+      },
+      {
+        key: 'amount',
+        header: 'Fee',
+        sortable: true,
+        width: '11%',
+        render: (sub) => (
+          <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+            {typeof sub.amount === 'number' ? `${sub.amount}.00` : 'Not available'}
+          </span>
+        ),
+      },
+      {
+        key: 'csTask',
+        header: 'CS Assignee',
+        sortable: true,
+        width: '12%',
+        render: (sub) => (
+          <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+            CS Task: {sub.csTask?.assignee || 'Unassigned'}
+          </span>
+        ),
+      },
+      {
+        key: 'actionLabel',
+        header: 'Workflow Stage',
+        sortable: true,
+        width: '12%',
+        align: 'right',
+        render: (sub) => (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-sky-400 dark:border-sky-500/40 text-sky-700 dark:text-sky-400 bg-transparent whitespace-nowrap">
+            {sub.actionLabel}
+          </span>
+        ),
+      },
+    ],
+    []
+  );
 
   // File Upload State
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -353,7 +500,44 @@ export default function OrderDetailsPage() {
   };
 
   const applyTemplate = (text: string) => {
+    if (text.includes('Call doctor')) {
+      setIhTaskSelected('CS');
+      triggerToast('Template applied: Auto-routed task to Customer Service (CS)');
+    } else if (text.includes('DICOM artifact')) {
+      setIhTaskSelected('Scanning Techs');
+      setIsRushTask(true);
+      triggerToast('Template applied: Auto-routed task to Scanning Techs [RUSH PRIORITY]');
+    } else if (text.includes('Expedited turnaround')) {
+      setIhTaskSelected('Production');
+      setIsRushTask(true);
+      triggerToast('Template applied: Auto-routed task to Production [RUSH PRIORITY]');
+    } else {
+      triggerToast('Quick template applied to note.');
+    }
     setNewInternalNote((prev) => (prev ? `${prev} - ${text}` : text));
+  };
+
+  const copyPrescriptionSummary = () => {
+    if (!flowOrder) return;
+    const activeOrder = flowOrder;
+    const summary = `3D DIAGNOSTIX CLINICAL CASE SUMMARY
+=========================================
+Order ID: #${activeOrder.orderNum}
+Status: ${orderStatus}
+Primary Service: ${primaryService.title} (${primaryService.format || 'Not available'})
+Doctor: ${doctorName}
+Patient: ${patientName}
+Scanning Center: ${scanCenter}
+Dr. Special Request: ${drSpecialRequest || 'Not available'}
+Client Note: ${clientNote || 'Not available'}
+Registration Type: ${registrationType ? registrationType.toUpperCase() : 'Not available'}
+Shipping Instructions: ${specialPreShippingOld || 'Not available'}
+Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} (${typeof s.amount === 'number' ? `${s.amount}` : 'Not available'})`).join(', ')}
+Total Value: ${activeOrder.services.some(s => typeof s.amount === 'number') ? `${activeOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
+Generated on: ${new Date().toLocaleString()}
+`;
+    navigator.clipboard.writeText(summary);
+    triggerToast('Case prescription summary copied to clipboard!');
   };
 
   const handlePostInternalNote = (e: React.FormEvent) => {
@@ -639,6 +823,16 @@ Generated on: ${new Date().toLocaleString()}
 
               <button
                 type="button"
+                onClick={copyPrescriptionSummary}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-amber-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                title="Copy case prescription summary to clipboard"
+              >
+                <Copy size={13} />
+                <span className="hidden sm:inline">Copy Summary</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={exportCaseSummary}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
                 title={t('action.download', 'Download Summary File')}
@@ -898,66 +1092,28 @@ Generated on: ${new Date().toLocaleString()}
             </div>
           </div>
 
-          {/* B. Internal Case Note(Old) Table (Exact Image 1 layout) */}
-          <div className="border border-slate-300 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-[#0b101d] shadow-sm space-y-0 text-xs">
-            <div className="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 font-extrabold text-slate-800 dark:text-slate-200 flex items-center justify-between">
-              <span>Internal Case Note(Old)</span>
-              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-                {oldNotes.length} historical logs
-              </span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-black text-white font-extrabold text-[11px]">
-                    <th className="py-2.5 px-3 w-[12%]">By</th>
-                    <th className="py-2.5 px-3 w-[10%]">To</th>
-                    <th className="py-2.5 px-3 w-[22%]">Time Sent</th>
-                    <th className="py-2.5 px-3 w-[44%]">History</th>
-                    <th className="py-2.5 px-3 w-[12%] text-center">Attach</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs font-medium">
-                  {oldNotes.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-4 px-3 text-center text-slate-500 dark:text-slate-400">
-                        No historical notes recorded for this order.
-                      </td>
-                    </tr>
-                  ) : (
-                    oldNotes.map((n) => (
-                    <tr key={n.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-900 dark:text-white">{n.by}</td>
-                      <td className="py-2 px-3 font-mono font-bold text-sky-700 dark:text-sky-400">{n.to}</td>
-                      <td className="py-2 px-3 font-mono text-slate-600 dark:text-slate-400 text-[11px]">{n.timeSent}</td>
-                      <td className="py-2 px-3 text-slate-800 dark:text-slate-200">{n.history}</td>
-                      <td className="py-2 px-3 text-center">
-                        {n.attach === 'View' ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActivePreviewDoc({
-                                title: `Attachment for Note #${n.id} (Sent to ${n.to})`,
-                                content: n.attachContent || 'Standard surgical planning document attached.',
-                                type: 'Clinical Report'
-                              })
-                            }
-                            className="px-2 py-0.5 rounded text-sky-700 dark:text-sky-400 font-extrabold hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <Eye size={12} />
-                            <span>View</span>
-                          </button>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  )))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* B. Internal Case Note(Old) Table - Modernized with Unified DataTable */}
+          <DataTable<CaseNoteItem>
+            columns={noteColumns}
+            data={oldNotes}
+            rowKey={(item) => String(item.id)}
+            title="Internal Case Note (Old)"
+            subtitle={`${oldNotes.length} historical logs`}
+            searchable
+            searchPlaceholder="Filter notes by sender, recipient, or text..."
+            searchFilter={(item, query) =>
+              item.by.toLowerCase().includes(query) ||
+              item.to.toLowerCase().includes(query) ||
+              item.history.toLowerCase().includes(query) ||
+              item.timeSent.toLowerCase().includes(query)
+            }
+            ariaLabel="Internal Case Notes Table"
+            emptyState={
+              <div className="py-4 px-3 text-center text-slate-500 dark:text-slate-400">
+                No historical notes recorded for this order.
+              </div>
+            }
+          />
 
           {/* C. Internal Case Note & Task Dispatcher System (Modernized Checkboxes & Radios) */}
           <div className="border border-slate-300 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-[#0b101d] shadow-sm text-xs">
@@ -1398,54 +1554,104 @@ Generated on: ${new Date().toLocaleString()}
       {/* ------------------------------------------------------------------ */}
       {activeTab === 'suborders' && (
         <div className="border border-slate-300 dark:border-slate-800 rounded-2xl p-5 bg-white dark:bg-[#0b101d] space-y-4 text-xs shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
             <div>
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 Case #{flowOrder.orderNum} Sub-Orders Breakdown
               </h3>
               <p className="text-xs text-slate-400">All services billed and tracked under this master order</p>
             </div>
-            <span className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400">
-              Total: {flowOrder.services.some(s => typeof s.amount === 'number') ? `$${flowOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
-            </span>
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle: Table vs Cards */}
+              <div className="inline-flex items-center p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={() => setSubOrdersViewMode('table')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    subOrdersViewMode === 'table'
+                      ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Table View"
+                >
+                  <List size={13} />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSubOrdersViewMode('matrix')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    subOrdersViewMode === 'matrix'
+                      ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Card Matrix View"
+                >
+                  <LayoutGrid size={13} />
+                  <span>Cards</span>
+                </button>
+              </div>
+
+              <span className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400">
+                Total: {flowOrder.services.some(s => typeof s.amount === 'number') ? `${flowOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {flowOrder.services.map((sub, srvIdx) => (
-              <div
-                key={sub.id || srvIdx}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/40"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black border border-sky-400 dark:border-sky-500/50 text-sky-700 dark:text-sky-400 bg-transparent">
-                      {sub.typeCode}
-                    </span>
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">
-                      {sub.title}
+          {subOrdersViewMode === 'table' ? (
+            <DataTable<SubServiceItem>
+              columns={subOrderColumns}
+              data={flowOrder.services}
+              rowKey={(sub, idx) => sub.id || `${sub.typeCode}-${idx}`}
+              searchable
+              searchPlaceholder="Filter sub-orders by title or code..."
+              searchFilter={(sub, query) =>
+                sub.title.toLowerCase().includes(query) ||
+                sub.typeCode.toLowerCase().includes(query) ||
+                sub.format.toLowerCase().includes(query) ||
+                (sub.csTask?.assignee || '').toLowerCase().includes(query)
+              }
+              ariaLabel="Sub-orders Matrix Breakdown Table"
+              emptyState="No sub-orders recorded for this master order."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {flowOrder.services.map((sub, srvIdx) => (
+                <div
+                  key={sub.id || srvIdx}
+                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/40"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black border border-sky-400 dark:border-sky-500/50 text-sky-700 dark:text-sky-400 bg-transparent">
+                        {sub.typeCode}
+                      </span>
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">
+                        {sub.title}
+                      </span>
+                    </div>
+                    <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                      {typeof sub.amount === 'number' ? `${sub.amount}.00` : 'Not available'}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                    {typeof sub.amount === 'number' ? `$${sub.amount}.00` : 'Not available'}
-                  </span>
-                </div>
 
-                <div className="text-[11px] text-slate-500 space-y-1">
-                  <div>Format: <strong className="text-slate-700 dark:text-slate-300">{sub.format}</strong></div>
-                  <div>Anatomical Jaws: <strong className="text-slate-700 dark:text-slate-300">Max: {sub.maxilla} • Mand: {sub.mandible}</strong></div>
-                  <div>Bill To: <span className="text-slate-700 dark:text-slate-300 truncate block">{sub.billTo}</span></div>
-                  <div>Received: <span className="font-mono text-[10px] text-slate-400">{sub.receivedTime}</span></div>
-                </div>
+                  <div className="text-[11px] text-slate-500 space-y-1">
+                    <div>Format: <strong className="text-slate-700 dark:text-slate-300">{sub.format}</strong></div>
+                    <div>Anatomical Jaws: <strong className="text-slate-700 dark:text-slate-300">Max: {sub.maxilla} • Mand: {sub.mandible}</strong></div>
+                    <div>Bill To: <span className="text-slate-700 dark:text-slate-300 truncate block">{sub.billTo}</span></div>
+                    <div>Received: <span className="font-mono text-[10px] text-slate-400">{sub.receivedTime}</span></div>
+                  </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <span className="text-[10px] font-mono text-slate-400">CS Task: {sub.csTask.assignee || 'Unassigned'}</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-sky-400 dark:border-sky-500/40 text-sky-700 dark:text-sky-400 bg-transparent">
-                    {sub.actionLabel}
-                  </span>
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] font-mono text-slate-400">CS Task: {sub.csTask.assignee || 'Unassigned'}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-sky-400 dark:border-sky-500/40 text-sky-700 dark:text-sky-400 bg-transparent">
+                      {sub.actionLabel}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
