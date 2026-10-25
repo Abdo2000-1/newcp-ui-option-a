@@ -295,6 +295,11 @@ export default function OrderDetailsPage() {
   const [attachedNoteFileName, setAttachedNoteFileName] = useState<string>('');
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
+  // Prototype mock action states (UIUX-REQ-016)
+  const [isSavingSpecialRequest, setIsSavingSpecialRequest] = useState(false);
+  const [isSavingClientNote, setIsSavingClientNote] = useState(false);
+  const [isDispatchingNote, setIsDispatchingNote] = useState(false);
+
   // Preview Modal State
   const [activePreviewDoc, setActivePreviewDoc] = useState<{ title: string; content: string; type: string } | null>(null);
   const [subOrdersViewMode, setSubOrdersViewMode] = useState<'matrix' | 'table'>('table');
@@ -540,32 +545,55 @@ Generated on: ${new Date().toLocaleString()}
     triggerToast('Case prescription summary copied to clipboard!');
   };
 
+  const handleSaveSpecialRequest = () => {
+    setIsSavingSpecialRequest(true);
+    setTimeout(() => {
+      setIsSavingSpecialRequest(false);
+      triggerToast('[MOCK / NOT_INTEGRATED] Dr. Special Request saved to local case state.');
+    }, 300);
+  };
+
+  const handleSaveClientNote = () => {
+    setIsSavingClientNote(true);
+    setTimeout(() => {
+      setIsSavingClientNote(false);
+      triggerToast('[MOCK / NOT_INTEGRATED] Client Note saved to case file.');
+    }, 300);
+  };
+
   const handlePostInternalNote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newInternalNote.trim()) {
-      triggerToast('Please write a message before dispatching!');
+    if (!newInternalNote.trim() || isDispatchingNote) {
+      if (!newInternalNote.trim()) {
+        triggerToast('Please write a message before dispatching!');
+      }
       return;
     }
 
-    const now = new Date();
-    const formattedDate = `${now.getFullYear()}/${now.toLocaleString('en', { month: 'short' })}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    setIsDispatchingNote(true);
 
-    const newEntry: CaseNoteItem = {
-      id: Date.now(),
-      by: 'You (Current CS Agent)',
-      to: ihTaskSelected,
-      timeSent: formattedDate,
-      history: `${isRushTask ? '[⚡ RUSH] ' : ''}${newInternalNote.trim()}`,
-      attach: attachedNoteFileName ? 'View' : '-',
-      attachContent: attachedNoteFileName
-        ? `Attached Document: ${attachedNoteFileName}\nDispatched with Task to ${ihTaskSelected}.\nNotes: ${newInternalNote.trim()}`
-        : undefined
-    };
+    setTimeout(() => {
+      const now = new Date();
+      const formattedDate = `${now.getFullYear()}/${now.toLocaleString('en', { month: 'short' })}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    setOldNotes([newEntry, ...oldNotes]);
-    setNewInternalNote('');
-    setAttachedNoteFileName('');
-    triggerToast(`Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
+      const newEntry: CaseNoteItem = {
+        id: Date.now(),
+        by: 'You (Current CS Agent)',
+        to: ihTaskSelected,
+        timeSent: formattedDate,
+        history: `${isRushTask ? '[⚡ RUSH] ' : ''}${newInternalNote.trim()}`,
+        attach: attachedNoteFileName ? 'View' : '-',
+        attachContent: attachedNoteFileName
+          ? `Attached Document: ${attachedNoteFileName}\nDispatched with Task to ${ihTaskSelected}.\nNotes: ${newInternalNote.trim()}`
+          : undefined
+      };
+
+      setOldNotes([newEntry, ...oldNotes]);
+      setNewInternalNote('');
+      setAttachedNoteFileName('');
+      setIsDispatchingNote(false);
+      triggerToast(`[MOCK / NOT_INTEGRATED] Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
+    }, 300);
   };
 
   const handleFileUpload = (e: React.FormEvent) => {
@@ -1024,11 +1052,12 @@ Generated on: ${new Date().toLocaleString()}
                   />
                   <button
                     type="button"
-                    onClick={() => triggerToast('Dr. Special Request saved successfully!')}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0"
+                    disabled={isSavingSpecialRequest}
+                    onClick={handleSaveSpecialRequest}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0 disabled:opacity-50 transition-all"
                   >
                     <Save size={12} />
-                    <span>Save</span>
+                    <span>{isSavingSpecialRequest ? 'Saving...' : 'Save'}</span>
                   </button>
                 </div>
               </div>
@@ -1080,11 +1109,12 @@ Generated on: ${new Date().toLocaleString()}
                   />
                   <button
                     type="button"
-                    onClick={() => triggerToast('Client Note saved to case file!')}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0"
+                    disabled={isSavingClientNote}
+                    onClick={handleSaveClientNote}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0 disabled:opacity-50 transition-all"
                   >
                     <Save size={12} />
-                    <span>Save</span>
+                    <span>{isSavingClientNote ? 'Saving...' : 'Save'}</span>
                   </button>
                 </div>
               </div>
@@ -1325,10 +1355,12 @@ Generated on: ${new Date().toLocaleString()}
               <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-sky-500/70 hover:bg-sky-500/10 text-sky-700 dark:text-sky-300 font-extrabold text-xs transition-all cursor-pointer bg-transparent shadow-xs active:scale-95"
+                  disabled={isDispatchingNote}
+                  onClick={handlePostInternalNote}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-sky-500/70 hover:bg-sky-500/10 text-sky-700 dark:text-sky-300 font-extrabold text-xs transition-all cursor-pointer bg-transparent shadow-xs active:scale-95 disabled:opacity-50"
                 >
-                  <Send size={14} />
-                  <span>Dispatch Note & Notify Departments</span>
+                  <Send size={14} className={isDispatchingNote ? 'animate-pulse' : ''} />
+                  <span>{isDispatchingNote ? 'Dispatching...' : 'Dispatch Note & Notify Departments'}</span>
                 </button>
               </div>
             </form>
@@ -1603,6 +1635,7 @@ Generated on: ${new Date().toLocaleString()}
               columns={subOrderColumns}
               data={flowOrder.services}
               rowKey={(sub, idx) => sub.id || `${sub.typeCode}-${idx}`}
+              onRowClick={(sub) => triggerToast(`[MOCK] Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
               searchable
               searchPlaceholder="Filter sub-orders by title or code..."
               searchFilter={(sub, query) =>
