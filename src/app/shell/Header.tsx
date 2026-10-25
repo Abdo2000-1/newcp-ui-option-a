@@ -18,6 +18,7 @@ import {
   Plus, 
   LogOut, 
   Settings, 
+  User,
   ExternalLink,
   ChevronDown
 } from 'lucide-react';
@@ -451,6 +452,14 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </Typography>
               </Box>
               <Box sx={{ py: 0.5 }}>
+                <Button
+                  fullWidth
+                  onClick={() => { navigate('/profile'); setProfileOpen(false); }}
+                  startIcon={<User size={15} />}
+                  sx={{ justifyContent: 'flex-start', fontSize: '0.75rem', color: 'text.primary', py: 0.75 }}
+                >
+                  Operator Profile
+                </Button>
                 <Button
                   fullWidth
                   onClick={() => { navigate('/settings'); setProfileOpen(false); }}
