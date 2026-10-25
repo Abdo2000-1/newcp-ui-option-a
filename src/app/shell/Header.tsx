@@ -1,23 +1,29 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import Badge from '@mui/material/Badge';
+import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import { 
   Menu, 
   Search, 
   Bell, 
   Sun, 
   Moon, 
-  User, 
   Plus, 
   LogOut, 
   Settings, 
-  Check, 
   ExternalLink,
   ChevronDown
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
-import { Button } from '@/shared/components/Button';
 import { timeAgo } from '@/shared/utils/format';
 
 interface HeaderProps {
@@ -27,7 +33,10 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const muiTheme = useMuiTheme();
   const { theme, toggleTheme } = useThemeContext();
+
+  const isDark = muiTheme.palette.mode === 'dark';
 
   const [notifsOpen, setNotifsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -82,203 +91,398 @@ export function Header({ onMenuClick }: HeaderProps) {
     navigate('/login');
   };
 
+  const headerBorder = isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08);
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 sm:px-6">
+    <Box
+      component="header"
+      sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 30,
+        display: 'flex',
+        height: 64,
+        flexShrink: 0,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: `1px solid ${headerBorder}`,
+        bgcolor: isDark ? alpha('#0f172a', 0.95) : alpha('#ffffff', 0.95),
+        backdropFilter: 'blur(8px)',
+        px: { xs: 2, sm: 3 },
+      }}
+    >
       {/* Left: Mobile Hamburger & Page Title */}
-      <div className="flex items-center gap-3">
-        <button
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <IconButton
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
           aria-label="Open navigation menu"
+          size="small"
+          sx={{
+            display: { lg: 'none' },
+            p: 1,
+            borderRadius: 2,
+            color: 'text.secondary',
+            '&:hover': {
+              bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+              color: 'text.primary',
+            },
+          }}
         >
           <Menu size={20} />
-        </button>
+        </IconButton>
 
-        <div className="flex items-center gap-2">
-          <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ fontSize: { xs: '1rem', sm: '1.125rem' }, fontWeight: 800, color: 'text.primary' }}>
             {currentTitle}
-          </span>
+          </Typography>
           {pathSegments.length > 1 && (
-            <span className="text-xs text-gray-400 font-mono hidden sm:inline">
+            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', fontFamily: 'monospace', display: { xs: 'none', sm: 'inline' } }}>
               / #{pathSegments[1]}
-            </span>
+            </Typography>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Middle: Interactive Global Search */}
-      <div className="relative hidden md:block max-w-sm w-full mx-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+      <Box sx={{ position: 'relative', display: { xs: 'none', md: 'block' }, maxWidth: 360, width: '100%', mx: 2 }}>
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 3,
+            border: `1px solid ${headerBorder}`,
+            bgcolor: isDark ? alpha('#1e293b', 0.6) : alpha('#f8fafc', 0.9),
+            px: 1.5,
+            py: 0.5,
+            transition: 'all 0.15s ease',
+            '&:focus-within': {
+              borderColor: '#0284c7',
+              boxShadow: `0 0 0 2px ${alpha('#0284c7', 0.2)}`,
+            },
+          }}
+        >
+          <Search size={16} color={isDark ? '#94a3b8' : '#64748b'} style={{ marginRight: 8, flexShrink: 0 }} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             placeholder="Quick search orders, patients (Ctrl+K)..."
-            className="w-full pl-9 pr-4 py-1.5 text-xs rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all shadow-xs"
+            style={{
+              width: '100%',
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              fontSize: '0.75rem',
+              color: isDark ? '#f8fafc' : '#0f172a',
+            }}
           />
-        </div>
+        </Box>
 
         {/* Live Search Dropdown */}
         {searchFocused && searchResults.length > 0 && (
-          <div className="absolute top-10 left-0 right-0 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-fade-in backdrop-blur-md">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase px-2 py-1 flex items-center justify-between">
-              <span>Quick Results</span>
-              <span className="text-[10px] text-cyan-500 font-mono">React Search</span>
-            </div>
+          <Paper
+            elevation={12}
+            sx={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              left: 0,
+              right: 0,
+              bgcolor: isDark ? '#1e293b' : '#ffffff',
+              borderRadius: 3,
+              border: `1px solid ${headerBorder}`,
+              p: 1,
+              zIndex: 50,
+            }}
+          >
+            <Box sx={{ px: 1, py: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary' }}>
+                Quick Results
+              </Typography>
+              <Typography sx={{ fontSize: '0.625rem', color: '#0284c7', fontFamily: 'monospace' }}>
+                React Search
+              </Typography>
+            </Box>
             {searchResults.map((res) => (
-              <button
+              <Box
                 key={res.id}
+                component="button"
                 onMouseDown={() => {
                   navigate(res.url);
                   setSearchQuery('');
                   setSearchFocused(false);
                 }}
-                className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-cyan-500/10 dark:hover:bg-cyan-400/10 text-left transition-colors group"
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 1,
+                  borderRadius: 2,
+                  border: 'none',
+                  bgcolor: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    bgcolor: alpha('#0284c7', 0.08),
+                  },
+                }}
               >
-                <div>
-                  <div className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{res.title}</div>
-                  <div className="text-[11px] text-slate-400">{res.subtitle}</div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-400 transition-colors" />
-              </button>
+                <Box>
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.primary' }}>
+                    {res.title}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
+                    {res.subtitle}
+                  </Typography>
+                </Box>
+                <ExternalLink size={14} color="#94a3b8" />
+              </Box>
             ))}
-          </div>
+          </Paper>
         )}
-      </div>
+      </Box>
 
       {/* Right: Quick Action Buttons & Profile */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
         {/* Cohesive, Modern Header Action Button */}
-        <button 
+        <Button
           onClick={() => navigate('/add-case')}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-xs shadow-cyan-500/20 transition-all duration-150 active:scale-95 cursor-pointer"
+          variant="contained"
+          size="small"
+          startIcon={<Plus size={14} />}
+          sx={{
+            display: { xs: 'none', sm: 'inline-flex' },
+            bgcolor: '#00706a',
+            color: '#ffffff',
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            px: 2,
+            py: 0.75,
+            borderRadius: 2,
+            boxShadow: 'none',
+            '&:hover': {
+              bgcolor: '#008b84',
+              boxShadow: 'none',
+            },
+          }}
         >
-          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>New Order</span>
-        </button>
+          New Order
+        </Button>
 
         {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          aria-label="Toggle Theme"
-        >
-          {theme === 'dark' ? <Sun size={19} className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> : <Moon size={19} />}
-        </button>
+        <Tooltip title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} arrow>
+          <IconButton
+            onClick={toggleTheme}
+            size="small"
+            aria-label="Toggle Theme"
+            sx={{
+              p: 1,
+              borderRadius: 2,
+              color: isDark ? '#fbbf24' : '#64748b',
+              '&:hover': {
+                bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+              },
+            }}
+          >
+            {theme === 'dark' ? (
+              <Sun size={19} className="lucide-sun" style={{ filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.6))' }} />
+            ) : (
+              <Moon size={19} className="lucide-moon" />
+            )}
+          </IconButton>
+        </Tooltip>
 
         {/* Notifications Popover */}
-        <div className="relative" ref={notifsRef}>
-          <button
-            onClick={() => setNotifsOpen(!notifsOpen)}
-            className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
-            title="Notifications"
-            aria-label="Open notifications"
-          >
-            <Bell size={19} />
-            {unreadNotifs.length > 0 && (
-              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900">
-                {unreadNotifs.length > 9 ? '9+' : unreadNotifs.length}
-              </span>
-            )}
-          </button>
+        <Box sx={{ position: 'relative' }} ref={notifsRef}>
+          <Tooltip title="Notifications" arrow>
+            <IconButton
+              onClick={() => setNotifsOpen(!notifsOpen)}
+              size="small"
+              aria-label="Open notifications"
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                color: 'text.secondary',
+                '&:hover': {
+                  bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+                  color: 'text.primary',
+                },
+              }}
+            >
+              <Badge badgeContent={unreadNotifs.length > 9 ? '9+' : unreadNotifs.length} color="error">
+                <Bell size={19} />
+              </Badge>
+            </IconButton>
+          </Tooltip>
 
           {notifsOpen && (
-            <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 sm:max-w-none rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 py-3 z-50 animate-slide-up">
-              <div className="flex items-center justify-between px-4 pb-2 border-b border-gray-100 dark:border-gray-700">
-                <span className="font-bold text-sm text-gray-900 dark:text-white">Recent Alerts</span>
+            <Paper
+              elevation={12}
+              sx={{
+                position: 'absolute',
+                right: 0,
+                mt: 1,
+                width: { xs: 'calc(100vw - 2rem)', sm: 360 },
+                maxWidth: 380,
+                borderRadius: 3,
+                border: `1px solid ${headerBorder}`,
+                p: 2,
+                zIndex: 50,
+                bgcolor: isDark ? '#1e293b' : '#ffffff',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1, borderBottom: `1px solid ${headerBorder}` }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '0.875rem' }}>Recent Alerts</Typography>
                 {unreadNotifs.length > 0 && (
-                  <button 
-                    onClick={() => store.markAllNotificationsAsRead()} 
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                  <Button
+                    onClick={() => store.markAllNotificationsAsRead()}
+                    size="small"
+                    sx={{ fontSize: '0.6875rem', p: 0, minWidth: 0, color: '#0284c7' }}
                   >
                     Mark all read
-                  </button>
+                  </Button>
                 )}
-              </div>
-              <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800">
+              </Box>
+
+              <Box sx={{ maxHeight: 280, overflowY: 'auto', my: 1 }}>
                 {notifications.slice(0, 5).map((n) => (
-                  <div 
-                    key={n.id} 
+                  <Box
+                    key={n.id}
                     onClick={() => {
                       store.markNotificationAsRead(n.id);
                       if (n.relatedId) navigate(`/orders/${n.relatedId}`);
                       setNotifsOpen(false);
                     }}
-                    className={`p-3 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors ${!n.read ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''}`}
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      bgcolor: !n.read ? (isDark ? alpha('#0284c7', 0.1) : alpha('#0284c7', 0.06)) : 'transparent',
+                      '&:hover': {
+                        bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
+                      },
+                    }}
                   >
-                    <div className="flex justify-between items-start gap-2">
-                      <p className={`text-xs ${!n.read ? 'font-bold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: !n.read ? 800 : 600 }}>
                         {n.title}
-                      </p>
-                      <span className="text-[10px] text-gray-400 whitespace-nowrap">{timeAgo(n.createdAt)}</span>
-                    </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">{n.message}</p>
-                  </div>
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>
+                        {timeAgo(n.createdAt)}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', mt: 0.25 }}>
+                      {n.message}
+                    </Typography>
+                  </Box>
                 ))}
-              </div>
-              <div className="pt-2 px-4 border-t border-gray-100 dark:border-gray-700 text-center">
-                <button 
+              </Box>
+
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ textAlign: 'center' }}>
+                <Button
                   onClick={() => { navigate('/notifications'); setNotifsOpen(false); }}
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  size="small"
+                  sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284c7' }}
                 >
                   View All Notifications →
-                </button>
-              </div>
-            </div>
+                </Button>
+              </Box>
+            </Paper>
           )}
-        </div>
+        </Box>
 
         {/* User Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
-          <button
+        <Box sx={{ position: 'relative' }} ref={profileRef}>
+          <IconButton
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="User Profile Menu"
+            size="small"
+            sx={{
+              p: 0.5,
+              borderRadius: 2,
+              '&:hover': {
+                bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+              },
+            }}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 text-xs font-bold text-white shadow-sm ring-2 ring-cyan-100 dark:ring-cyan-900/50">
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #00706a 0%, #0284c7 100%)',
+                color: '#ffffff',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+              }}
+            >
               {profile.avatarInitials || `${profile.firstName?.[0] || 'J'}${profile.lastName?.[0] || 'R'}`}
-            </div>
-            <ChevronDown size={14} className="text-gray-400 hidden sm:inline" />
-          </button>
+            </Box>
+            <ChevronDown size={14} style={{ marginLeft: 4, opacity: 0.6 }} />
+          </IconButton>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 p-2 z-50 animate-slide-up text-xs">
-              <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-                <p className="font-bold text-gray-900 dark:text-white text-sm">{profile.firstName} {profile.lastName}</p>
-                <p className="text-gray-400 text-[11px]">{profile.role} • Pro</p>
-              </div>
-              <div className="py-1">
-                <button
+            <Paper
+              elevation={12}
+              sx={{
+                position: 'absolute',
+                right: 0,
+                mt: 1,
+                width: 220,
+                borderRadius: 3,
+                border: `1px solid ${headerBorder}`,
+                p: 1,
+                zIndex: 50,
+                bgcolor: isDark ? '#1e293b' : '#ffffff',
+              }}
+            >
+              <Box sx={{ px: 1.5, py: 1, borderBottom: `1px solid ${headerBorder}` }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '0.8125rem' }}>
+                  {profile.firstName} {profile.lastName}
+                </Typography>
+                <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
+                  {profile.role} • Pro
+                </Typography>
+              </Box>
+              <Box sx={{ py: 0.5 }}>
+                <Button
+                  fullWidth
                   onClick={() => { navigate('/settings'); setProfileOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-left"
+                  startIcon={<Settings size={15} />}
+                  sx={{ justifyContent: 'flex-start', fontSize: '0.75rem', color: 'text.primary', py: 0.75 }}
                 >
-                  <Settings size={15} />
-                  <span>Lab & App Settings</span>
-                </button>
-                <button
+                  Lab & App Settings
+                </Button>
+                <Button
+                  fullWidth
                   onClick={() => { toggleTheme(); setProfileOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-left"
+                  startIcon={theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                  sx={{ justifyContent: 'flex-start', fontSize: '0.75rem', color: 'text.primary', py: 0.75 }}
                 >
-                  {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-                  <span>Switch Theme ({theme === 'dark' ? 'Light' : 'Dark'})</span>
-                </button>
-              </div>
-              <div className="pt-1 border-t border-gray-100 dark:border-gray-700">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-left font-semibold"
-                >
-                  <LogOut size={15} />
-                  <span>Log Out</span>
-                </button>
-              </div>
-            </div>
+                  Switch Theme ({theme === 'dark' ? 'Light' : 'Dark'})
+                </Button>
+              </Box>
+              <Divider sx={{ my: 0.5 }} />
+              <Button
+                fullWidth
+                onClick={handleLogout}
+                startIcon={<LogOut size={15} />}
+                sx={{ justifyContent: 'flex-start', fontSize: '0.75rem', color: '#e11d48', py: 0.75, fontWeight: 700 }}
+              >
+                Log Out
+              </Button>
+            </Paper>
           )}
-        </div>
-      </div>
-    </header>
+        </Box>
+      </Box>
+    </Box>
   );
 }
+
+export default Header;

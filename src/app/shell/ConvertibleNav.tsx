@@ -1,5 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import ButtonBase from '@mui/material/ButtonBase';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import {
   Layers,
   FilePlus2,
@@ -22,14 +31,9 @@ import {
   Check,
   ChevronDown,
   Shield,
-  Sliders,
-  SlidersHorizontal,
-  Home,
   User,
   LogOut,
-  ExternalLink,
   Search,
-  Sparkles,
   Move
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
@@ -55,13 +59,16 @@ export function ConvertibleNav({
   onChangePosition,
   collapsed,
   onToggleCollapse,
-  isDraggingNav,
+  isDraggingNav: _isDraggingNav,
   setIsDraggingNav,
 }: ConvertibleNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const muiTheme = useMuiTheme();
   const { theme, toggleTheme } = useThemeContext();
   const { language, setLanguage, currentOption, t } = useLanguage();
+
+  const isDark = muiTheme.palette.mode === 'dark';
 
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -190,445 +197,895 @@ export function ConvertibleNav({
 
   const isVertical = position === 'left' || position === 'right';
 
+  // Surface style tokens
+  const tier1Bg = isDark ? alpha('#0a1b32', 0.95) : alpha('#ffffff', 0.96);
+  const tier1Border = isDark ? alpha('#38bdf8', 0.16) : alpha('#0284c7', 0.14);
+  const tier2Bg = isDark ? alpha('#071526', 0.92) : alpha('#f0f9ff', 0.94);
+  const tier2Border = isDark ? alpha('#38bdf8', 0.12) : alpha('#0284c7', 0.12);
+
   if (!isVertical) {
     return (
       <>
-        {/* Fixed Top 2-Tier Navigation Bar (100% Locked with Scroll) */}
-        <div className={position === 'top' ? 'fixed top-0 left-0 right-0 z-50 w-full shadow-sm' : ''}>
-        {/* ================================================================= */}
-        {/* TIER 1: FIXED TOP GLOBAL UTILITY BAR (STATIONARY ACROSS ALL PAGES) */}
-        {/* Brand, Drag Handle, Centered Search, Language, Theme, Profile      */}
-        {/* ================================================================= */}
-        <header
-          className={`w-full bg-sky-100/90 dark:bg-[#0a1b32]/92 backdrop-blur-md border-b border-sky-300/60 dark:border-sky-800/60 shadow-xs select-none z-50 ${
-            position === 'top' ? 'relative' : 'fixed bottom-0 left-0 right-0 border-t shadow-2xl'
-          }`}
+        {/* Fixed Top or Bottom 2-Tier Navigation Bar */}
+        <Box
+          component="div"
+          sx={{
+            position: position === 'top' ? 'fixed' : 'relative',
+            top: position === 'top' ? 0 : 'auto',
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            width: '100%',
+            boxShadow: position === 'top' ? (isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 2px 12px rgba(0,0,0,0.06)') : 'none',
+          }}
         >
-          <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-            
-            {/* Left: Drag Handle, Quick Dock Menu & Brand Logo */}
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Hand Drag Handle: Drag & Drop anywhere */}
-              <div
-                draggable
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onPointerDown={handlePointerDownDrag}
-                title="Click & Drag with mouse to dock navigation anywhere (Top, Left, Right, Bottom)"
-                className="flex items-center justify-center p-1.5 rounded-xl text-slate-500 hover:text-[#0284c7] dark:hover:text-sky-400 hover:bg-white/80 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing transition-colors group border border-transparent hover:border-sky-300/60 dark:hover:border-sky-700/60 shadow-2xs"
-              >
-                <GripVertical size={18} className="group-hover:scale-110 transition-transform text-[#0284c7] dark:text-sky-400" />
-              </div>
+          {/* ================================================================= */}
+          {/* TIER 1: GLOBAL UTILITY BAR (STATIONARY ACROSS ALL PAGES)          */}
+          {/* ================================================================= */}
+          <Box
+            component="header"
+            sx={{
+              width: '100%',
+              bgcolor: tier1Bg,
+              backdropFilter: 'blur(12px)',
+              borderBottom: position === 'top' ? `1px solid ${tier1Border}` : 'none',
+              borderTop: position === 'bottom' ? `1px solid ${tier1Border}` : 'none',
+              position: position === 'bottom' ? 'fixed' : 'relative',
+              bottom: position === 'bottom' ? 0 : 'auto',
+              left: 0,
+              right: 0,
+              zIndex: 50,
+              userSelect: 'none',
+            }}
+          >
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: 1920,
+                mx: 'auto',
+                px: { xs: 2, sm: 3 },
+                height: 56,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+              }}
+            >
+              {/* Left: Drag Handle, Quick Dock Menu & Brand Logo */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+                {/* Hand Drag Handle: Drag & Drop anywhere */}
+                <Tooltip title="Click & Drag to dock navigation anywhere (Top, Left, Right, Bottom)" arrow>
+                  <IconButton
+                    draggable
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onPointerDown={handlePointerDownDrag}
+                    size="small"
+                    aria-label="Drag navigation dock"
+                    sx={{
+                      cursor: 'grab',
+                      '&:active': { cursor: 'grabbing' },
+                      color: isDark ? 'sky.400' : '#0284c7',
+                      bgcolor: isDark ? alpha('#38bdf8', 0.08) : alpha('#0284c7', 0.06),
+                      border: `1px solid ${alpha(isDark ? '#38bdf8' : '#0284c7', 0.2)}`,
+                      borderRadius: 2,
+                      p: 0.75,
+                      '&:hover': {
+                        bgcolor: isDark ? alpha('#38bdf8', 0.16) : alpha('#0284c7', 0.12),
+                      },
+                    }}
+                  >
+                    <GripVertical size={16} />
+                  </IconButton>
+                </Tooltip>
 
-              {/* Quick Dock Position Selector Dropdown Menu */}
-              <div className="relative" ref={posRef}>
-                <button
-                  type="button"
-                  onClick={() => setPosDropdownOpen(!posDropdownOpen)}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl border border-sky-300/60 dark:border-sky-800/60 hover:bg-white/90 dark:hover:bg-slate-800/90 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-2xs group"
-                  title="Choose navigation dock position directly from menu"
+                {/* Quick Dock Position Selector Dropdown Menu */}
+                <Box sx={{ position: 'relative' }} ref={posRef}>
+                  <ButtonBase
+                    type="button"
+                    onClick={() => setPosDropdownOpen(!posDropdownOpen)}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.75,
+                      px: 1.25,
+                      py: 0.75,
+                      borderRadius: 2,
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : alpha('#000000', 0.02),
+                      color: isDark ? '#f8fafc' : '#0f172a',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.05),
+                        borderColor: isDark ? 'sky.400' : '#0284c7',
+                      },
+                    }}
+                    title="Choose navigation dock position directly from menu"
+                  >
+                    <Move size={13} color={isDark ? '#38bdf8' : '#0284c7'} />
+                    <Typography component="span" sx={{ display: { xs: 'none', sm: 'inline' }, textTransform: 'capitalize', fontSize: '0.75rem', fontWeight: 800 }}>
+                      {position}
+                    </Typography>
+                    <ChevronDown size={12} style={{ transform: posDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {posDropdownOpen && (
+                    <Paper
+                      elevation={8}
+                      sx={{
+                        position: 'absolute',
+                        left: 0,
+                        ...(position === 'bottom' ? { bottom: 'calc(100% + 8px)' } : { top: 'calc(100% + 8px)' }),
+                        width: 210,
+                        p: 1,
+                        borderRadius: 3,
+                        bgcolor: isDark ? '#0c1222' : '#ffffff',
+                        border: `1px solid ${isDark ? alpha('#38bdf8', 0.25) : alpha('#0284c7', 0.2)}`,
+                        zIndex: 60,
+                      }}
+                    >
+                      <Typography sx={{ px: 1, py: 0.5, fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
+                        Dock Navbar Position
+                      </Typography>
+
+                      {[
+                        { pos: 'top' as const, label: 'Top Navbar (Fixed)', icon: PanelTopClose },
+                        { pos: 'bottom' as const, label: 'Bottom Taskbar', icon: PanelBottomClose },
+                        { pos: 'left' as const, label: 'Left Sidebar', icon: PanelLeftClose },
+                        { pos: 'right' as const, label: 'Right Sidebar', icon: PanelRightClose },
+                      ].map((item) => (
+                        <ButtonBase
+                          key={item.pos}
+                          type="button"
+                          onClick={() => {
+                            onChangePosition(item.pos);
+                            setPosDropdownOpen(false);
+                          }}
+                          sx={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            px: 1.5,
+                            py: 1,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            bgcolor: position === item.pos ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1)) : 'transparent',
+                            color: position === item.pos ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#e2e8f0' : '#1e293b'),
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                            <item.icon size={15} color={position === item.pos ? '#0284c7' : '#94a3b8'} />
+                            <span>{item.label}</span>
+                          </Box>
+                          {position === item.pos && <Check size={14} color="#0284c7" />}
+                        </ButtonBase>
+                      ))}
+                    </Paper>
+                  )}
+                </Box>
+
+                {/* Brand Logo (Links to Home) */}
+                <NavLink
+                  to="/dashboard"
+                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}
+                  title="3D Diagnostix Cloud ERP - Home"
                 >
-                  <Move size={13} className="text-[#0284c7] dark:text-sky-400 group-hover:rotate-45 transition-transform" />
-                  <span className="hidden sm:inline capitalize text-[11px] font-extrabold">{position}</span>
-                  <ChevronDown size={11} className={`text-slate-400 transition-transform duration-200 ${posDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
+                  <Box
+                    sx={{
+                      height: 32,
+                      px: 1,
+                      borderRadius: 2,
+                      bgcolor: isDark ? '#0c1222' : '#ffffff',
+                      border: `1px solid ${tier1Border}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <img
+                      src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
+                      alt="3D Diagnostix"
+                      style={{ height: 20, width: 'auto', objectFit: 'contain' }}
+                    />
+                  </Box>
+                  <Box sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', lineHeight: 1.1 }}>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '-0.02em', textTransform: 'uppercase', color: isDark ? '#f8fafc' : '#0f172a' }}>
+                      CP PRO MAX
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: isDark ? '#38bdf8' : '#0284c7' }}>
+                      Clinical Platform
+                    </Typography>
+                  </Box>
+                </NavLink>
+              </Box>
 
-                {posDropdownOpen && (
-                  <div className={`absolute left-0 ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} w-52 rounded-2xl bg-white dark:bg-[#0c1222] border border-sky-200/80 dark:border-sky-800/80 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 py-1">
-                      Dock Navbar Position
-                    </div>
+              {/* Center: Streamlined Global Search Bar (Spotlight Powered) */}
+              <Box sx={{ flex: 1, maxWidth: 420, mx: { xs: 1, sm: 3 }, display: { xs: 'none', md: 'block' } }}>
+                <ButtonBase
+                  onClick={() => setIsSearchModalOpen(true)}
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    px: 2,
+                    py: 0.85,
+                    borderRadius: 3,
+                    bgcolor: isDark ? alpha('#0c1222', 0.8) : alpha('#ffffff', 0.9),
+                    border: `1px solid ${tier1Border}`,
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    transition: 'all 0.15s ease',
+                    '&:hover': {
+                      borderColor: isDark ? '#38bdf8' : '#0284c7',
+                      bgcolor: isDark ? '#0c1222' : '#ffffff',
+                      boxShadow: `0 0 0 2px ${alpha(isDark ? '#38bdf8' : '#0284c7', 0.15)}`,
+                    },
+                  }}
+                  title="Search cases, orders, clinicians (Ctrl+K)"
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, color: isDark ? '#94a3b8' : '#64748b' }}>
+                    <Search size={14} />
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'inherit' }}>
+                      Spotlight Search...
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label="Ctrl+K"
+                    size="small"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      fontFamily: 'monospace',
+                      bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06),
+                      color: isDark ? '#cbd5e1' : '#475569',
+                      borderRadius: 1.5,
+                      '& .MuiChip-label': { px: 0.75 },
+                    }}
+                  />
+                </ButtonBase>
+              </Box>
 
-                    {[
-                      { pos: 'top' as const, label: 'Top Navbar (Fixed)', icon: PanelTopClose },
-                      { pos: 'bottom' as const, label: 'Bottom Taskbar', icon: PanelBottomClose },
-                      { pos: 'left' as const, label: 'Left Sidebar', icon: PanelLeftClose },
-                      { pos: 'right' as const, label: 'Right Sidebar', icon: PanelRightClose },
-                    ].map((item) => (
-                      <button
-                        key={item.pos}
+              {/* Right: Language, Theme & User Profile Menu */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+                {/* Language Switcher */}
+                <Box sx={{ position: 'relative' }} ref={langRef}>
+                  <ButtonBase
+                    type="button"
+                    onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.75,
+                      p: 0.75,
+                      px: 1.25,
+                      borderRadius: 2,
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : alpha('#000000', 0.02),
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        borderColor: isDark ? 'sky.400' : '#0284c7',
+                      },
+                    }}
+                    title="Change System Language"
+                  >
+                    <LanguageFlag code={currentOption.code} />
+                    <Typography component="span" sx={{ display: { xs: 'none', lg: 'inline' }, fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                      {currentOption.code}
+                    </Typography>
+                    <ChevronDown size={11} style={{ opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {langDropdownOpen && (
+                    <Paper
+                      elevation={8}
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        ...(position === 'bottom' ? { bottom: 'calc(100% + 8px)' } : { top: 'calc(100% + 8px)' }),
+                        width: 175,
+                        p: 1,
+                        borderRadius: 3,
+                        bgcolor: isDark ? '#0c1222' : '#ffffff',
+                        border: `1px solid ${isDark ? alpha('#38bdf8', 0.25) : alpha('#0284c7', 0.2)}`,
+                        zIndex: 60,
+                      }}
+                    >
+                      <Typography sx={{ px: 1, py: 0.5, fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
+                        Select Language
+                      </Typography>
+                      {LANGUAGES.map((lang) => (
+                        <ButtonBase
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setLangDropdownOpen(false);
+                          }}
+                          sx={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            px: 1.25,
+                            py: 0.75,
+                            borderRadius: 1.5,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            bgcolor: language === lang.code ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1)) : 'transparent',
+                            color: language === lang.code ? (isDark ? '#38bdf8' : '#0284c7') : 'inherit',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <LanguageFlag code={lang.code} />
+                            <span>{lang.nativeName}</span>
+                          </Box>
+                          {language === lang.code && <Check size={13} color="#0284c7" />}
+                        </ButtonBase>
+                      ))}
+                    </Paper>
+                  )}
+                </Box>
+
+                {/* Theme Toggle */}
+                <Tooltip title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} arrow>
+                  <IconButton
+                    onClick={toggleTheme}
+                    size="small"
+                    aria-label="Toggle Theme"
+                    sx={{
+                      p: 0.75,
+                      borderRadius: 2,
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : alpha('#000000', 0.02),
+                      color: isDark ? '#fbbf24' : '#475569',
+                      '&:hover': {
+                        bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.05),
+                        color: isDark ? '#f59e0b' : '#0284c7',
+                      },
+                    }}
+                  >
+                    {theme === 'dark' ? (
+                      <Sun size={17} style={{ filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.6))' }} />
+                    ) : (
+                      <Moon size={17} />
+                    )}
+                  </IconButton>
+                </Tooltip>
+
+                {/* User Profile Dropdown Menu */}
+                <Box sx={{ position: 'relative' }} ref={profileDropdownRef}>
+                  <ButtonBase
+                    type="button"
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1.25,
+                      p: 0.5,
+                      pl: 0.75,
+                      pr: 1.25,
+                      borderRadius: 2.5,
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#0c1222', 0.7) : alpha('#ffffff', 0.8),
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        borderColor: isDark ? 'sky.400' : '#0284c7',
+                      },
+                    }}
+                    title="Operator Profile & Account Menu"
+                  >
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, #0284c7 0%, #ea580c 100%)',
+                        color: '#ffffff',
+                        fontSize: '0.6875rem',
+                        fontWeight: 900,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      }}
+                    >
+                      {profile?.avatarInitials || '3D'}
+                    </Box>
+                    <Box sx={{ display: { xs: 'none', xl: 'flex' }, flexDirection: 'column', textAlign: 'left', lineHeight: 1.1 }}>
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {profile?.firstName || 'Abdu M.'}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.625rem', fontWeight: 800, color: '#ea580c' }}>
+                        Lead Specialist
+                      </Typography>
+                    </Box>
+                    <ChevronDown size={12} style={{ opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {profileDropdownOpen && (
+                    <Paper
+                      elevation={8}
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        ...(position === 'bottom' ? { bottom: 'calc(100% + 8px)' } : { top: 'calc(100% + 8px)' }),
+                        width: 250,
+                        p: 1.25,
+                        borderRadius: 3,
+                        bgcolor: isDark ? '#0c1222' : '#ffffff',
+                        border: `1px solid ${isDark ? alpha('#38bdf8', 0.25) : alpha('#0284c7', 0.2)}`,
+                        zIndex: 60,
+                      }}
+                    >
+                      <Box sx={{ p: 1, mb: 1, borderBottom: `1px solid ${isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}` }}>
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 900 }}>
+                          {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary', fontFamily: 'monospace' }}>
+                          a.aladawy@3ddx.com • ID: 3DDX-9942
+                        </Typography>
+                      </Box>
+
+                      <ButtonBase
                         type="button"
                         onClick={() => {
-                          onChangePosition(item.pos);
-                          setPosDropdownOpen(false);
+                          setProfileDropdownOpen(false);
+                          setIsProfileModalOpen(true);
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          position === item.pos
-                            ? 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300 border border-sky-300/50 dark:border-sky-700/50'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-800/80'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <item.icon size={14} className={position === item.pos ? 'text-[#0284c7]' : 'text-slate-400'} />
-                          <span>{item.label}</span>
-                        </div>
-                        {position === item.pos && <Check size={13} className="text-[#0284c7]" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Brand Logo (Links to Home - No redundant Home button) */}
-              <NavLink
-                to="/dashboard"
-                className="flex items-center gap-2 group"
-                title="3D Diagnostix Cloud ERP - Home"
-              >
-                <div className="h-8 px-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex items-center shadow-xs group-hover:border-[#0284c7] transition-colors">
-                  <img
-                    src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
-                    alt="3D Diagnostix"
-                    className="h-5 w-auto object-contain"
-                  />
-                </div>
-                <div className="hidden sm:flex flex-col leading-none">
-                  <span className="text-xs font-black text-slate-900 dark:text-white tracking-tight uppercase">
-                    CP PRO MAX
-                  </span>
-                  <span className="text-[9px] font-bold text-sky-600 dark:text-sky-400">
-                    Clinical Platform
-                  </span>
-                </div>
-              </NavLink>
-            </div>
-
-            {/* Center: Clean Minimalist Global Search Bar (Spotlight Powered) */}
-            <div className="flex-1 max-w-md mx-2 sm:mx-6 hidden md:block">
-              <div
-                onClick={() => setIsSearchModalOpen(true)}
-                className="relative group cursor-pointer"
-              >
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-[#0284c7] transition-colors pointer-events-none" />
-                <input
-                  type="text"
-                  readOnly
-                  placeholder="Search orders, cases, patients, doctors... (⌘K)"
-                  className="w-full h-8.5 pl-9 pr-12 text-xs font-medium rounded-xl bg-white/80 dark:bg-slate-900/80 border border-sky-300/60 dark:border-sky-800/60 text-slate-900 dark:text-slate-100 placeholder-slate-400/80 cursor-pointer hover:border-[#0284c7] dark:hover:border-sky-400 transition-all shadow-xs"
-                />
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-                  <kbd className="px-1.5 py-0.5 text-[9px] font-mono font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-2xs">
-                    ⌘K
-                  </kbd>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Language, Theme, & User Profile Dropdown */}
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Mobile Search Button */}
-              <button
-                type="button"
-                onClick={() => setIsSearchModalOpen(true)}
-                className="md:hidden p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                title="Deep Global Search"
-              >
-                <Search size={15} />
-              </button>
-              
-              {/* Language Switcher */}
-              <div className="relative" ref={langRef}>
-                <button
-                  type="button"
-                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                  title="Change System Language"
-                >
-                  <LanguageFlag code={currentOption.code} />
-                  <span className="font-extrabold text-[11px] uppercase">{currentOption.code}</span>
-                  <ChevronDown size={12} className="text-slate-400" />
-                </button>
-
-                {langDropdownOpen && (
-                  <div className={`absolute right-0 ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} w-44 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up`}>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-                      Select Language
-                    </div>
-                    {LANGUAGES.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code);
-                          setLangDropdownOpen(false);
+                        sx={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.25,
+                          p: 1,
+                          borderRadius: 2,
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          color: isDark ? '#e2e8f0' : '#1e293b',
+                          '&:hover': {
+                            bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            color: '#0284c7',
+                          },
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                          language === lang.code
-                            ? 'bg-[#0284c7]/15 text-[#0284c7] dark:text-sky-300'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <LanguageFlag code={lang.code} />
-                          <span>{lang.nativeName}</span>
-                        </div>
-                        {language === lang.code && <Check size={13} className="text-[#0284c7]" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                        <User size={15} color="#0284c7" />
+                        <span>Operator Profile & Credentials</span>
+                      </ButtonBase>
 
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                type="button"
-                className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0284c7] transition-colors cursor-pointer"
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              >
-                {theme === 'dark' ? (
-                  <Sun size={17} className="text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-                ) : (
-                  <Moon size={17} className="text-slate-700" />
-                )}
-              </button>
+                      <NavLink
+                        to="/settings"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.25,
+                            p: 1,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              color: '#059669',
+                            },
+                          }}
+                        >
+                          <Shield size={15} color="#059669" />
+                          <span>Security & Preferences</span>
+                        </Box>
+                      </NavLink>
 
-              {/* User Profile Dropdown Menu (Houses Admin CMS link for authorized users) */}
-              <div className="relative" ref={profileDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 hover:border-[#0284c7] dark:hover:border-sky-500 bg-slate-50/80 dark:bg-slate-900/80 transition-all cursor-pointer group"
-                  title="Operator Profile & Account Menu"
-                >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-[#0284c7] to-[#ea580c] text-xs font-black text-white shadow-xs group-hover:scale-105 transition-transform">
-                    {profile?.avatarInitials || '3D'}
-                  </div>
-                  <div className="flex flex-col text-left leading-tight hidden xl:flex">
-                    <span className="text-[11px] font-black text-slate-900 dark:text-white truncate max-w-[100px]">
-                      {profile?.firstName || 'Abdu M.'}
-                    </span>
-                    <span className="text-[9px] font-bold text-[#ea580c]">
-                      Lead Specialist
-                    </span>
-                  </div>
-                  <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200" />
-                </button>
+                      <Divider sx={{ my: 0.75 }} />
 
-                {profileDropdownOpen && (
-                  <div className={`absolute right-0 ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 animate-slide-up space-y-1`}>
-                    <div className="p-2 border-b border-slate-100 dark:border-slate-800/80 mb-1">
-                      <div className="font-extrabold text-xs text-slate-900 dark:text-white">
-                        {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        a.aladawy@3ddx.com • ID: 3DDX-9942
-                      </div>
-                    </div>
+                      <NavLink
+                        to="/login"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.25,
+                            p: 1,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: '#e11d48',
+                            '&:hover': {
+                              bgcolor: alpha('#e11d48', 0.08),
+                            },
+                          }}
+                        >
+                          <LogOut size={15} />
+                          <span>Sign Out</span>
+                        </Box>
+                      </NavLink>
+                    </Paper>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          </Box>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfileDropdownOpen(false);
-                        setIsProfileModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                    >
-                      <User size={15} className="text-sky-500" />
-                      <span>Operator Profile & Credentials</span>
-                    </button>
-
-                    <NavLink
-                      to="/settings"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2.5 p-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <Shield size={15} className="text-emerald-500" />
-                      <span>Security & Preferences</span>
-                    </NavLink>
-
-                    <div className="border-t border-slate-100 dark:border-slate-800 my-1 pt-1" />
-
-                    <NavLink
-                      to="/login"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2.5 p-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                    >
-                      <LogOut size={15} />
-                      <span>Sign Out</span>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* ================================================================= */}
-        {/* TIER 2: SECONDARY WORKSPACE SUB-NAVBAR                            */}
-        {/* Lighter Ice-Blue Glassmorphic Tint, Fixed Dropdowns, Zero CMS Link */}
-        {/* ================================================================= */}
-        <nav
-          className={`w-full bg-sky-50/75 dark:bg-[#071526]/80 backdrop-blur-md border-b border-sky-200/50 dark:border-sky-900/50 shadow-xs select-none z-40 ${
-            position === 'top' ? 'relative' : 'fixed bottom-14 left-0 right-0 border-t shadow-xl'
-          }`}
-        >
-          <div
-            data-testid="tier2-nav-container"
-            className={`w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 ${isTier2DropdownOpen ? 'overflow-visible' : 'overflow-x-auto md:overflow-visible no-scrollbar'}`}
+          {/* ================================================================= */}
+          {/* TIER 2: SECONDARY WORKSPACE SUB-NAVBAR                            */}
+          {/* ================================================================= */}
+          <Box
+            component="nav"
+            sx={{
+              width: '100%',
+              bgcolor: tier2Bg,
+              backdropFilter: 'blur(8px)',
+              borderBottom: position === 'top' ? `1px solid ${tier2Border}` : 'none',
+              borderTop: position === 'bottom' ? `1px solid ${tier2Border}` : 'none',
+              position: position === 'bottom' ? 'fixed' : 'relative',
+              bottom: position === 'bottom' ? 56 : 'auto',
+              left: 0,
+              right: 0,
+              zIndex: 40,
+              userSelect: 'none',
+            }}
           >
-            
-            {/* Categorized Spread Menus */}
-            <div className="flex items-center gap-1 sm:gap-2 relative">
-              
-              {/* 1. Dashboard */}
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    isActive
-                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-700'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
-                  }`
-                }
-              >
-                <LayoutDashboard size={13} />
-                <span>Dashboard</span>
-              </NavLink>
-
-              {/* 2. Orders & Cases Spread Dropdown */}
-              <div className="relative" ref={ordersDropdownRef}>
-                <button
-                  type="button"
-                  aria-expanded={ordersDropdownOpen}
-                  aria-haspopup="true"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOrdersDropdownOpen(!ordersDropdownOpen);
-                    setOpsDropdownOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
-                      ? 'bg-sky-50 dark:bg-sky-950/40 text-[#0284c7] dark:text-sky-400 border border-sky-200 dark:border-sky-800'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
-                  }`}
+            <div
+              data-testid="tier2-nav-container"
+              className={`w-full max-w-[1920px] mx-auto px-4 sm:px-6 h-11 flex items-center justify-between gap-4 ${isTier2DropdownOpen ? 'overflow-visible' : 'overflow-x-auto md:overflow-visible no-scrollbar'}`}
+            >
+              {/* Categorized Spread Menus */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 }, position: 'relative' }}>
+                {/* 1. Dashboard */}
+                <NavLink
+                  to="/dashboard"
+                  style={{ textDecoration: 'none' }}
                 >
-                  <Layers size={13} />
-                  <span>Orders & Cases</span>
-                  <ChevronDown size={11} className={`transition-transform duration-200 ${ordersDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {ordersDropdownOpen && (
-                  <div
-                    data-testid="orders-dropdown-menu"
-                    className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
-                    <NavLink
-                      to="/flow"
-                      onClick={() => setOrdersDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  {({ isActive }) => (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        transition: 'all 0.15s ease',
+                        bgcolor: isActive ? (isDark ? '#0c1222' : '#ffffff') : 'transparent',
+                        color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
+                        border: `1px solid ${isActive ? (isDark ? alpha('#38bdf8', 0.3) : alpha('#0284c7', 0.2)) : 'transparent'}`,
+                        boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                        '&:hover': {
+                          color: isDark ? '#f8fafc' : '#0f172a',
+                          bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                        },
+                      }}
                     >
-                      <Layers size={14} className="text-sky-500" />
-                      <div>
-                        <div>Workflow Queue</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Master production queue</div>
-                      </div>
-                    </NavLink>
+                      <LayoutDashboard size={13} />
+                      <span>Dashboard</span>
+                    </Box>
+                  )}
+                </NavLink>
 
-                    <NavLink
-                      to="/order-details"
-                      onClick={() => setOrdersDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                {/* 2. Orders & Cases Spread Dropdown */}
+                <Box sx={{ position: 'relative' }} ref={ordersDropdownRef}>
+                  <ButtonBase
+                    type="button"
+                    aria-expanded={ordersDropdownOpen}
+                    aria-haspopup="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOrdersDropdownOpen(!ordersDropdownOpen);
+                      setOpsDropdownOpen(false);
+                    }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      bgcolor: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                        ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
+                        : 'transparent',
+                      color: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                        ? (isDark ? '#38bdf8' : '#0284c7')
+                        : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      '&:hover': {
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                      },
+                    }}
+                  >
+                    <Layers size={13} />
+                    <span>Orders & Cases</span>
+                    <ChevronDown size={11} style={{ transform: ordersDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {ordersDropdownOpen && (
+                    <div
+                      data-testid="orders-dropdown-menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
                     >
-                      <FileText size={14} className="text-indigo-500" />
-                      <div>
-                        <div>Order Details</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Deep telemetry & files</div>
-                      </div>
-                    </NavLink>
+                      <NavLink
+                        to="/flow"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Layers size={15} color="#0284c7" />
+                          <Box>
+                            <div>Workflow Queue</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Master production queue</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
 
-                    <NavLink
-                      to="/edit-case"
-                      onClick={() => setOrdersDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      <NavLink
+                        to="/order-details"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <FileText size={15} color="#6366f1" />
+                          <Box>
+                            <div>Order Details</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Deep telemetry & files</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/edit-case"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <FileEdit size={15} color="#a855f7" />
+                          <Box>
+                            <div>Edit Case</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Revisions & remakes</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+                    </div>
+                  )}
+                </Box>
+
+                {/* 3. Operations & Analytics Spread Dropdown */}
+                <Box sx={{ position: 'relative' }} ref={opsDropdownRef}>
+                  <ButtonBase
+                    type="button"
+                    aria-expanded={opsDropdownOpen}
+                    aria-haspopup="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpsDropdownOpen(!opsDropdownOpen);
+                      setOrdersDropdownOpen(false);
+                    }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                        ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
+                        : 'transparent',
+                      color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                        ? (isDark ? '#38bdf8' : '#0284c7')
+                        : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      '&:hover': {
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                      },
+                    }}
+                  >
+                    <Boxes size={13} />
+                    <span>Operations & Reports</span>
+                    <ChevronDown size={11} style={{ transform: opsDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {opsDropdownOpen && (
+                    <div
+                      data-testid="ops-dropdown-menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
                     >
-                      <FileEdit size={14} className="text-purple-500" />
-                      <div>
-                        <div>Edit Case</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Revisions & remakes</div>
-                      </div>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
+                      <NavLink
+                        to="/quarter-targets"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <TrendingUp size={15} color="#0284c7" />
+                          <Box>
+                            <div>Quarter Targets & Power BI</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>DAX analytics & targets</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
 
-              {/* 3. Operations & Analytics Spread Dropdown */}
-              <div className="relative" ref={opsDropdownRef}>
-                <button
-                  type="button"
-                  aria-expanded={opsDropdownOpen}
-                  aria-haspopup="true"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpsDropdownOpen(!opsDropdownOpen);
-                    setOrdersDropdownOpen(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
-                      ? 'bg-sky-50 dark:bg-sky-950/40 text-[#0284c7] dark:text-sky-400 border border-sky-200 dark:border-sky-800'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
-                  }`}
+                      <NavLink
+                        to="/task-47"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Boxes size={15} color="#059669" />
+                          <Box>
+                            <div>Task 47: Models Report</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>3D Model logs & units</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/task-31"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Users2 size={15} color="#d97706" />
+                          <Box>
+                            <div>Task 31: Staff Targets</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Technician volume tiers</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+                    </div>
+                  )}
+                </Box>
+              </Box>
+
+              {/* Right: Primary Call to Action Button */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                <NavLink
+                  to="/add-case"
+                  style={{ textDecoration: 'none' }}
                 >
-                  <Boxes size={13} />
-                  <span>Operations & Reports</span>
-                  <ChevronDown size={11} className={`transition-transform duration-200 ${opsDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {opsDropdownOpen && (
-                  <div
-                    data-testid="ops-dropdown-menu"
-                    className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-slide-up space-y-1`}>
-                    <NavLink
-                      to="/quarter-targets"
-                      onClick={() => setOpsDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <TrendingUp size={14} className="text-sky-500" />
-                      <div>
-                        <div>Quarter Targets & Power BI</div>
-                        <div className="text-[10px] text-slate-400 font-normal">DAX analytics & targets</div>
-                      </div>
-                    </NavLink>
-
-                    <NavLink
-                      to="/task-47"
-                      onClick={() => setOpsDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <Boxes size={14} className="text-emerald-500" />
-                      <div>
-                        <div>Task 47: Models Report</div>
-                        <div className="text-[10px] text-slate-400 font-normal">3D Model logs & units</div>
-                      </div>
-                    </NavLink>
-
-                    <NavLink
-                      to="/task-31"
-                      onClick={() => setOpsDropdownOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <Users2 size={14} className="text-amber-500" />
-                      <div>
-                        <div>Task 31: Staff Targets</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Technician volume tiers</div>
-                      </div>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
+                  <ButtonBase
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 2,
+                      py: 0.75,
+                      borderRadius: 2,
+                      bgcolor: '#00706a',
+                      color: '#ffffff',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      boxShadow: '0 1px 3px rgba(0, 112, 106, 0.3)',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        bgcolor: '#008b84',
+                        boxShadow: '0 2px 6px rgba(0, 112, 106, 0.4)',
+                      },
+                    }}
+                  >
+                    <FilePlus2 size={14} />
+                    <span>+ Add Case</span>
+                  </ButtonBase>
+                </NavLink>
+              </Box>
             </div>
-
-            {/* Right: Primary Call to Action Button */}
-            <div className="flex items-center gap-2 shrink-0">
-              <NavLink
-                to="/add-case"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs hover:shadow-sm transition-all"
-              >
-                <FilePlus2 size={13} />
-                <span>+ Add Case</span>
-              </NavLink>
-            </div>
-          </div>
-        </nav>
-      </div>
+          </Box>
+        </Box>
 
         {/* DOM Flow Spacer when docked at top (56px Tier 1 + 44px Tier 2 = 100px) */}
         {position === 'top' && (
@@ -649,167 +1106,364 @@ export function ConvertibleNav({
   // =========================================================================
   return (
     <>
-      <aside
-        className={`hidden lg:flex flex-col h-screen shrink-0 bg-sky-100/90 dark:bg-[#0a1b32]/92 backdrop-blur-md select-none transition-all duration-200 relative z-40 ${
-          position === 'left' ? 'border-r' : 'border-l order-last'
-        } border-sky-300/60 dark:border-sky-800/60 shadow-xs ${collapsed ? 'w-20' : 'w-64'}`}
+      <Box
+        component="aside"
+        sx={{
+          display: { xs: 'none', lg: 'flex' },
+          flexDirection: 'column',
+          height: '100vh',
+          flexShrink: 0,
+          bgcolor: isDark ? alpha('#0a1b32', 0.96) : alpha('#ffffff', 0.96),
+          backdropFilter: 'blur(12px)',
+          userSelect: 'none',
+          transition: 'width 0.2s ease',
+          position: 'relative',
+          zIndex: 40,
+          borderRight: position === 'left' ? `1px solid ${tier1Border}` : 'none',
+          borderLeft: position === 'right' ? `1px solid ${tier1Border}` : 'none',
+          order: position === 'right' ? 999 : 'unset',
+          boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.4)' : '0 1px 8px rgba(0,0,0,0.05)',
+          width: collapsed ? 80 : 256,
+        }}
       >
         {/* Header & Logo */}
-        <div className="flex h-14 items-center justify-between px-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
+        <Box
+          sx={{
+            display: 'flex',
+            height: 56,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 1.5,
+            borderBottom: `1px solid ${tier1Border}`,
+            flexShrink: 0,
+          }}
+        >
           {!collapsed ? (
-            <div className="flex items-center gap-2 overflow-hidden">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden' }}>
               <img
                 src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
                 alt="3DDX"
-                className="h-5 w-auto object-contain"
+                style={{ height: 20, width: 'auto', objectFit: 'contain' }}
               />
-              <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', color: isDark ? '#f8fafc' : '#0f172a' }}>
                 CP PRO MAX
-              </span>
-            </div>
+              </Typography>
+            </Box>
           ) : (
-            <div className="w-full flex justify-center">
-              <span className="text-xs font-black tracking-tight text-[#0284c7]">3DDX</span>
-            </div>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 900, color: '#0284c7' }}>
+                3DDX
+              </Typography>
+            </Box>
           )}
 
           {/* Drag Handle to dock anywhere */}
-          <div
-            draggable
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onPointerDown={handlePointerDownDrag}
-            title={t('action.dragHandle', 'Click & drag with hand/mouse to dock at any edge')}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-[#0284c7] hover:bg-slate-100 dark:hover:bg-slate-800 cursor-grab active:cursor-grabbing transition-colors"
-          >
-            <GripHorizontal size={18} />
-          </div>
-        </div>
+          <Tooltip title={t('action.dragHandle', 'Click & drag to dock at any edge')} arrow>
+            <IconButton
+              draggable
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onPointerDown={handlePointerDownDrag}
+              size="small"
+              aria-label="Drag navigation dock"
+              sx={{
+                p: 0.75,
+                borderRadius: 2,
+                cursor: 'grab',
+                '&:active': { cursor: 'grabbing' },
+                color: 'text.secondary',
+                '&:hover': {
+                  color: '#0284c7',
+                  bgcolor: isDark ? alpha('#38bdf8', 0.1) : alpha('#0284c7', 0.08),
+                },
+              }}
+            >
+              <GripHorizontal size={18} />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         {/* Dock Switcher / Collapse Bar */}
-        <div className={`flex items-center ${collapsed ? 'justify-center py-2' : 'justify-between px-3 py-1.5'} border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50`}>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onChangePosition('top')}
-              type="button"
-              title="Dock as Top Navbar"
-              className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-[#0284c7] hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 cursor-pointer"
-            >
-              <PanelTopClose size={12} className="text-[#0284c7]" />
-              {!collapsed && <span>Top</span>}
-            </button>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'space-between',
+            px: collapsed ? 0.5 : 1.5,
+            py: 1,
+            borderBottom: `1px solid ${tier1Border}`,
+            bgcolor: isDark ? alpha('#ffffff', 0.02) : alpha('#000000', 0.02),
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Tooltip title="Dock as Top Navbar" arrow>
+              <ButtonBase
+                onClick={() => onChangePosition('top')}
+                type="button"
+                aria-label="Dock as Top Navbar"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1.5,
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  color: isDark ? '#cbd5e1' : '#475569',
+                  border: `1px solid ${tier1Border}`,
+                  bgcolor: isDark ? alpha('#ffffff', 0.04) : '#ffffff',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    color: '#0284c7',
+                    borderColor: '#0284c7',
+                  },
+                }}
+              >
+                <PanelTopClose size={12} color="#0284c7" />
+                {!collapsed && <span>Top</span>}
+              </ButtonBase>
+            </Tooltip>
 
             {!collapsed && (
               <>
-                <button
-                  onClick={() => onChangePosition('bottom')}
-                  type="button"
-                  title="Dock as Bottom Taskbar"
-                  className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-[#ea580c] hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 cursor-pointer"
-                >
-                  <PanelBottomClose size={12} className="text-[#ea580c]" />
-                  <span>Bottom</span>
-                </button>
+                <Tooltip title="Dock as Bottom Taskbar" arrow>
+                  <ButtonBase
+                    onClick={() => onChangePosition('bottom')}
+                    type="button"
+                    aria-label="Dock as Bottom Taskbar"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1.5,
+                      fontSize: '0.6875rem',
+                      fontWeight: 700,
+                      color: isDark ? '#cbd5e1' : '#475569',
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : '#ffffff',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: '#ea580c',
+                        borderColor: '#ea580c',
+                      },
+                    }}
+                  >
+                    <PanelBottomClose size={12} color="#ea580c" />
+                    <span>Bottom</span>
+                  </ButtonBase>
+                </Tooltip>
 
-                <button
-                  onClick={() => onChangePosition(position === 'left' ? 'right' : 'left')}
-                  type="button"
-                  title={position === 'left' ? 'Move to Right' : 'Move to Left'}
-                  className="flex items-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:text-sky-600 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 cursor-pointer"
-                >
-                  {position === 'left' ? <PanelRightClose size={12} /> : <PanelLeftClose size={12} />}
-                  <span>{position === 'left' ? 'Right' : 'Left'}</span>
-                </button>
+                <Tooltip title={position === 'left' ? 'Move to Right' : 'Move to Left'} arrow>
+                  <ButtonBase
+                    onClick={() => onChangePosition(position === 'left' ? 'right' : 'left')}
+                    type="button"
+                    aria-label={position === 'left' ? 'Move to Right' : 'Move to Left'}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1.5,
+                      fontSize: '0.6875rem',
+                      fontWeight: 700,
+                      color: isDark ? '#cbd5e1' : '#475569',
+                      border: `1px solid ${tier1Border}`,
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : '#ffffff',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: '#0284c7',
+                        borderColor: '#0284c7',
+                      },
+                    }}
+                  >
+                    {position === 'left' ? <PanelRightClose size={12} /> : <PanelLeftClose size={12} />}
+                    <span>{position === 'left' ? 'Right' : 'Left'}</span>
+                  </ButtonBase>
+                </Tooltip>
               </>
             )}
-          </div>
+          </Box>
 
-          <button
-            onClick={onToggleCollapse}
-            type="button"
-            title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
-        </div>
+          <Tooltip title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'} arrow>
+            <IconButton
+              onClick={onToggleCollapse}
+              size="small"
+              aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              sx={{
+                p: 0.5,
+                borderRadius: 1.5,
+                color: 'text.secondary',
+                '&:hover': {
+                  color: isDark ? '#f8fafc' : '#0f172a',
+                },
+              }}
+            >
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </IconButton>
+          </Tooltip>
+        </Box>
 
         {/* Target Nav Links */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1 custom-scrollbar">
+        <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {targetNavItems.map((item) => {
-            const isActive = location.pathname === item.path || 
+            const isActive = location.pathname === item.path ||
               (item.path === '/flow' && (location.pathname === '/orders' || location.pathname === '/flow'));
             return (
               <NavLink
                 key={item.id}
                 to={item.path}
                 title={collapsed ? item.label : undefined}
-                className={`group relative flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'} rounded-xl text-xs font-bold transition-all duration-150 ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#0284c7]/20 to-[#ea580c]/10 text-[#0284c7] dark:text-sky-300 border-l-2 border-[#0284c7] shadow-xs'
-                    : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-white'
-                }`}
+                style={{ textDecoration: 'none' }}
               >
-                <item.icon
-                  size={18}
-                  className={`shrink-0 transition-colors ${
-                    isActive ? 'text-[#0284c7] dark:text-sky-400 drop-shadow-[0_0_6px_rgba(2,132,199,0.5)]' : 'text-slate-400 group-hover:text-[#0284c7]'
-                  }`}
-                />
-
-                {!collapsed && (
-                  <span className="truncate">{item.label}</span>
-                )}
+                <ButtonBase
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    gap: 1.5,
+                    p: collapsed ? 1.25 : 1.25,
+                    px: collapsed ? 1.25 : 1.75,
+                    borderRadius: 2,
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    bgcolor: isActive ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1)) : 'transparent',
+                    color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#cbd5e1' : '#475569'),
+                    borderLeft: isActive ? `3px solid ${isDark ? '#38bdf8' : '#0284c7'}` : '3px solid transparent',
+                    '&:hover': {
+                      bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#0284c7', 0.05),
+                      color: isDark ? '#f8fafc' : '#0f172a',
+                    },
+                  }}
+                >
+                  <item.icon size={18} color={isActive ? (isDark ? '#38bdf8' : '#0284c7') : '#94a3b8'} />
+                  {!collapsed && (
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 'inherit', color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.label}
+                    </Typography>
+                  )}
+                </ButtonBase>
               </NavLink>
             );
           })}
-        </div>
+        </Box>
 
-        {/* Footer: Profile, Language & Theme - strictly aligned to the bottom at all times */}
-        <div className={`mt-auto shrink-0 p-2 border-t border-sky-200/60 dark:border-sky-800/60 bg-sky-50/70 dark:bg-slate-950/70 ${collapsed ? 'flex flex-col items-center gap-2' : 'space-y-2'}`}>
-          <button
+        {/* Footer: Profile, Language & Theme */}
+        <Box
+          sx={{
+            mt: 'auto',
+            flexShrink: 0,
+            p: 1.5,
+            borderTop: `1px solid ${tier1Border}`,
+            bgcolor: isDark ? alpha('#000000', 0.2) : alpha('#ffffff', 0.4),
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1,
+            alignItems: collapsed ? 'center' : 'stretch',
+          }}
+        >
+          <ButtonBase
             type="button"
             onClick={() => setIsProfileModalOpen(true)}
-            className={`w-full flex items-center ${collapsed ? 'justify-center p-1.5' : 'gap-2 px-2 py-1.5'} rounded-xl hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors cursor-pointer`}
+            sx={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: 1.25,
+              p: 0.75,
+              borderRadius: 2,
+              cursor: 'pointer',
+              border: '1px solid transparent',
+              '&:hover': {
+                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
+                borderColor: tier1Border,
+              },
+            }}
             title="Technician Profile"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-[#0284c7] to-[#ea580c] text-[10px] font-black text-white shrink-0">
+            <Box
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #0284c7 0%, #ea580c 100%)',
+                color: '#ffffff',
+                fontSize: '0.625rem',
+                fontWeight: 900,
+                flexShrink: 0,
+              }}
+            >
               {profile?.avatarInitials || '3D'}
-            </div>
+            </Box>
             {!collapsed && (
-              <div className="flex flex-col text-left min-w-0">
-                <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+              <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left', minWidth: 0, lineHeight: 1.1 }}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
-                </span>
-                <span className="text-[9px] text-[#ea580c] font-bold">CP Specialist</span>
-              </div>
+                </Typography>
+                <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: '#ea580c' }}>
+                  CP Specialist
+                </Typography>
+              </Box>
             )}
-          </button>
+          </ButtonBase>
 
-          <div className={`flex items-center ${collapsed ? 'flex-col gap-1' : 'justify-between px-1'}`}>
-            <button
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', flexDirection: collapsed ? 'column' : 'row', gap: 1 }}>
+            <ButtonBase
               onClick={() => {
                 const nextIndex = (LANGUAGES.findIndex((l) => l.code === language) + 1) % LANGUAGES.length;
                 setLanguage(LANGUAGES[nextIndex].code);
               }}
-              className="flex items-center gap-1 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 text-[11px] font-black cursor-pointer"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                p: 0.75,
+                borderRadius: 1.5,
+                border: `1px solid ${tier1Border}`,
+                cursor: 'pointer',
+                bgcolor: isDark ? alpha('#ffffff', 0.04) : '#ffffff',
+                fontSize: '0.6875rem',
+                fontWeight: 900,
+                '&:hover': {
+                  borderColor: '#0284c7',
+                },
+              }}
               title={`Language: ${currentOption.nativeName}`}
             >
               <LanguageFlag code={currentOption.code} />
               {!collapsed && <span>{currentOption.code.toUpperCase()}</span>}
-            </button>
+            </ButtonBase>
 
-            <button
-              onClick={toggleTheme}
-              type="button"
-              className="p-1.5 rounded-lg text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-[#0284c7] cursor-pointer"
-              title="Toggle Dark / Light Mode"
-            >
-              {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />}
-            </button>
-          </div>
-        </div>
-      </aside>
+            <Tooltip title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} arrow>
+              <IconButton
+                onClick={toggleTheme}
+                size="small"
+                sx={{
+                  p: 0.75,
+                  borderRadius: 1.5,
+                  color: isDark ? '#fbbf24' : '#475569',
+                  '&:hover': {
+                    bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+                  },
+                }}
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Interactive Profile Credentials Modal */}
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
