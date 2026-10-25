@@ -85,7 +85,9 @@ export default function OrderDetailsPage() {
   const { t } = useLanguage();
 
   // URL Params matching: OrderDetails.php?xid=1016;reg=1;u=1;modID=288004;ID=504901 or ?ID=504901 or ?id=ord-1
-  const paramId = searchParams.get('ID') || searchParams.get('id');
+  // If no param is provided at all, gracefully default to demo case #504901 so direct navigation never dead-ends
+  const rawId = searchParams.get('ID') || searchParams.get('id');
+  const paramId = rawId !== null ? rawId : '504901';
   const modId = searchParams.get('modID') || '288004';
   const xid = searchParams.get('xid') || '1016';
 

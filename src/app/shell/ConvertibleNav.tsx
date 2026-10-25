@@ -103,7 +103,7 @@ export function ConvertibleNav({
     { id: 'dashboard', label: t('nav.dashboard', 'Dashboard'), path: '/dashboard', icon: LayoutDashboard },
     { id: 'flow', label: t('nav.flow', 'Master Orders Flow'), path: '/flow', icon: Layers },
     { id: 'addCase', label: t('nav.addCase', 'Add New Case'), path: '/add-case', icon: FilePlus2 },
-    { id: 'orderDetails', label: t('nav.orderDetails', 'Order Details'), path: '/order-details', icon: FileText },
+    { id: 'orderDetails', label: t('nav.orderDetails', 'Order Details'), path: '/order-details?id=504901', icon: FileText },
     { id: 'quarterTargets', label: t('nav.quarterTargets', 'Quarter Targets'), path: '/quarter-targets', icon: TrendingUp },
     { id: 'task47', label: t('nav.task47', 'Task 47: Models'), path: '/task-47', icon: Boxes },
     { id: 'task31', label: t('nav.task31', 'Task 31: Staff Targets'), path: '/task-31', icon: Users2 },
@@ -872,7 +872,7 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
-                        to="/order-details"
+                        to="/order-details?id=504901"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >

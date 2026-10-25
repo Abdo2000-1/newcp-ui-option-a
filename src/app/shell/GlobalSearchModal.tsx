@@ -1,5 +1,15 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import InputBase from '@mui/material/InputBase';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import ButtonBase from '@mui/material/ButtonBase';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import {
   Search,
   X,
@@ -10,18 +20,18 @@ import {
   Scan,
   Compass,
   ArrowRight,
-  Clock,
   Layers,
-  Sparkles,
-  Command,
-  CheckCircle2,
   Sliders,
-  DollarSign,
   Plus
 } from 'lucide-react';
 import { useStore } from '@/shared/hooks/useStore';
 import { MASTER_WORKFLOW_ORDERS } from '@/shared/data/flowMockData';
 import { sound } from '@/shared/utils/sound';
+import {
+  SearchResultItem,
+  SearchIndex,
+  createIndexedItem,
+} from '@/shared/utils/searchIndex';
 
 export interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -30,21 +40,15 @@ export interface GlobalSearchModalProps {
 
 type SearchCategory = 'all' | 'orders' | 'patients' | 'doctors' | 'clinics' | 'actions';
 
-interface SearchResultItem {
-  id: string;
-  category: 'orders' | 'patients' | 'doctors' | 'clinics' | 'actions';
-  title: string;
-  subtitle: string;
-  tag?: string;
-  badgeColor?: string;
-  route: string;
-  icon: React.ElementType;
-}
-
 export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const muiTheme = useMuiTheme();
+  const isDark = muiTheme.palette.mode === 'dark';
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [isDebouncing, setIsDebouncing] = useState(false);
   const [activeCategory, setActiveCategory] = useState<SearchCategory>('all');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -55,18 +59,38 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   const storeClinics = useStore((s) => s.getClinics());
   const storeScanCenters = useStore((s) => s.getScanCenters());
 
-  // Focus input when opened
+  // Focus input when opened and reset states
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
       setSelectedIndex(0);
+      return () => clearTimeout(timer);
     } else {
-      setQuery('');
+      setInputValue('');
+      setDebouncedQuery('');
+      setIsDebouncing(false);
       setSelectedIndex(0);
     }
   }, [isOpen]);
+
+  // Debounce search query input (150ms)
+  useEffect(() => {
+    if (inputValue === '') {
+      setDebouncedQuery('');
+      setIsDebouncing(false);
+      return;
+    }
+
+    setIsDebouncing(true);
+    const handler = setTimeout(() => {
+      setDebouncedQuery(inputValue);
+      setIsDebouncing(false);
+    }, 150);
+
+    return () => clearTimeout(handler);
+  }, [inputValue]);
 
   // Global Quick Action Pages
   const SYSTEM_PAGES: SearchResultItem[] = useMemo(() => [
@@ -76,7 +100,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Create New Case',
       subtitle: 'Open the digital case submission wizard',
       tag: 'Action',
-      badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30',
+      badgeColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
       route: '/add-case',
       icon: Plus,
     },
@@ -86,7 +110,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Master Orders Flow',
       subtitle: 'Multi-service digital production grid & queue',
       tag: 'Production',
-      badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30',
+      badgeColor: isDark ? 'rgba(14, 165, 233, 0.2)' : 'rgba(14, 165, 233, 0.1)',
       route: '/flow',
       icon: Layers,
     },
@@ -96,7 +120,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Analytics Dashboard',
       subtitle: 'Executive KPIs, Power BI metrics & live targets',
       tag: 'Analytics',
-      badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30',
+      badgeColor: isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.1)',
       route: '/dashboard',
       icon: Compass,
     },
@@ -106,7 +130,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Configuration Management System (CMS)',
       subtitle: 'Manage app.config.json, YAML settings & live features',
       tag: 'Admin',
-      badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30',
+      badgeColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)',
       route: '/cms',
       icon: Sliders,
     },
@@ -116,7 +140,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Patient Directory',
       subtitle: 'View patient records, case histories, and dental scans',
       tag: 'Clinical',
-      badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30',
+      badgeColor: isDark ? 'rgba(6, 182, 212, 0.2)' : 'rgba(6, 182, 212, 0.1)',
       route: '/patients',
       icon: User,
     },
@@ -126,7 +150,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Doctors & Clinicians',
       subtitle: 'Manage prescribing dentists and specialists',
       tag: 'Clinicians',
-      badgeColor: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/30',
+      badgeColor: isDark ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.1)',
       route: '/doctors',
       icon: Stethoscope,
     },
@@ -136,7 +160,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Clinics & Imaging Facilities',
       subtitle: 'Dental clinics, scan centers and hospitals',
       tag: 'Directory',
-      badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30',
+      badgeColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)',
       route: '/clinics',
       icon: Building2,
     },
@@ -146,317 +170,513 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
       title: 'Scan Centers Hub',
       subtitle: 'Manage incoming CBCT and intraoral scan gateways',
       tag: 'Facility',
-      badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30',
+      badgeColor: isDark ? 'rgba(168, 85, 247, 0.2)' : 'rgba(168, 85, 247, 0.1)',
       route: '/scan-center',
       icon: Scan,
     },
-  ], []);
+  ], [isDark]);
 
-  // Compute Search Results across All Sources
-  const allResults: SearchResultItem[] = useMemo(() => {
-    const q = query.trim().toLowerCase();
-
-    // 1. Orders from both Store and Master Workflow
-    const orderResults: SearchResultItem[] = [];
+  // Build the in-memory SearchIndex ONLY when underlying data collections change.
+  // Keystrokes NEVER rebuild this index.
+  const searchIndex = useMemo(() => {
+    const indexedItems = [];
     const seenOrderNums = new Set<string>();
 
-    // From MASTER_WORKFLOW_ORDERS
-    MASTER_WORKFLOW_ORDERS.forEach((o) => {
-      if (seenOrderNums.has(o.orderNum)) return;
+    // 1. Workflow Orders
+    for (const o of MASTER_WORKFLOW_ORDERS) {
+      if (seenOrderNums.has(o.orderNum)) continue;
       seenOrderNums.add(o.orderNum);
 
-      const matches = !q ||
-        o.orderNum.toLowerCase().includes(q) ||
-        o.patientName.toLowerCase().includes(q) ||
-        o.doctorName.toLowerCase().includes(q) ||
-        o.scanCenter.toLowerCase().includes(q) ||
-        o.services.some(s => s.typeCode.toLowerCase().includes(q) || s.title.toLowerCase().includes(q));
+      const serviceCodes = o.services.map((s) => s.typeCode).join(', ');
+      const serviceTitles = o.services.map((s) => s.title).join(' ');
 
-      if (matches) {
-        orderResults.push({
-          id: `wf-${o.id}`,
-          category: 'orders',
-          title: `Case #${o.orderNum} • ${o.patientName}`,
-          subtitle: `Dr. ${o.doctorName} • ${o.scanCenter} • ${o.services.map(s => s.typeCode).join(', ')}`,
-          tag: o.source,
-          badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono',
-          route: `/order-details?ID=${o.orderNum}`,
-          icon: FileText,
-        });
-      }
-    });
+      const item: SearchResultItem = {
+        id: `wf-${o.id}`,
+        category: 'orders',
+        title: `Case #${o.orderNum} • ${o.patientName}`,
+        subtitle: `Dr. ${o.doctorName} • ${o.scanCenter} • ${serviceCodes}`,
+        tag: o.source,
+        badgeColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)',
+        route: `/order-details?ID=${o.orderNum}`,
+        icon: FileText,
+      };
+      indexedItems.push(createIndexedItem(item, [o.orderNum, o.patientName, o.doctorName, o.scanCenter, serviceCodes, serviceTitles]));
+    }
 
-    // From storeOrders
-    storeOrders.forEach((o) => {
-      if (seenOrderNums.has(o.orderNumber)) return;
+    // 2. Store Orders
+    for (const o of storeOrders) {
+      if (seenOrderNums.has(o.orderNumber)) continue;
       seenOrderNums.add(o.orderNumber);
 
-      const matches = !q ||
-        o.orderNumber.toLowerCase().includes(q) ||
-        o.patientName.toLowerCase().includes(q) ||
-        o.doctorName.toLowerCase().includes(q) ||
-        o.clinicName.toLowerCase().includes(q);
+      const item: SearchResultItem = {
+        id: `ord-${o.id}`,
+        category: 'orders',
+        title: `Order #${o.orderNumber} • ${o.patientName}`,
+        subtitle: `Dr. ${o.doctorName} • ${o.clinicName} • Status: ${o.status}`,
+        tag: o.status,
+        badgeColor: isDark ? 'rgba(14, 165, 233, 0.2)' : 'rgba(14, 165, 233, 0.1)',
+        route: `/order-details?id=${o.id}`,
+        icon: FileText,
+      };
+      indexedItems.push(createIndexedItem(item, [o.orderNumber, o.patientName, o.doctorName, o.clinicName, o.status]));
+    }
 
-      if (matches) {
-        orderResults.push({
-          id: `ord-${o.id}`,
-          category: 'orders',
-          title: `Order #${o.orderNumber} • ${o.patientName}`,
-          subtitle: `Dr. ${o.doctorName} • ${o.clinicName} • Status: ${o.status}`,
-          tag: o.status,
-          badgeColor: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30',
-          route: `/order-details?id=${o.id}`,
-          icon: FileText,
-        });
-      }
-    });
-
-    // 2. Patients
-    const patientResults: SearchResultItem[] = storePatients
-      .filter((p) => !q || p.name.toLowerCase().includes(q) || p.phone?.toLowerCase().includes(q))
-      .map((p) => ({
+    // 3. Patients
+    for (const p of storePatients) {
+      const item: SearchResultItem = {
         id: `pat-${p.id}`,
         category: 'patients',
         title: p.name,
         subtitle: `Phone: ${p.phone || 'N/A'} • Total Cases: ${p.ordersCount || 1}`,
         tag: 'Patient',
-        badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30',
-        route: `/patients`,
+        badgeColor: isDark ? 'rgba(6, 182, 212, 0.2)' : 'rgba(6, 182, 212, 0.1)',
+        route: '/patients',
         icon: User,
-      }));
+      };
+      indexedItems.push(createIndexedItem(item, [p.name, p.phone]));
+    }
 
-    // 3. Doctors
-    const doctorResults: SearchResultItem[] = storeDoctors
-      .filter((d) => !q || d.name.toLowerCase().includes(q) || d.specialty?.toLowerCase().includes(q) || d.clinicName?.toLowerCase().includes(q))
-      .map((d) => ({
+    // 4. Doctors
+    for (const d of storeDoctors) {
+      const item: SearchResultItem = {
         id: `doc-${d.id}`,
         category: 'doctors',
         title: d.name,
         subtitle: `${d.specialty || 'General Dentistry'} • Clinic: ${d.clinicName || '3DDX Clinic'}`,
         tag: 'Clinician',
-        badgeColor: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/30',
-        route: `/doctors`,
+        badgeColor: isDark ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.1)',
+        route: '/doctors',
         icon: Stethoscope,
-      }));
+      };
+      indexedItems.push(createIndexedItem(item, [d.name, d.specialty, d.clinicName]));
+    }
 
-    // 4. Clinics & Scan Centers
-    const clinicResults: SearchResultItem[] = [
-      ...storeClinics
-        .filter((c) => !q || c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q))
-        .map((c) => ({
-          id: `cln-${c.id}`,
-          category: 'clinics' as const,
-          title: c.name,
-          subtitle: `Location: ${c.city || 'Dental Facility'} • Active Cases: ${c.ordersCount || 0}`,
-          tag: 'Clinic',
-          badgeColor: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30',
-          route: `/clinics`,
-          icon: Building2,
-        })),
-      ...storeScanCenters
-        .filter((sc) => !q || sc.name.toLowerCase().includes(q) || sc.location?.toLowerCase().includes(q))
-        .map((sc) => ({
-          id: `sc-${sc.id}`,
-          category: 'clinics' as const,
-          title: sc.name,
-          subtitle: `Location: ${sc.location || 'Scan Facility'} • Devices: ${sc.devices || 1} • Active: ${sc.activeOrders || 0}`,
-          tag: 'Scan Center',
-          badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30',
-          route: `/scan-center`,
-          icon: Scan,
-        }))
-    ];
+    // 5. Clinics
+    for (const c of storeClinics) {
+      const item: SearchResultItem = {
+        id: `cln-${c.id}`,
+        category: 'clinics',
+        title: c.name,
+        subtitle: `Location: ${c.city || 'Dental Facility'} • Active Cases: ${c.ordersCount || 0}`,
+        tag: 'Clinic',
+        badgeColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)',
+        route: '/clinics',
+        icon: Building2,
+      };
+      indexedItems.push(createIndexedItem(item, [c.name, c.city]));
+    }
 
-    // 5. Actions / Pages
-    const actionResults: SearchResultItem[] = SYSTEM_PAGES.filter(
-      (a) => !q || a.title.toLowerCase().includes(q) || a.subtitle.toLowerCase().includes(q)
-    );
+    // 6. Scan Centers
+    for (const sc of storeScanCenters) {
+      const item: SearchResultItem = {
+        id: `sc-${sc.id}`,
+        category: 'clinics',
+        title: sc.name,
+        subtitle: `Location: ${sc.location || 'Scan Facility'} • Devices: ${sc.devices || 1} • Active: ${sc.activeOrders || 0}`,
+        tag: 'Scan Center',
+        badgeColor: isDark ? 'rgba(168, 85, 247, 0.2)' : 'rgba(168, 85, 247, 0.1)',
+        route: '/scan-center',
+        icon: Scan,
+      };
+      indexedItems.push(createIndexedItem(item, [sc.name, sc.location]));
+    }
 
-    let combined: SearchResultItem[] = [];
+    // 7. System Quick Actions
+    for (const act of SYSTEM_PAGES) {
+      indexedItems.push(createIndexedItem(act, [act.title, act.subtitle]));
+    }
+
+    return new SearchIndex(indexedItems);
+  }, [storeOrders, storePatients, storeDoctors, storeClinics, storeScanCenters, SYSTEM_PAGES, isDark]);
+
+  // Query the pre-built index using debouncedQuery
+  const searchResults: SearchResultItem[] = useMemo(() => {
+    const q = debouncedQuery.trim();
 
     if (!q) {
-      // Default / empty query suggestions: Quick actions first, followed by recent orders
-      combined = [...actionResults, ...orderResults.slice(0, 6)];
-    } else {
-      combined = [
-        ...orderResults.slice(0, 8),
-        ...actionResults.slice(0, 4),
-        ...patientResults.slice(0, 5),
-        ...doctorResults.slice(0, 4),
-        ...clinicResults.slice(0, 4),
+      // Empty query default recommendations: Quick actions followed by recent orders
+      if (activeCategory === 'actions') {
+        return SYSTEM_PAGES;
+      }
+      if (activeCategory === 'orders') {
+        return searchIndex.search('', 'orders', { maxTotal: 10 });
+      }
+      if (activeCategory !== 'all') {
+        return searchIndex.search('', activeCategory, { maxTotal: 10 });
+      }
+      return [
+        ...SYSTEM_PAGES.slice(0, 4),
+        ...searchIndex.search('', 'orders', { maxTotal: 6 }),
       ];
     }
 
-    if (activeCategory === 'all') return combined;
-    return combined.filter((item) => item.category === activeCategory);
-  }, [query, activeCategory, storeOrders, storePatients, storeDoctors, storeClinics, storeScanCenters, SYSTEM_PAGES]);
+    return searchIndex.search(q, activeCategory, {
+      maxTotal: 25,
+      maxPerCategory: {
+        orders: 8,
+        actions: 4,
+        patients: 5,
+        doctors: 4,
+        clinics: 4,
+      },
+    });
+  }, [debouncedQuery, activeCategory, searchIndex, SYSTEM_PAGES]);
 
-  // Keep selected index within bounds
+  // Reset selected index when query or category changes
   useEffect(() => {
     setSelectedIndex(0);
-  }, [query, activeCategory]);
+  }, [debouncedQuery, activeCategory]);
 
-  const handleSelect = (item: SearchResultItem) => {
-    sound.playClick();
+  const handleSelect = useCallback((item: SearchResultItem) => {
+    sound.playClick?.();
     onClose();
     navigate(item.route);
-  };
+  }, [navigate, onClose]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev < allResults.length - 1 ? prev + 1 : 0));
+      setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allResults.length - 1));
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (allResults[selectedIndex]) {
-        handleSelect(allResults[selectedIndex]);
+      if (searchResults[selectedIndex]) {
+        handleSelect(searchResults[selectedIndex]);
       }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
     }
   };
 
-  if (!isOpen) return null;
+  const categories = [
+    { id: 'all' as const, label: 'All Results' },
+    { id: 'orders' as const, label: 'Orders & Cases' },
+    { id: 'actions' as const, label: 'Quick Navigation' },
+    { id: 'patients' as const, label: 'Patients' },
+    { id: 'doctors' as const, label: 'Clinicians' },
+    { id: 'clinics' as const, label: 'Facilities' },
+  ];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 bg-slate-950/60 backdrop-blur-md animate-fade-in"
-      onClick={onClose}
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      aria-labelledby="global-search-dialog-title"
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 4,
+            bgcolor: isDark ? '#090e18' : '#ffffff',
+            backgroundImage: 'none',
+            border: `1px solid ${isDark ? alpha('#38bdf8', 0.2) : alpha('#0284c7', 0.16)}`,
+            boxShadow: isDark
+              ? '0 25px 50px -12px rgba(0, 0, 0, 0.75)'
+              : '0 25px 50px -12px rgba(14, 165, 233, 0.2)',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            m: { xs: 1.5, sm: 2 },
+          },
+        },
+        backdrop: {
+          sx: {
+            backdropFilter: 'blur(8px)',
+            backgroundColor: isDark ? 'rgba(2, 6, 23, 0.75)' : 'rgba(15, 23, 42, 0.5)',
+          },
+        },
+      }}
+      onKeyDown={handleKeyDown}
     >
-      <div
-        className="relative w-full max-w-2xl bg-white dark:bg-[#090e18] rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-scale-up"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
-      >
+      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Search Input Bar */}
-        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-200/80 dark:border-slate-800">
-          <Search size={20} className="text-sky-500 shrink-0 ml-1" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            px: 2.5,
+            py: 1.75,
+            borderBottom: `1px solid ${isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08)}`,
+            gap: 1.5,
+          }}
+        >
+          <Search size={22} color={isDark ? '#38bdf8' : '#0284c7'} style={{ flexShrink: 0 }} />
+          <InputBase
+            inputRef={inputRef}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="Search orders, cases, patients, doctors, facilities, actions..."
-            className="w-full bg-transparent px-3 text-sm sm:text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            fullWidth
+            inputProps={{ 'aria-label': 'Search clinical repository' }}
+            sx={{
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontWeight: 600,
+              color: isDark ? '#f8fafc' : '#0f172a',
+              '& input::placeholder': {
+                color: isDark ? '#64748b' : '#94a3b8',
+                opacity: 1,
+              },
+            }}
           />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer mr-1"
+
+          {isDebouncing && (
+            <CircularProgress size={16} sx={{ color: '#0284c7', shrink: 0 }} />
+          )}
+
+          {inputValue && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                setInputValue('');
+                inputRef.current?.focus();
+              }}
+              aria-label="Clear search input"
+              sx={{ color: isDark ? '#94a3b8' : '#64748b' }}
             >
               <X size={16} />
-            </button>
+            </IconButton>
           )}
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
-            ESC
-          </kbd>
-        </div>
+
+          <Chip
+            label="ESC"
+            size="small"
+            sx={{
+              display: { xs: 'none', sm: 'inline-flex' },
+              height: 22,
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              fontFamily: 'monospace',
+              borderRadius: 1.5,
+              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
+              color: 'text.secondary',
+              border: `1px solid ${isDark ? alpha('#ffffff', 0.1) : alpha('#000000', 0.1)}`,
+            }}
+          />
+        </Box>
 
         {/* Categories Bar */}
-        <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800 overflow-x-auto text-xs font-bold">
-          {[
-            { id: 'all' as const, label: 'All Results' },
-            { id: 'orders' as const, label: 'Orders & Cases' },
-            { id: 'actions' as const, label: 'Quick Navigation' },
-            { id: 'patients' as const, label: 'Patients' },
-            { id: 'doctors' as const, label: 'Clinicians' },
-            { id: 'clinics' as const, label: 'Facilities' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-3 py-1 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                activeCategory === cat.id
-                  ? 'bg-sky-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 1.25,
+            bgcolor: isDark ? alpha('#000000', 0.25) : alpha('#f8fafc', 0.8),
+            borderBottom: `1px solid ${isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.06)}`,
+            overflowX: 'auto',
+          }}
+        >
+          {categories.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <ButtonBase
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease-in-out',
+                  bgcolor: isActive
+                    ? '#0284c7'
+                    : isDark
+                    ? alpha('#ffffff', 0.04)
+                    : alpha('#000000', 0.04),
+                  color: isActive ? '#ffffff' : isDark ? '#94a3b8' : '#475569',
+                  boxShadow: isActive ? '0 2px 8px rgba(2, 132, 199, 0.35)' : 'none',
+                  '&:hover': {
+                    bgcolor: isActive ? '#0284c7' : isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08),
+                  },
+                }}
+              >
+                {cat.label}
+              </ButtonBase>
+            );
+          })}
+        </Box>
 
         {/* Results List */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-3 divide-y divide-slate-100 dark:divide-slate-800/60">
-          {allResults.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 space-y-2">
-              <Search size={32} className="mx-auto opacity-30" />
-              <p className="text-sm font-bold">No results found for "{query}"</p>
-              <p className="text-xs">Try searching by Order Number (e.g. 504900), patient name, or doctor name.</p>
-            </div>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.75,
+          }}
+          role="listbox"
+          aria-label="Search results"
+        >
+          {searchResults.length === 0 ? (
+            <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary', px: 2 }}>
+              <Search size={36} style={{ margin: '0 auto', opacity: 0.3, marginBottom: 8 }} />
+              <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: isDark ? '#e2e8f0' : '#1e293b' }}>
+                No results found for &ldquo;{debouncedQuery}&rdquo;
+              </Typography>
+              <Typography sx={{ fontSize: '0.8rem', mt: 0.5, color: 'text.secondary' }}>
+                Try searching by Order Number (e.g. 504900), patient name, doctor name, or clinical tag.
+              </Typography>
+            </Box>
           ) : (
-            allResults.map((item, idx) => {
+            searchResults.map((item, idx) => {
               const Icon = item.icon;
               const isSelected = selectedIndex === idx;
 
               return (
-                <div
+                <ButtonBase
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all ${
-                    isSelected
-                      ? 'bg-sky-50 dark:bg-sky-950/40 border-l-4 border-l-sky-500'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
-                  }`}
+                  role="option"
+                  aria-selected={isSelected}
+                  sx={{
+                    width: '100%',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    p: 1.25,
+                    borderRadius: 2.5,
+                    transition: 'all 0.12s ease-in-out',
+                    bgcolor: isSelected
+                      ? isDark
+                        ? alpha('#0284c7', 0.16)
+                        : alpha('#0284c7', 0.08)
+                      : 'transparent',
+                    borderLeft: isSelected ? '4px solid #0284c7' : '4px solid transparent',
+                    '&:hover': {
+                      bgcolor: isDark ? alpha('#ffffff', 0.04) : alpha('#000000', 0.03),
+                    },
+                  }}
                 >
-                  <div className="flex items-center gap-3 min-w-0 pr-2">
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                        isSelected
-                          ? 'bg-sky-500 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                      }`}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, minWidth: 0, pr: 1 }}>
+                    <Box
+                      sx={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shrink: 0,
+                        bgcolor: isSelected
+                          ? '#0284c7'
+                          : isDark
+                          ? alpha('#ffffff', 0.06)
+                          : alpha('#000000', 0.05),
+                        color: isSelected ? '#ffffff' : isDark ? '#38bdf8' : '#0284c7',
+                        transition: 'background-color 0.15s ease',
+                      }}
                     >
                       <Icon size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography
+                          noWrap
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: { xs: '0.825rem', sm: '0.9rem' },
+                            color: isDark ? '#f8fafc' : '#0f172a',
+                          }}
+                        >
                           {item.title}
-                        </span>
+                        </Typography>
                         {item.tag && (
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${item.badgeColor || 'bg-slate-100 text-slate-600'}`}>
-                            {item.tag}
-                          </span>
+                          <Chip
+                            label={item.tag}
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.625rem',
+                              fontWeight: 700,
+                              bgcolor: item.badgeColor || (isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)),
+                              color: isDark ? '#94a3b8' : '#475569',
+                            }}
+                          />
                         )}
-                      </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      </Box>
+                      <Typography
+                        noWrap
+                        sx={{
+                          fontSize: '0.725rem',
+                          color: 'text.secondary',
+                          mt: 0.25,
+                        }}
+                      >
                         {item.subtitle}
-                      </p>
-                    </div>
-                  </div>
+                      </Typography>
+                    </Box>
+                  </Box>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-sky-500 transition-colors hidden sm:inline">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, shrink: 0 }}>
+                    <Typography
+                      sx={{
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        color: isSelected ? '#0284c7' : 'text.secondary',
+                        display: { xs: 'none', sm: 'inline' },
+                      }}
+                    >
                       Jump to
-                    </span>
-                    <ArrowRight size={14} className="text-slate-400 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                </div>
+                    </Typography>
+                    <ArrowRight
+                      size={14}
+                      color={isSelected ? '#0284c7' : isDark ? '#64748b' : '#94a3b8'}
+                    />
+                  </Box>
+                </ButtonBase>
               );
             })
           )}
-        </div>
+        </Box>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-          <div className="flex items-center gap-3">
-            <span><kbd className="font-mono bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">↑↓</kbd> Navigate</span>
-            <span><kbd className="font-mono bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">↵</kbd> Select</span>
-            <span><kbd className="font-mono bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">ESC</kbd> Close</span>
-          </div>
-          <span className="font-bold text-sky-600 dark:text-sky-400 hidden sm:inline">
+        <Box
+          sx={{
+            px: 2.5,
+            py: 1.25,
+            bgcolor: isDark ? alpha('#000000', 0.3) : alpha('#f8fafc', 0.9),
+            borderTop: `1px solid ${isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.06)}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.725rem',
+            color: 'text.secondary',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Chip label="↑↓" size="small" sx={{ height: 18, fontSize: '0.625rem', fontFamily: 'monospace', fontWeight: 700 }} />
+              <Typography sx={{ fontSize: '0.7rem' }}>Navigate</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Chip label="↵" size="small" sx={{ height: 18, fontSize: '0.625rem', fontFamily: 'monospace', fontWeight: 700 }} />
+              <Typography sx={{ fontSize: '0.7rem' }}>Select</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Chip label="ESC" size="small" sx={{ height: 18, fontSize: '0.625rem', fontFamily: 'monospace', fontWeight: 700 }} />
+              <Typography sx={{ fontSize: '0.7rem' }}>Close</Typography>
+            </Box>
+          </Box>
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.7rem',
+              color: '#0284c7',
+              display: { xs: 'none', sm: 'inline' },
+            }}
+          >
             3DDX Global Spotlight Engine
-          </span>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 };
