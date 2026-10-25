@@ -12,10 +12,17 @@ import type {
 import type { Case, Order, Patient, BillingRecord } from '@/shared/types';
 import type { PaginatedResult } from '@/shared/types';
 import { ServiceInstanceMockAdapter } from './serviceInstanceMockAdapter';
+import { HttpTransport, type IHttpTransport } from './httpTransport';
 
 export class ApiClient implements IApiClient {
   private baseUrl: string;
   private readonly adapter: IServiceInstanceMockAdapter;
+
+  /**
+   * Typed contract-aware HTTP transport for OpenAPI operations.
+   * Offline test double and mock adapters remain active by default.
+   */
+  public readonly transport: IHttpTransport;
 
   /**
    * EXPLICIT BOUNDARY: MOCK / NOT_INTEGRATED
@@ -31,12 +38,14 @@ export class ApiClient implements IApiClient {
     mockServiceInstances?: IServiceInstanceMockAdapter
   ) {
     if (typeof baseUrlOrOptions === 'object' && baseUrlOrOptions !== null) {
-      this.baseUrl = baseUrlOrOptions.baseUrl || (import.meta.env.VITE_API_BASE_URL as string) || '/api/v1';
+      this.baseUrl = baseUrlOrOptions.baseUrl || (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1';
       this.adapter = baseUrlOrOptions.mockServiceInstances ?? new ServiceInstanceMockAdapter();
     } else {
-      this.baseUrl = baseUrlOrOptions || (import.meta.env.VITE_API_BASE_URL as string) || '/api/v1';
+      this.baseUrl = baseUrlOrOptions || (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1';
       this.adapter = mockServiceInstances ?? new ServiceInstanceMockAdapter();
     }
+
+    this.transport = new HttpTransport({ baseUrl: this.baseUrl });
 
     this.offlineMockServiceInstances = {
       item: (serviceItemUuid: string): Promise<WithVersion<ServiceItem>> => {
