@@ -48,7 +48,7 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       const aside = container.querySelector('aside');
       expect(aside).toBeInTheDocument();
       expect(aside).toHaveStyle({
-        position: 'sticky',
+        position: 'fixed',
         top: '0px',
       });
       // In JSDOM, 100vh evaluates to window.innerHeight (768px)
@@ -74,7 +74,7 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       const aside = container.querySelector('aside');
       expect(aside).toBeInTheDocument();
       expect(aside).toHaveStyle({
-        position: 'sticky',
+        position: 'fixed',
         top: '0px',
         order: '999',
       });
@@ -98,7 +98,7 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       const aside = container.querySelector('aside');
       expect(aside).toBeInTheDocument();
       expect(aside).toHaveStyle({
-        position: 'sticky',
+        position: 'fixed',
         top: '0px',
       });
       expect(window.getComputedStyle(aside!).height).toBe('768px');
@@ -125,6 +125,11 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       // Logo image is present
       const logoImg = screen.getByAltText(/3DDX Brand Logo/i);
       expect(logoImg).toBeInTheDocument();
+
+      // Logo is a clickable link navigating to /dashboard
+      const logoLink = screen.getByTitle('3DDX Dashboard');
+      expect(logoLink).toBeInTheDocument();
+      expect(logoLink).toHaveAttribute('href', '/dashboard');
 
       // No text branding like "DentaLab" or redundant text clutter in sidebar header
       expect(screen.queryByText(/DentaLab/i)).not.toBeInTheDocument();

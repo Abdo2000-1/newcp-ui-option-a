@@ -1117,26 +1117,40 @@ export function ConvertibleNav({
   // =========================================================================
   return (
     <>
+      {/* Sibling Layout Spacer to preserve document layout width */}
+      <Box
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          width: collapsed ? 80 : 256,
+          flexShrink: 0,
+          order: position === 'right' ? 999 : 'unset',
+          transition: 'width 0.2s ease',
+        }}
+        aria-hidden="true"
+      />
+
       <Box
         component="aside"
         sx={{
           display: { xs: 'none', lg: 'flex' },
           flexDirection: 'column',
           height: '100vh',
+          width: collapsed ? 80 : 256,
           flexShrink: 0,
           bgcolor: isDark ? alpha('#0a1b32', 0.96) : alpha('#ffffff', 0.96),
           backdropFilter: 'blur(12px)',
           userSelect: 'none',
           transition: 'width 0.2s ease',
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
-          alignSelf: 'flex-start',
+          bottom: 0,
+          left: position === 'left' ? 0 : 'auto',
+          right: position === 'right' ? 0 : 'auto',
           zIndex: 40,
           borderRight: position === 'left' ? `1px solid ${tier1Border}` : 'none',
           borderLeft: position === 'right' ? `1px solid ${tier1Border}` : 'none',
           order: position === 'right' ? 999 : 'unset',
           boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.4)' : '0 1px 8px rgba(0,0,0,0.05)',
-          width: collapsed ? 80 : 256,
         }}
       >
         {/* Header & Logo */}
@@ -1151,7 +1165,20 @@ export function ConvertibleNav({
             flexShrink: 0,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', flex: 1, overflow: 'hidden' }}>
+          <Box
+            component={NavLink}
+            to="/dashboard"
+            title="3DDX Dashboard"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              flex: 1,
+              overflow: 'hidden',
+              textDecoration: 'none',
+              cursor: 'pointer',
+            }}
+          >
             <img
               src={`${import.meta.env.BASE_URL}${collapsed ? 'logo-3ddx.png' : 'logo-3ddx-full.png'}`}
               alt="3DDX Brand Logo"
