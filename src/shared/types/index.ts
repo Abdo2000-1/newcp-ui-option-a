@@ -95,6 +95,9 @@ export interface BillingRecord {
   amount: number; status: 'Pending' | 'Invoiced' | 'Paid' | 'Overdue' | 'Cancelled';
   invoiceNumber?: string; invoiceDate?: string; dueDate: string;
   paidDate?: string | null; vouchers: number; notes: string;
+  isBillable?: boolean;
+  billingAccountName?: string;
+  billingAccountType?: 'Clinic' | 'Doctor' | 'ScanCenter' | 'DirectAccount';
 }
 
 // Doctor types
