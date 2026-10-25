@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Boxes,
+  Sparkles,
   Calendar,
   Filter,
   Download,
@@ -64,9 +65,25 @@ export default function Task47ModelWorkReport() {
   const [fromDate, setFromDate] = useState('2026-09-01');
   const [toDate, setToDate] = useState('2026-10-03');
   const [search, setSearch] = useState('');
+  const [activePreset, setActivePreset] = useState<'none' | 'dual_arch' | 'high_value' | 'vouchers_only'>('none');
 
-  const filteredRows = useMemo(() => {
+  const applyPreset = (preset: 'dual_arch' | 'high_value' | 'vouchers_only') => {
+    setActivePreset(preset);
+    if (preset === 'dual_arch') {
+      triggerToast('[MOCK / AUTOMATION] Applied preset: Dual Arch Work (Maxilla & Mandible).');
+    } else if (preset === 'high_value') {
+      triggerToast('[MOCK / AUTOMATION] Applied preset: High Value Appliances (≥$100).');
+    } else if (preset === 'vouchers_only') {
+      triggerToast('[MOCK / AUTOMATION] Applied preset: Vouchers Linked Only.');
+    }
+  };
+
+    const filteredRows = useMemo(() => {
     return SAMPLE_TASK47_ROWS.filter((r) => {
+      if (activePreset === 'dual_arch' && (!r.maxilla || !r.mandible)) return false;
+      if (activePreset === 'high_value' && r.cost < 100) return false;
+      if (activePreset === 'vouchers_only' && r.voucher === 'None') return false;
+
       if (selectedOperator !== '-1' && !r.operator.includes(selectedOperator)) {
         return false;
       }
@@ -81,7 +98,7 @@ export default function Task47ModelWorkReport() {
       }
       return true;
     });
-  }, [selectedOperator, search]);
+  }, [activePreset, selectedOperator, search]);
 
   const [sortField, setSortField] = useState<string>('orderId');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -116,9 +133,10 @@ export default function Task47ModelWorkReport() {
   const totalMax = filteredRows.filter((r) => r.maxilla).length;
   const totalMand = filteredRows.filter((r) => r.mandible).length;
 
-  const isFiltered = selectedOperator !== '-1' || fromDate !== '2026-09-01' || toDate !== '2026-10-03' || search.trim() !== '';
+  const isFiltered = activePreset !== 'none' || selectedOperator !== '-1' || fromDate !== '2026-09-01' || toDate !== '2026-10-03' || search.trim() !== '';
 
   const handleResetFilters = () => {
+    setActivePreset('none');
     setSelectedOperator('-1');
     setFromDate('2026-09-01');
     setToDate('2026-10-03');
@@ -228,6 +246,67 @@ export default function Task47ModelWorkReport() {
         </div>
       </div>
 
+            {/* Automation Quick Presets Ribbon (UIUX-REQ-020) */}
+      <div className="bg-white dark:bg-[#0b101d] p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles size={13} className="text-pink-500" />
+            Automation Presets:
+          </span>
+          <button
+            type="button"
+            data-testid="preset-dual-arch"
+            onClick={() => applyPreset('dual_arch')}
+            className={`px-2.5 py-1 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
+              activePreset === 'dual_arch'
+                ? 'bg-pink-600 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-pink-600'
+            }`}
+          >
+            Dual Arch Work (Max + Mand)
+          </button>
+          <button
+            type="button"
+            data-testid="preset-high-value"
+            onClick={() => applyPreset('high_value')}
+            className={`px-2.5 py-1 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
+              activePreset === 'high_value'
+                ? 'bg-pink-600 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-pink-600'
+            }`}
+          >
+            High Value (≥$100)
+          </button>
+          <button
+            type="button"
+            data-testid="preset-vouchers"
+            onClick={() => applyPreset('vouchers_only')}
+            className={`px-2.5 py-1 rounded-xl font-bold text-[11px] transition-all cursor-pointer ${
+              activePreset === 'vouchers_only'
+                ? 'bg-pink-600 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-pink-600'
+            }`}
+          >
+            Vouchers Linked
+          </button>
+          {activePreset !== 'none' && (
+            <button
+              type="button"
+              onClick={() => {
+                setActivePreset('none');
+                triggerToast('[MOCK] Preset cleared.');
+              }}
+              className="text-pink-600 dark:text-pink-400 font-bold hover:underline text-[11px] ml-1 cursor-pointer"
+            >
+              Clear Preset
+            </button>
+          )}
+        </div>
+        <div className="text-[11px] font-mono text-slate-400">
+          Preset Mode: <strong className="text-pink-600 dark:text-pink-400 uppercase font-black">{activePreset}</strong>
+        </div>
+      </div>
+
       {/* 2. Original Filter Form from task47.php */}
       <div className="bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -253,26 +332,14 @@ export default function Task47ModelWorkReport() {
             <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
               From Date
             </label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
-            >
-            </input>
+            <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
 
           <div>
             <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">
               To Date
             </label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
-            >
-            </input>
+            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-full p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white" />
           </div>
 
           <div>
@@ -369,10 +436,27 @@ export default function Task47ModelWorkReport() {
             </div>
           </div>
 
-          {/* Table Container - Perfectly fits 22" (1920px) screens without horizontal scroll */}
-          <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
-            <div className="w-full overflow-x-auto lg:overflow-x-hidden">
-              <table className="w-full text-left text-xs border-collapse">
+          {/* Table Container or No Results */}
+          {filteredRows.length === 0 ? (
+            <div
+              data-testid="task47-no-results"
+              className="p-8 text-center space-y-3 bg-white dark:bg-[#0b101d] rounded-2xl border border-dashed border-slate-200 dark:border-slate-800"
+            >
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                No model work appliance records match current filters or preset.
+              </p>
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="px-4 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold cursor-pointer"
+              >
+                Reset Filters & Presets
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
+            <div className="w-full overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left text-xs border-collapse min-w-[1050px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase select-none">
                     <th onClick={() => handleSort('serial')} className="py-3 px-3 w-10 cursor-pointer hover:text-slate-800 dark:hover:text-white">
@@ -477,6 +561,7 @@ export default function Task47ModelWorkReport() {
               <span className="font-mono text-emerald-600 font-bold">Live Production Pipeline</span>
             </div>
           </div>
+          )}
 
         </div>
       )}
