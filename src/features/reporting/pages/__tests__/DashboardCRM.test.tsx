@@ -126,7 +126,7 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
   });
 
   describe('Default Route Auth Redirect', () => {
-    it('redirects root route / to /dashboard landing page', async () => {
+    it('redirects root route / to /login landing page', async () => {
       await act(async () => {
         render(
           <MemoryRouter initialEntries={['/']}>
@@ -137,10 +137,8 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
         );
       });
 
-      // After navigating to '/', it redirects to '/dashboard' and renders Dashboard Command Center
-      await waitFor(() => {
-        expect(screen.getByText(/command center/i)).toBeInTheDocument();
-      });
+      // After navigating to '/', it redirects to '/login' and renders Login page
+      expect(await screen.findByRole('button', { name: /sign in/i }, { timeout: 5000 })).toBeInTheDocument();
     });
 
     it('allows direct access to /login without forced redirect to dashboard', async () => {

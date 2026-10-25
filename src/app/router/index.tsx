@@ -117,8 +117,8 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
         <Route path="/" element={<Layout />}>
-          {/* Default landing: 3DDX CP Dashboard (UIUX-REQ-006) */}
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          {/* Default landing: 3DDX CP Login */}
+          <Route index element={<Navigate to="/login" replace />} />
           
           {/* 8 Target Modernized Pages */}
           <Route path="flow" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
@@ -133,7 +133,7 @@ export function AppRouter() {
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
           <Route path="cms" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
-          <Route path="newcp/index.php" element={<Navigate to="/dashboard" replace />} />
+          <Route path="newcp/index.php" element={<Navigate to="/login" replace />} />
 
           {/* Auxiliary ERP & CRM Routes */}
           <Route path="orders/:orderId" element={<SuspenseWrapper><ViewOrder /></SuspenseWrapper>} />

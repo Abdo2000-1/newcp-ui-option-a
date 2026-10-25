@@ -179,7 +179,12 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           </Tooltip>
         ) : (
           <>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden' }}>
+            <Box
+              component={NavLink}
+              to="/dashboard"
+              title="3DDX Dashboard"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden', textDecoration: 'none', cursor: 'pointer' }}
+            >
               <img
                 src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
                 alt="3DDX Brand Logo"
@@ -260,16 +265,27 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
     <>
       {/* 1. Desktop Persistent Sidebar */}
       <Box
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          width: collapsed ? 80 : 256,
+          flexShrink: 0,
+          transition: 'width 0.2s ease',
+        }}
+        aria-hidden="true"
+      />
+      <Box
         component="aside"
         sx={{
           display: { xs: 'none', lg: 'block' },
           height: '100vh',
-          flexShrink: 0,
-          position: 'sticky',
-          top: 0,
-          alignSelf: 'flex-start',
-          transition: 'width 0.2s ease',
           width: collapsed ? 80 : 256,
+          flexShrink: 0,
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 40,
+          transition: 'width 0.2s ease',
         }}
       >
         {sidebarContent}
