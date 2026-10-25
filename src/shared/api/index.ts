@@ -5,6 +5,7 @@ export * from './httpTransport';
 export * from './catalogClient';
 export * from './serviceClient';
 export * from './workflowClient';
+export * from './pricingClient';
 export * from './concurrencyManager';
 export * from './useServiceItemConcurrency';
 export {
