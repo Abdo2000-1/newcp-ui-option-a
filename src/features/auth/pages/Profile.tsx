@@ -1,6 +1,19 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import ButtonBase from '@mui/material/ButtonBase';
+import TextField from '@mui/material/TextField';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import Tooltip from '@mui/material/Tooltip';
+import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import {
   User,
   Shield,
@@ -15,460 +28,767 @@ import {
   Database,
   Monitor,
   Save,
-  RotateCcw,
-  Check,
   Sun,
   Moon,
-  Laptop,
-  Compass,
-  Volume2,
-  VolumeX,
-  Bell,
-  Activity,
-  Layers,
-  Award,
-  Key
+  PanelTopClose,
+  PanelBottomClose,
+  PanelLeftClose,
+  PanelRightClose,
+  Check,
+  Key,
+  BadgeCheck
 } from 'lucide-react';
 import { useStore } from '@/shared/hooks/useStore';
+import { store } from '@/shared/services/store';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { sound } from '@/shared/utils/sound';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const muiTheme = useMuiTheme();
+  const isDark = muiTheme.palette.mode === 'dark';
   const { theme, toggleTheme } = useThemeContext();
-  const { language, setLanguage, currentOption, t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
+
   const rawProfile = useStore((s) => s.getProfile());
 
   const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'pacs' | 'security'>('profile');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Form State
-  const [firstName, setFirstName] = useState(rawProfile?.firstName || 'Abdo');
-  const [lastName, setLastName] = useState(rawProfile?.lastName || 'Mohamed');
-  const [email, setEmail] = useState('a.aladawy@3ddx.com');
-  const [phone, setPhone] = useState('+1 (555) 749-3821');
-  const [role, setRole] = useState('Lead CAD/CAM Engineer & Co-Diagnostix Director');
-  const [license, setLicense] = useState('CAD-DL-89421');
-  const [bio, setBio] = useState('Specialist in digital dental prosthetics, coDiagnostiX surgical guide planning, and 3D intraoral scan segmentation.');
+  // Form State initialized from reactive store
+  const [firstName, setFirstName] = useState(rawProfile?.firstName || 'Jessica');
+  const [lastName, setLastName] = useState(rawProfile?.lastName || 'Ruiz');
+  const [email, setEmail] = useState(rawProfile?.email || 'j.ruiz@dentalab-cad.com');
+  const [phone, setPhone] = useState(rawProfile?.phone || '+1 (555) 749-3821');
+  const [role, setRole] = useState(rawProfile?.role || 'Lab Director');
+  const [specialty, setSpecialty] = useState(rawProfile?.specialty || 'Orthodontics & 3D CAD/CAM');
+  const [license, setLicense] = useState(rawProfile?.licenseNumber || 'CAD-DL-89421');
+  const [bio, setBio] = useState(rawProfile?.bio || 'Specialist in digital dental prosthetics and 3D intraoral scan segmentation.');
+  const [avatarInitials, setAvatarInitials] = useState(rawProfile?.avatarInitials || 'JR');
 
-  // Personalization settings
+  // Workstation personalization settings
   const [dockPos, setDockPos] = useState<string>(() => localStorage.getItem('3ddx-cp-nav-position') || 'top');
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [pacsAutoSync, setPacsAutoSync] = useState(true);
-  const [pacsSyncInterval, setPacsSyncInterval] = useState('15s');
+
+  // Sync state if store updates from other parts of the app
+  useEffect(() => {
+    if (rawProfile) {
+      setFirstName(rawProfile.firstName || 'Jessica');
+      setLastName(rawProfile.lastName || 'Ruiz');
+      setEmail(rawProfile.email || 'j.ruiz@dentalab-cad.com');
+      setPhone(rawProfile.phone || '+1 (555) 749-3821');
+      setRole(rawProfile.role || 'Lab Director');
+      setSpecialty(rawProfile.specialty || 'Orthodontics & 3D CAD/CAM');
+      setLicense(rawProfile.licenseNumber || 'CAD-DL-89421');
+      setBio(rawProfile.bio || 'Specialist in digital dental prosthetics and 3D intraoral scan segmentation.');
+      setAvatarInitials(rawProfile.avatarInitials || 'JR');
+    }
+  }, [rawProfile]);
 
   const showToast = (msg: string) => {
-    setToastMessage(msg);
+    setSnackbarMessage(msg);
+    setSnackbarOpen(true);
     sound.playPop?.();
-    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 1. Update reactive store (MOCK session storage)
+    const updatedInitials = avatarInitials.trim() || `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    store.updateProfile({
+      firstName,
+      lastName,
+      email,
+      phone,
+      role,
+      specialty,
+      licenseNumber: license,
+      bio,
+      avatarInitials: updatedInitials,
+    });
+
+    // 2. Persist nav position
     localStorage.setItem('3ddx-cp-nav-position', dockPos);
     window.dispatchEvent(new Event('storage'));
-    showToast(t('action.save', 'Preferences saved successfully!'));
+
+    showToast(t('profile.saveSuccess', 'Profile and preferences updated successfully!'));
   };
 
+  const borderColor = isDark ? alpha('#38bdf8', 0.16) : alpha('#0284c7', 0.14);
+  const cardBg = isDark ? '#0a1b32' : '#ffffff';
+
   return (
-    <div className="space-y-6 w-full max-w-5xl mx-auto min-w-0 select-none pb-12">
-      
+    <Box sx={{ width: '100%', maxWidth: 1100, mx: 'auto', pb: 8, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
       {/* Toast Notification */}
-      {toastMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-2xl shadow-emerald-900/40 border border-emerald-400"
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3500}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%', fontWeight: 700, borderRadius: 2 }}
         >
-          <CheckCircle2 size={16} />
-          <span>{toastMessage}</span>
-        </motion.div>
-      )}
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
 
-      {/* Header Banner */}
-      <div className="relative rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#070b14] shadow-sm">
-        
+      {/* Header Banner & Overlapping Profile Card */}
+      <Paper
+        elevation={2}
+        sx={{
+          borderRadius: 4,
+          overflow: 'hidden',
+          border: `1px solid ${borderColor}`,
+          bgcolor: cardBg,
+        }}
+      >
         {/* Brand Gradient Banner */}
-        <div className="h-36 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#ea580c] relative p-6 flex items-end justify-between">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
-              CP PRO MAX • Master Specialist Profile
-            </span>
-          </div>
-          <span className="text-[11px] font-mono text-white/80 font-bold hidden sm:inline">
+        <Box
+          sx={{
+            height: 140,
+            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #ea580c 100%)',
+            p: 3,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            position: 'relative',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label="CP PRO MAX • Dedicated Specialist Profile"
+              size="small"
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(8px)',
+                color: '#ffffff',
+                fontWeight: 900,
+                fontSize: '0.6875rem',
+                letterSpacing: '0.04em',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+              }}
+            />
+          </Box>
+          <Typography
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontSize: '0.6875rem',
+              color: 'rgba(255, 255, 255, 0.85)',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+            }}
+          >
             PACS Telemetry Node #1016 • Verified
-          </span>
-        </div>
+          </Typography>
+        </Box>
 
-        {/* Profile Card Header */}
-        <div className="px-6 pb-6 pt-0">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-14 mb-4 gap-4">
-            <div className="flex items-end gap-4">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-[#0284c7] to-[#ea580c] p-1.5 shadow-xl ring-4 ring-white dark:ring-[#070b14]">
-                  <div className="w-full h-full rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center font-black text-3xl text-[#0284c7] dark:text-sky-400">
-                    3DDX
-                  </div>
-                </div>
-                <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#070b14]" title="Operator Online" />
-              </div>
+        {/* Profile Card Header Info */}
+        <Box sx={{ px: { xs: 2.5, sm: 4 }, pb: 3, pt: 0 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'flex-end' },
+              justifyContent: 'space-between',
+              mt: -6,
+              mb: 3,
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2.5 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Box
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: 3.5,
+                    p: 0.5,
+                    background: 'linear-gradient(135deg, #0284c7 0%, #ea580c 100%)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                    border: `4px solid ${cardBg}`,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 3,
+                      bgcolor: isDark ? '#0c1222' : '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.75rem',
+                      fontWeight: 900,
+                      color: '#0284c7',
+                    }}
+                  >
+                    {avatarInitials || '3D'}
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    bottom: 4,
+                    right: 4,
+                    width: 14,
+                    height: 14,
+                    borderRadius: '50%',
+                    bgcolor: '#059669',
+                    border: `2px solid ${cardBg}`,
+                  }}
+                  title="Operator Online"
+                />
+              </Box>
 
-              <div className="mb-1">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-black text-slate-900 dark:text-white">
+              <Box sx={{ mb: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary' }}>
                     {firstName} {lastName}
-                  </h1>
-                  <span className="text-emerald-500" title="CP PRO MAX Certified">
-                    <CheckCircle2 size={18} />
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-[#ea580c] dark:text-orange-400">
+                  </Typography>
+                  <Tooltip title="CP PRO MAX Verified Operator" arrow>
+                    <Box component="span" sx={{ color: '#059669', display: 'flex', alignItems: 'center' }}>
+                      <CheckCircle2 size={20} />
+                    </Box>
+                  </Tooltip>
+                </Box>
+                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 800, color: '#ea580c' }}>
                   {role}
-                </p>
-                <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                  3D Diagnostix Hub (Boston / Cairo Lab) • License: <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{license}</span>
-                </p>
-              </div>
-            </div>
+                </Typography>
+                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', fontWeight: 600, mt: 0.25 }}>
+                  3D Diagnostix Hub (Boston / Cairo Lab) • License: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{license}</span>
+                </Typography>
+              </Box>
+            </Box>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, alignSelf: { xs: 'stretch', sm: 'flex-end' } }}>
+              <Button
+                variant="contained"
                 onClick={handleSave}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer"
+                startIcon={<Save size={15} />}
+                sx={{
+                  bgcolor: '#00706a',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.8125rem',
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2.5,
+                  boxShadow: '0 2px 8px rgba(0, 112, 106, 0.25)',
+                  '&:hover': {
+                    bgcolor: '#008b84',
+                    boxShadow: '0 4px 12px rgba(0, 112, 106, 0.35)',
+                  },
+                }}
               >
-                <Save size={15} />
-                <span>Save Changes</span>
-              </button>
-            </div>
-          </div>
+                Save Changes
+              </Button>
+            </Box>
+          </Box>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 text-xs font-bold mt-6 overflow-x-auto">
-            {[
-              { id: 'profile', label: 'Clinician Credentials', icon: User },
-              { id: 'appearance', label: 'UI Personalization & Docking', icon: Sliders },
-              { id: 'pacs', label: 'PACS & Power BI Gateway', icon: Database },
-              { id: 'security', label: 'Security & Access Logs', icon: Shield },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 pb-3 px-3 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-[#0284c7] text-[#0284c7] dark:text-sky-400 font-black'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <tab.icon size={15} />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-      </div>
+          <Tabs
+            value={activeTab}
+            onChange={(_, val) => setActiveTab(val)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              borderBottom: `1px solid ${isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08)}`,
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.8125rem',
+                minHeight: 48,
+                gap: 1,
+              },
+            }}
+          >
+            <Tab icon={<User size={16} />} iconPosition="start" label="Clinician Credentials" value="profile" />
+            <Tab icon={<Sliders size={16} />} iconPosition="start" label="Workstation & Docking" value="appearance" />
+            <Tab icon={<Database size={16} />} iconPosition="start" label="PACS & Power BI Gateway" value="pacs" />
+            <Tab icon={<Shield size={16} />} iconPosition="start" label="Security & Access Logs" value="security" />
+          </Tabs>
+        </Box>
+      </Paper>
 
       {/* TAB 1: CLINICIAN CREDENTIALS */}
       {activeTab === 'profile' && (
-        <form onSubmit={handleSave} className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-base font-black text-slate-900 dark:text-white">
+        <Paper
+          elevation={1}
+          component="form"
+          onSubmit={handleSave}
+          sx={{
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 4,
+            border: `1px solid ${borderColor}`,
+            bgcolor: cardBg,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
               Personal & Professional Profile
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Manage your identity, CAD credentials, and clinical signature displayed on 3DDX surgical guide reports.
-            </p>
-          </div>
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              Manage your operator identity, clinical CAD credentials, and digital signature rendered across surgical guide exports.
+            </Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">First Name</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-              />
-            </div>
+          {/* Mock Boundary Alert */}
+          <Alert severity="info" variant="outlined" sx={{ borderRadius: 2.5 }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
+              MOCK AUTHENTICATION BOUNDARY: Profile modifications are updated in local application state only. No backend persistence, live database mutation, or OAuth synchronization is performed in this version.
+            </Typography>
+          </Alert>
 
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">Last Name</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">Corporate Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">Phone / Ext</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">License & Certification ID</label>
-              <input
-                type="text"
-                value={license}
-                onChange={(e) => setLicense(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-600 dark:text-slate-400 mb-1">System Role Designation</label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-slate-600 dark:text-slate-400 text-xs font-semibold mb-1">Professional Bio & Notes</label>
-            <textarea
-              rows={3}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs"
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2.5 }}>
+            <TextField
+              label="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'First Name' } }}
             />
-          </div>
+            <TextField
+              label="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'Last Name' } }}
+            />
+            <TextField
+              label="Corporate Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'Corporate Email' } }}
+            />
+            <TextField
+              label="Phone / Extension"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'Phone / Extension' } }}
+            />
+            <TextField
+              label="License & Certification ID"
+              value={license}
+              onChange={(e) => setLicense(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'License & Certification ID' } }}
+            />
+            <TextField
+              label="Clinical Role Designation"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'Clinical Role Designation' } }}
+            />
+            <TextField
+              label="Clinical Specialty"
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { 'aria-label': 'Clinical Specialty' } }}
+            />
+            <TextField
+              label="Avatar Initials"
+              value={avatarInitials}
+              onChange={(e) => setAvatarInitials(e.target.value.toUpperCase())}
+              size="small"
+              fullWidth
+              slotProps={{ htmlInput: { maxLength: 3, 'aria-label': 'Avatar Initials' } }}
+            />
+          </Box>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-            <button
+          <TextField
+            label="Professional Bio & Clinical Notes"
+            multiline
+            rows={3}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            size="small"
+            fullWidth
+            slotProps={{ htmlInput: { 'aria-label': 'Professional Bio & Clinical Notes' } }}
+          />
+
+          <Box sx={{ pt: 2, borderTop: `1px solid ${isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08)}`, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
               type="submit"
-              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white font-bold text-xs shadow-md"
+              variant="contained"
+              sx={{
+                bgcolor: '#00706a',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '0.8125rem',
+                px: 3.5,
+                py: 1,
+                borderRadius: 2,
+                '&:hover': { bgcolor: '#008b84' },
+              }}
             >
               Update Clinician Info
-            </button>
-          </div>
-        </form>
+            </Button>
+          </Box>
+        </Paper>
       )}
 
-      {/* TAB 2: UI PERSONALIZATION & DOCKING */}
+      {/* TAB 2: WORKSTATION & DOCKING */}
       {activeTab === 'appearance' && (
-        <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-base font-black text-slate-900 dark:text-white">
+        <Paper
+          elevation={1}
+          sx={{
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 4,
+            border: `1px solid ${borderColor}`,
+            bgcolor: cardBg,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3.5,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
               Workstation Personalization & Navigation Dock
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Customize how the CP PRO MAX navigation bar docks and configure your 22" display ergonomics.
-            </p>
-          </div>
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              Customize how the CP PRO MAX navigation bar docks and configure your 22" display workstation ergonomics.
+            </Typography>
+          </Box>
 
           {/* Docking Position Selector */}
-          <div className="space-y-3">
-            <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Default Navigation Bar Docking Position
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-bold">
+            </Typography>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 2 }}>
               {[
-                { id: 'top', label: 'Top Navbar', icon: '⬆️', desc: 'Standard header across top' },
-                { id: 'bottom', label: 'Bottom Taskbar', icon: '⬇️', desc: 'Docked at bottom of screen' },
-                { id: 'left', label: 'Left Sidebar', icon: '⬅️', desc: 'Collapsible left rail' },
-                { id: 'right', label: 'Right Sidebar', icon: '➡️', desc: 'Collapsible right rail' },
-              ].map((pos) => (
-                <button
-                  key={pos.id}
-                  type="button"
-                  onClick={() => {
-                    setDockPos(pos.id);
-                    localStorage.setItem('3ddx-cp-nav-position', pos.id);
-                    window.location.reload();
-                  }}
-                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                    dockPos === pos.id
-                      ? 'bg-[#0284c7]/15 border-[#0284c7] text-[#0284c7] dark:text-sky-300 ring-2 ring-[#0284c7]/40 shadow-xs'
-                      : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">{pos.icon}</div>
-                  <div className="font-extrabold">{pos.label}</div>
-                  <div className="text-[10px] text-slate-500 font-normal mt-0.5">{pos.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
+                { id: 'top', label: 'Top Navbar', icon: PanelTopClose, desc: 'Stationary header across top' },
+                { id: 'bottom', label: 'Bottom Taskbar', icon: PanelBottomClose, desc: 'Docked at bottom of screen' },
+                { id: 'left', label: 'Left Sidebar', icon: PanelLeftClose, desc: 'Collapsible left rail' },
+                { id: 'right', label: 'Right Sidebar', icon: PanelRightClose, desc: 'Collapsible right rail' },
+              ].map((pos) => {
+                const isSelected = dockPos === pos.id;
+                return (
+                  <ButtonBase
+                    key={pos.id}
+                    type="button"
+                    onClick={() => {
+                      setDockPos(pos.id);
+                      localStorage.setItem('3ddx-cp-nav-position', pos.id);
+                      showToast(`Navigation docking position set to ${pos.label}`);
+                    }}
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 3,
+                      border: `2px solid ${isSelected ? '#0284c7' : borderColor}`,
+                      bgcolor: isSelected ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.08)) : (isDark ? alpha('#ffffff', 0.02) : '#f8fafc'),
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        borderColor: '#0284c7',
+                        bgcolor: isDark ? alpha('#0284c7', 0.12) : alpha('#0284c7', 0.04),
+                      },
+                    }}
+                  >
+                    <Box sx={{ color: isSelected ? '#0284c7' : 'text.secondary', mb: 1 }}>
+                      <pos.icon size={22} />
+                    </Box>
+                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 800, color: isSelected ? '#0284c7' : 'text.primary' }}>
+                      {pos.label}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', mt: 0.5 }}>
+                      {pos.desc}
+                    </Typography>
+                  </ButtonBase>
+                );
+              })}
+            </Box>
+          </Box>
+
+          <Divider />
 
           {/* Theme Mode Switcher */}
-          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Visual Workspace Theme
-            </label>
-            <div className="grid grid-cols-2 gap-3 text-xs font-bold">
-              <button
+            </Typography>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <ButtonBase
                 type="button"
                 onClick={() => { if (theme !== 'light') toggleTheme(); }}
-                className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
-                  theme === 'light'
-                    ? 'bg-amber-500/10 border-amber-500 text-amber-900 ring-2 ring-amber-400/40 font-black'
-                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'
-                }`}
+                sx={{
+                  p: 2.5,
+                  borderRadius: 3,
+                  border: `2px solid ${theme === 'light' ? '#f59e0b' : borderColor}`,
+                  bgcolor: theme === 'light' ? alpha('#f59e0b', 0.1) : (isDark ? alpha('#ffffff', 0.02) : '#f8fafc'),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
               >
-                <Sun size={20} className="text-amber-500" />
-                <div className="text-left">
-                  <div>Clinical Light Mode</div>
-                  <span className="text-[10px] font-normal text-slate-500">Optimized for daytime clinical viewing</span>
-                </div>
-              </button>
+                <Sun size={24} color="#f59e0b" />
+                <Box>
+                  <Typography sx={{ fontSize: '0.8125rem', fontWeight: 800, color: 'text.primary' }}>
+                    Clinical Light Mode
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
+                    Optimized for daylight clinical reading
+                  </Typography>
+                </Box>
+              </ButtonBase>
 
-              <button
+              <ButtonBase
                 type="button"
                 onClick={() => { if (theme !== 'dark') toggleTheme(); }}
-                className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
-                  theme === 'dark'
-                    ? 'bg-[#0284c7]/15 border-[#0284c7] text-white ring-2 ring-[#0284c7]/40 font-black'
-                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'
-                }`}
+                sx={{
+                  p: 2.5,
+                  borderRadius: 3,
+                  border: `2px solid ${theme === 'dark' ? '#0284c7' : borderColor}`,
+                  bgcolor: theme === 'dark' ? alpha('#0284c7', 0.18) : (isDark ? alpha('#ffffff', 0.02) : '#f8fafc'),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
               >
-                <Moon size={20} className="text-[#0284c7]" />
-                <div className="text-left">
-                  <div>Deep Dark Mode (OLED / CAD)</div>
-                  <span className="text-[10px] font-normal text-slate-400">High contrast for 3D DICOM & guide contours</span>
-                </div>
-              </button>
-            </div>
-          </div>
+                <Moon size={24} color="#38bdf8" />
+                <Box>
+                  <Typography sx={{ fontSize: '0.8125rem', fontWeight: 800, color: 'text.primary' }}>
+                    Deep Dark Mode (OLED / CAD)
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
+                    High contrast for 3D DICOM & guide contours
+                  </Typography>
+                </Box>
+              </ButtonBase>
+            </Box>
+          </Box>
+
+          <Divider />
 
           {/* Language Selection */}
-          <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
               Interface Language (Global System-Wide)
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-bold">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l.code}
-                  type="button"
-                  onClick={() => {
-                    setLanguage(l.code);
-                    showToast(`Language changed to ${l.nativeName}`);
-                  }}
-                  className={`p-3 rounded-2xl border flex items-center justify-between transition-colors ${
-                    language === l.code
-                      ? 'bg-[#0284c7]/15 border-[#0284c7] text-[#0284c7] dark:text-sky-300 ring-1 ring-[#0284c7]'
-                      : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <LanguageFlag code={l.code} className="w-5 h-3.5 rounded-xs object-cover shadow-2xs shrink-0" />
-                    <span>{l.nativeName}</span>
-                  </div>
-                  {language === l.code && <Check size={14} className="text-[#0284c7]" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+            </Typography>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' }, gap: 1.5 }}>
+              {LANGUAGES.map((l) => {
+                const isCurrent = language === l.code;
+                return (
+                  <ButtonBase
+                    key={l.code}
+                    type="button"
+                    onClick={() => {
+                      setLanguage(l.code);
+                      showToast(`Language set to ${l.nativeName}`);
+                    }}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2.5,
+                      border: `1.5px solid ${isCurrent ? '#0284c7' : borderColor}`,
+                      bgcolor: isCurrent ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.08)) : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: '#0284c7',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LanguageFlag code={l.code} />
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                        {l.nativeName}
+                      </Typography>
+                    </Box>
+                    {isCurrent && <Check size={14} color="#0284c7" />}
+                  </ButtonBase>
+                );
+              })}
+            </Box>
+          </Box>
+        </Paper>
       )}
 
       {/* TAB 3: PACS & POWER BI GATEWAY */}
       {activeTab === 'pacs' && (
-        <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-base font-black text-slate-900 dark:text-white">
+        <Paper
+          elevation={1}
+          sx={{
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 4,
+            border: `1px solid ${borderColor}`,
+            bgcolor: cardBg,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
               PACS Server Connection & Microsoft Power BI Gateway
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
               Direct telemetry connection status to 3DDX Boston Cloud Storage & Fabric Direct Lake.
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">PACS Cluster Endpoint</span>
-              <span className="font-mono font-bold text-slate-900 dark:text-white block">pacs-prod.3ddx.org</span>
-              <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-[11px]">
-                <CheckCircle2 size={13} /> Active (Latency 22ms)
-              </span>
-            </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor }}>
+              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary' }}>
+                PACS Cluster Endpoint
+              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 800, fontFamily: 'monospace', my: 0.5 }}>
+                pacs-prod.3ddx.org
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: '#059669', fontSize: '0.75rem', fontWeight: 700 }}>
+                <CheckCircle2 size={14} /> Active (Latency 22ms)
+              </Box>
+            </Paper>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Power BI Direct Lake</span>
-              <span className="font-mono font-bold text-slate-900 dark:text-white block">Fabric DW • Q4 Attainment</span>
-              <span className="inline-flex items-center gap-1.5 text-[#0284c7] font-bold mt-1 text-[11px]">
-                <Database size={13} /> Direct Query Synced
-              </span>
-            </div>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor }}>
+              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary' }}>
+                Power BI Direct Lake
+              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 800, fontFamily: 'monospace', my: 0.5 }}>
+                Fabric DW • Q4 Attainment
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: '#0284c7', fontSize: '0.75rem', fontWeight: 700 }}>
+                <Database size={14} /> Direct Query Synced
+              </Box>
+            </Paper>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Hardware Acceleration</span>
-              <span className="font-mono font-bold text-slate-900 dark:text-white block">WebGL 2.0 / 3D Shaders</span>
-              <span className="inline-flex items-center gap-1.5 text-amber-600 font-bold mt-1 text-[11px]">
-                <Sparkles size={13} /> Enabled
-              </span>
-            </div>
-          </div>
-        </div>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor }}>
+              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary' }}>
+                Hardware Acceleration
+              </Typography>
+              <Typography sx={{ fontSize: '0.875rem', fontWeight: 800, fontFamily: 'monospace', my: 0.5 }}>
+                WebGL 2.0 / 3D Shaders
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: '#d97706', fontSize: '0.75rem', fontWeight: 700 }}>
+                <Sparkles size={14} /> Enabled
+              </Box>
+            </Paper>
+          </Box>
+        </Paper>
       )}
 
       {/* TAB 4: SECURITY & ACCESS */}
       {activeTab === 'security' && (
-        <div className="bg-white dark:bg-[#070b14] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-base font-black text-slate-900 dark:text-white">
+        <Paper
+          elevation={1}
+          sx={{
+            p: { xs: 2.5, sm: 4 },
+            borderRadius: 4,
+            border: `1px solid ${borderColor}`,
+            bgcolor: cardBg,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
               Security Clearance & Production Privileges
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              CP PRO MAX enterprise role-based authorization assigned to operator #{rawProfile?.licenseNumber || '99421'}.
-            </p>
-          </div>
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              CP PRO MAX enterprise role-based authorization assigned to operator #{license}.
+            </Typography>
+          </Box>
 
-          <div className="space-y-3 text-xs font-semibold">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {[
               { role: 'Master Orders Flow Control', status: 'Full Write', desc: 'Ability to lock, archive, change state, and assign CS tasks' },
               { role: 'Co-Diagnostix Treatment Planning', status: 'Approved Lead', desc: 'Digital implant planning & nerve canal trace validation' },
               { role: 'Power BI Executive Intelligence', status: 'Enterprise Viewer', desc: 'Direct access to quarter targets, clinician quotas, and revenue metrics' },
               { role: 'DICOM Optical Scan Intake', status: 'Superuser', desc: 'Manage incoming CBCT slice volumes and optical intraoral models' },
             ].map((r, i) => (
-              <div key={i} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <div>
-                  <div className="font-bold text-slate-900 dark:text-white">{r.role}</div>
-                  <div className="text-[11px] text-slate-500 font-normal">{r.desc}</div>
-                </div>
-                <span className="px-2.5 py-1 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase font-mono">
-                  {r.status}
-                </span>
-              </div>
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 2,
+                  borderRadius: 2.5,
+                  bgcolor: isDark ? alpha('#ffffff', 0.03) : alpha('#000000', 0.02),
+                  border: `1px solid ${borderColor}`,
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontSize: '0.8125rem', fontWeight: 800 }}>
+                    {r.role}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
+                    {r.desc}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={r.status}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha('#059669', 0.15),
+                    color: '#059669',
+                    fontWeight: 900,
+                    fontSize: '0.6875rem',
+                    fontFamily: 'monospace',
+                  }}
+                />
+              </Box>
             ))}
-          </div>
+          </Box>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-            <button
-              type="button"
+          <Divider sx={{ my: 1 }} />
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.secondary' }}>
+                Authentication State: <span style={{ color: '#059669' }}>Active Mock Session</span>
+              </Typography>
+              <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', fontFamily: 'monospace' }}>
+                Token: MOCK_3DDX_SESSION_2026 • Tenant: 3DDX-INTERNAL
+              </Typography>
+            </Box>
+
+            <Button
+              variant="outlined"
+              color="error"
               onClick={() => navigate('/login')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 font-bold text-xs hover:bg-rose-50 dark:hover:bg-rose-950/40"
+              startIcon={<LogOut size={15} />}
+              sx={{ fontWeight: 800, fontSize: '0.75rem', borderRadius: 2 }}
             >
-              <LogOut size={14} />
-              <span>Sign Out of CP PRO MAX</span>
-            </button>
-          </div>
-        </div>
+              Sign Out of CP PRO MAX
+            </Button>
+          </Box>
+        </Paper>
       )}
-
-    </div>
+    </Box>
   );
 }

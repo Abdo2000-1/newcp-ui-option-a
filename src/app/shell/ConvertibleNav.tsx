@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -63,7 +63,6 @@ export function ConvertibleNav({
   setIsDraggingNav,
 }: ConvertibleNavProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const muiTheme = useMuiTheme();
   const { theme, toggleTheme } = useThemeContext();
   const { language, setLanguage, currentOption, t } = useLanguage();
@@ -568,6 +567,33 @@ export function ConvertibleNav({
                   </IconButton>
                 </Tooltip>
 
+                {/* Operator Avatar -> Navigates to dedicated profile page */}
+                <Tooltip title="View Operator Profile" arrow>
+                  <ButtonBase
+                    component={NavLink}
+                    to="/profile"
+                    aria-label="Operator Avatar"
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'linear-gradient(135deg, #0284c7 0%, #ea580c 100%)',
+                      color: '#ffffff',
+                      fontSize: '0.6875rem',
+                      fontWeight: 900,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      cursor: 'pointer',
+                      transition: 'transform 0.15s ease',
+                      '&:hover': { transform: 'scale(1.05)' },
+                    }}
+                  >
+                    {profile?.avatarInitials || '3D'}
+                  </ButtonBase>
+                </Tooltip>
+
                 {/* User Profile Dropdown Menu */}
                 <Box sx={{ position: 'relative' }} ref={profileDropdownRef}>
                   <ButtonBase
@@ -576,9 +602,9 @@ export function ConvertibleNav({
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 1.25,
+                      gap: 1,
                       p: 0.5,
-                      pl: 0.75,
+                      pl: 1,
                       pr: 1.25,
                       borderRadius: 2.5,
                       border: `1px solid ${tier1Border}`,
@@ -590,24 +616,8 @@ export function ConvertibleNav({
                       },
                     }}
                     title="Operator Profile & Account Menu"
+                    aria-label="Operator Profile & Account Menu"
                   >
-                    <Box
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #0284c7 0%, #ea580c 100%)',
-                        color: '#ffffff',
-                        fontSize: '0.6875rem',
-                        fontWeight: 900,
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      }}
-                    >
-                      {profile?.avatarInitials || '3D'}
-                    </Box>
                     <Box sx={{ display: { xs: 'none', xl: 'flex' }, flexDirection: 'column', textAlign: 'left', lineHeight: 1.1 }}>
                       <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {profile?.firstName || 'Abdu M.'}
@@ -643,32 +653,33 @@ export function ConvertibleNav({
                         </Typography>
                       </Box>
 
-                      <ButtonBase
-                        type="button"
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          setIsProfileModalOpen(true);
-                        }}
-                        sx={{
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1.25,
-                          p: 1,
-                          borderRadius: 2,
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          color: isDark ? '#e2e8f0' : '#1e293b',
-                          '&:hover': {
-                            bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
-                            color: '#0284c7',
-                          },
-                        }}
+                      <NavLink
+                        to="/profile"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
                       >
-                        <User size={15} color="#0284c7" />
-                        <span>Operator Profile & Credentials</span>
-                      </ButtonBase>
+                        <Box
+                          sx={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.25,
+                            p: 1,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              color: '#0284c7',
+                            },
+                          }}
+                        >
+                          <User size={15} color="#0284c7" />
+                          <span>Operator Profile & Credentials</span>
+                        </Box>
+                      </NavLink>
 
                       <NavLink
                         to="/settings"
@@ -1369,26 +1380,31 @@ export function ConvertibleNav({
             alignItems: collapsed ? 'center' : 'stretch',
           }}
         >
-          <ButtonBase
-            type="button"
-            onClick={() => setIsProfileModalOpen(true)}
-            sx={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: 1.25,
-              p: 0.75,
-              borderRadius: 2,
-              cursor: 'pointer',
-              border: '1px solid transparent',
-              '&:hover': {
-                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
-                borderColor: tier1Border,
-              },
-            }}
-            title="Technician Profile"
+          <NavLink
+            to="/profile"
+            style={{ textDecoration: 'none', width: '100%' }}
           >
+            <ButtonBase
+              type="button"
+              sx={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: 1.25,
+                p: 0.75,
+                borderRadius: 2,
+                cursor: 'pointer',
+                border: '1px solid transparent',
+                color: 'inherit',
+                '&:hover': {
+                  bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
+                  borderColor: tier1Border,
+                },
+              }}
+              title="Technician Profile"
+              aria-label="Technician Profile"
+            >
             <Box
               sx={{
                 width: 28,
@@ -1416,7 +1432,8 @@ export function ConvertibleNav({
                 </Typography>
               </Box>
             )}
-          </ButtonBase>
+            </ButtonBase>
+          </NavLink>
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between', flexDirection: collapsed ? 'column' : 'row', gap: 1 }}>
             <ButtonBase
