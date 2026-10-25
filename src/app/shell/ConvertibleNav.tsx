@@ -397,14 +397,6 @@ export function ConvertibleNav({
                       style={{ height: 20, width: 'auto', objectFit: 'contain' }}
                     />
                   </Box>
-                  <Box sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column', lineHeight: 1.1 }}>
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, letterSpacing: '-0.02em', textTransform: 'uppercase', color: isDark ? '#f8fafc' : '#0f172a' }}>
-                      CP PRO MAX
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: isDark ? '#38bdf8' : '#0284c7' }}>
-                      Clinical Platform
-                    </Typography>
-                  </Box>
                 </NavLink>
               </Box>
 

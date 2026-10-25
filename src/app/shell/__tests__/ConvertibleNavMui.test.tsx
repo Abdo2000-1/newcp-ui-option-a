@@ -60,12 +60,12 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
   });
 
   describe('Top Docking Mode (Tier 1 & Tier 2)', () => {
-    it('renders the brand logo and CP PRO MAX clinical badge', () => {
+    it('renders the brand logo without CP PRO MAX text (UIUX-REQ-014)', () => {
       renderConvertibleNav({ position: 'top' });
 
       expect(screen.getByAltText(/3D Diagnostix/i)).toBeInTheDocument();
-      expect(screen.getByText(/CP PRO MAX/i)).toBeInTheDocument();
-      expect(screen.getByText(/Clinical Platform/i)).toBeInTheDocument();
+      expect(screen.queryByText(/CP PRO MAX/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Clinical Platform/i)).not.toBeInTheDocument();
     });
 
     it('renders the global spotlight search trigger with keyboard shortcut chip', () => {
