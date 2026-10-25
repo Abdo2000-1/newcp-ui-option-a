@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Boxes,
@@ -12,7 +13,9 @@ import {
   ChevronDown,
   ArrowUp,
   ArrowDown,
-  ArrowUpDown
+  ArrowUpDown,
+  RotateCcw,
+  FileDown
 } from 'lucide-react';
 import { UIStateSwitcher, type UIStateType } from '@/shared/components/UIStateSwitcher';
 import { LoadingState } from '@/shared/components/LoadingState';
@@ -47,8 +50,16 @@ const SAMPLE_TASK47_ROWS: Task47Row[] = [
 ];
 
 export default function Task47ModelWorkReport() {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
+
+  // Prototype mock feedback state (UIUX-REQ-016)
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
   const [selectedOperator, setSelectedOperator] = useState<string>('-1');
   const [fromDate, setFromDate] = useState('2026-09-01');
   const [toDate, setToDate] = useState('2026-10-03');
@@ -105,9 +116,70 @@ export default function Task47ModelWorkReport() {
   const totalMax = filteredRows.filter((r) => r.maxilla).length;
   const totalMand = filteredRows.filter((r) => r.mandible).length;
 
+  const isFiltered = selectedOperator !== '-1' || fromDate !== '2026-09-01' || toDate !== '2026-10-03' || search.trim() !== '';
+
+  const handleResetFilters = () => {
+    setSelectedOperator('-1');
+    setFromDate('2026-09-01');
+    setToDate('2026-10-03');
+    setSearch('');
+    triggerToast('[MOCK] Filters reset to default values.');
+  };
+
+  const handleExportCsv = () => {
+    const headers = ['Serial', 'OrderID', 'ScanCenter', 'Doctor', 'PatientName', 'Maxilla', 'Mandible', 'Cost', 'ReceivedTime', 'SentTime', 'Operator', 'Voucher', 'ArchiveDate', 'ChargeTime'];
+    const rows = filteredRows.map((r) => [
+      r.serial,
+      r.orderId,
+      `"${r.scanCenter}"`,
+      `"${r.doctor}"`,
+      `"${r.patientName}"`,
+      r.maxilla ? 'Yes' : 'No',
+      r.mandible ? 'Yes' : 'No',
+      r.cost,
+      r.receivedTime,
+      r.sentTime,
+      `"${r.operator}"`,
+      r.voucher,
+      r.archiveDate,
+      r.chargeTime
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Task47_Model_Work_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    triggerToast(`[MOCK / NOT_INTEGRATED] Exported ${filteredRows.length} model work records to CSV.`);
+  };
+
   return (
     <div className="space-y-4 w-full min-w-0">
       
+      {/* Prototype mock action feedback toast */}
+      {toastMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-500/50 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center justify-between shadow-xs transition-all"
+        >
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="p-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 cursor-pointer font-bold"
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 1. Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         <div>
@@ -136,11 +208,22 @@ export default function Task47ModelWorkReport() {
           />
 
           <button
+            type="button"
+            onClick={handleExportCsv}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold text-xs shadow-xs hover:border-cyan-500 cursor-pointer"
+            title="Download report records as CSV (Simulated local export)"
+          >
+            <FileDown size={13} />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-xs hover:bg-cyan-400 cursor-pointer"
           >
             <Printer size={13} />
-            <span>Export Report</span>
+            <span>Print Report</span>
           </button>
         </div>
       </div>
@@ -207,6 +290,23 @@ export default function Task47ModelWorkReport() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Quick filter action reset bar */}
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            {isFiltered ? `Active filters applied • ${filteredRows.length} matching cases` : 'Showing all model work records'}
+          </span>
+          <button
+            type="button"
+            disabled={!isFiltered}
+            onClick={handleResetFilters}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+            title="Reset all filter parameters to default"
+          >
+            <RotateCcw size={12} />
+            <span>Reset Filters</span>
+          </button>
         </div>
       </div>
 
@@ -340,7 +440,16 @@ export default function Task47ModelWorkReport() {
                   {sortedRows.map((row) => (
                     <tr key={row.orderId} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors">
                       <td className="py-2.5 px-3 font-mono text-slate-400">{row.serial}</td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">#{row.orderId}</td>
+                      <td className="py-2.5 px-3 font-mono font-bold">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/order-details?ID=${row.orderId}`)}
+                          className="text-cyan-600 dark:text-cyan-400 hover:underline hover:text-cyan-500 font-bold cursor-pointer"
+                          title={`View Order #${row.orderId} Details`}
+                        >
+                          #{row.orderId}
+                        </button>
+                      </td>
                       <td className="py-2.5 px-3 text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{row.scanCenter}</td>
                       <td className="py-2.5 px-3 truncate max-w-[150px]">{row.doctor}</td>
                       <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{row.patientName}</td>
