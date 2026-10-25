@@ -12,8 +12,11 @@ import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { 
   TrendingUp, DollarSign, Award, Clock, Activity, Download, 
   Calendar, CheckCircle2, ArrowUpRight, Filter, Search, ChevronLeft, 
-  ChevronRight, Sparkles, Layers, ArrowDownRight, Compass
+  ChevronRight, Sparkles, Layers, ArrowDownRight, Compass,
+  Printer
 } from 'lucide-react';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // Custom Tooltip with React styling
 const CustomReportTooltip = ({ active, payload, label }: any) => {
@@ -97,28 +100,53 @@ export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('');
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | 'ytd'>('7d');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'zirconia' | 'emax' | 'titanium'>('all');
-  const [selectedDay, setSelectedDay] = useState<number>(14);
+    const [selectedDay, setSelectedDay] = useState<number>(14);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handlePrint = () => {
+    sound.playClick();
+    setToastMessage('[MOCK] Preparing report for browser print preview...');
+    setTimeout(() => setToastMessage(null), 3000);
+    try {
+      window.print();
+    } catch (err) {
+      console.warn('Print preview unavailable:', err);
+    }
+  };
 
   const { data: reports, loading: reportsLoading } = useFetch(api.getReports);
   const orders = useStore(s => s.getOrders());
   const billing = useStore(s => s.getBilling());
   const cases = useStore(s => s.getCases());
 
-  const handleExportCSV = () => {
+    const handleExportCSV = () => {
     sound.playSuccess();
+    setToastMessage('[MOCK / NOT_INTEGRATED] Formatted performance CSV report exported locally.');
+    setTimeout(() => setToastMessage(null), 3000);
+    const reportDate = new Date().toISOString().split('T')[0];
     const rows = [
-      ['Metric', 'Value', 'Benchmark', 'Status'],
-      ['Case Intake Velocity', `${(125 * (timeframe === '7d' ? 1 : timeframe === '30d' ? 4 : 12)).toFixed(0)} units`, '110 units', 'Optimal'],
-      ['Milling Efficiency', '98.4%', '95.0%', 'Passed'],
-      ['Turnaround SLA Yield', '99.1%', '98.0%', 'Exceeding'],
-      ['Total Billed Revenue', `$${totalRevenue.toLocaleString()}`, '$45,000', 'Profitable'],
-      ['Active CAD Stations', '8 Active', '8 Stations', 'Online'],
+      ['# 3D DIAGNOSTIX CLINICAL PERFORMANCE AUDIT REPORT'],
+      ['# Report Type: Executive Analytics Matrix'],
+      [`# Generated Date: ${reportDate}`],
+      [`# Timeframe: ${timeframe.toUpperCase()}`],
+      ['# Scope: Prototype Mock Dataset [MOCK / NOT_INTEGRATED]'],
+      [],
+      ['Metric Name', 'Observed Value', 'Target Benchmark', 'Operational Status', 'Yield Variance'],
+      ['Case Intake Velocity', `${(125 * (timeframe === '7d' ? 1 : timeframe === '30d' ? 4 : 12)).toFixed(0)} units`, '110 units', 'Optimal', '+18.4%'],
+      ['Milling Efficiency', '98.4%', '95.0%', 'Passed', '+3.4%'],
+      ['Turnaround SLA Yield', '99.1%', '98.0%', 'Exceeding', '+1.1%'],
+      ['Total Billed Revenue', `${totalRevenue.toLocaleString()}`, '$45,000', 'Profitable', '+16.4%'],
+      ['Active CAD Stations', '8 Active', '8 Stations', 'Online', '100%'],
+      ['Delivery Variance Spread', '±1.2 hrs', '±2.0 hrs', 'Within Limits', '-40%'],
+      [],
+      ['# Total Metric Count', '6 KPIs evaluated'],
+      ['# End of Report']
     ];
     const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `dentalab_performance_${timeframe}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `3ddx_performance_${timeframe}_${reportDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -193,11 +221,24 @@ export default function Reports() {
           {/* Export CSV Button */}
           <button
             type="button"
+            data-testid="reports-export-btn"
             onClick={handleExportCSV}
-            className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="no-print px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
             <Download size={14} className="text-cyan-500" />
             <span>{t('reports.exportCsv', 'Export CSV')}</span>
+          </button>
+
+          {/* Print Report Button (UIUX-REQ-018) */}
+          <button
+            type="button"
+            data-testid="reports-print-btn"
+            onClick={handlePrint}
+            aria-label="Print Performance Report"
+            className="no-print px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+          >
+            <Printer size={14} className="text-indigo-500" />
+            <span>{t('reports.printReport', 'Print Report')}</span>
           </button>
 
           {/* Search widget */}
@@ -219,6 +260,45 @@ export default function Reports() {
         </div>
       </div>
 
+
+            {/* PRINT-ONLY EXECUTIVE AUDIT HEADER (UIUX-REQ-018) */}
+      <div className="hidden print:block mb-6 p-5 border-b-2 border-slate-900 bg-white text-black">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-xl font-black uppercase tracking-wider text-black">
+              3D Diagnostix - Laboratory Performance Matrix
+            </h1>
+            <p className="text-xs text-slate-600 mt-1">
+              Generated: {new Date().toISOString().split('T')[0]} | Period Timeframe: {timeframe.toUpperCase()}
+            </p>
+          </div>
+          <div className="text-right text-xs">
+            <span className="inline-block px-2 py-0.5 border border-slate-800 text-[10px] font-mono font-bold uppercase">
+              CONFIDENTIAL / CLINICAL AUDIT
+            </span>
+            <p className="text-[10px] text-slate-500 mt-1">[MOCK / NOT_INTEGRATED PROTOTYPE]</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Filter No-Results Alert (UIUX-REQ-018) */}
+      {searchQuery && !['velocity', 'intake', 'milling', 'efficiency', 'turnaround', 'sla', 'revenue', 'cad', 'variance'].some(k => k.includes(searchQuery.toLowerCase().trim())) && (
+        <div
+          data-testid="reports-no-results"
+          className="p-6 rounded-2xl border border-dashed border-amber-300 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 text-center space-y-2 no-print"
+        >
+          <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+            No performance metrics match query: &ldquo;{searchQuery}&rdquo;
+          </p>
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="px-3 py-1 text-xs rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold cursor-pointer"
+          >
+            Reset Filter
+          </button>
+        </div>
+      )}
 
       {/* ============================================================ */}
       {/* ROW 1: 4 WIDGETS (Spline Trajectory, Multi-point Line, Calendar, Dual Gauge) */}
@@ -667,6 +747,60 @@ export default function Reports() {
         </div>
 
       </div>
+
+      {/* PRINT-ONLY EXECUTIVE KPI SUMMARY TABLE (UIUX-REQ-018) */}
+      <div className="hidden print:block my-6">
+        <h2 className="text-sm font-bold text-black uppercase mb-2">Executive KPI Summary Matrix</h2>
+        <table className="w-full text-xs border border-slate-300">
+          <thead>
+            <tr className="bg-slate-100 text-black border-b border-slate-300">
+              <th className="p-2 text-left">Metric Name</th>
+              <th className="p-2 text-left">Observed Value</th>
+              <th className="p-2 text-left">Benchmark</th>
+              <th className="p-2 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-slate-200">
+              <td className="p-2 font-medium">Case Intake Velocity</td>
+              <td className="p-2 font-bold">{Math.round(125 * tfMultiplier)} units</td>
+              <td className="p-2">110 units</td>
+              <td className="p-2">Optimal</td>
+            </tr>
+            <tr className="border-b border-slate-200">
+              <td className="p-2 font-medium">Milling Precision Efficiency</td>
+              <td className="p-2 font-bold">98.4%</td>
+              <td className="p-2">95.0%</td>
+              <td className="p-2">Passed</td>
+            </tr>
+            <tr className="border-b border-slate-200">
+              <td className="p-2 font-medium">Turnaround SLA Yield</td>
+              <td className="p-2 font-bold">99.1%</td>
+              <td className="p-2">98.0%</td>
+              <td className="p-2">Exceeding</td>
+            </tr>
+            <tr className="border-b border-slate-200">
+              <td className="p-2 font-medium">Total Billed Revenue</td>
+              <td className="p-2 font-bold">${totalRevenue.toLocaleString()}</td>
+              <td className="p-2">$45,000</td>
+              <td className="p-2">Profitable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Prototype Mock Notification Toast (UIUX-REQ-018) */}
+      <Snackbar
+        open={Boolean(toastMessage)}
+        autoHideDuration={3000}
+        onClose={() => setToastMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        className="no-print"
+      >
+        <Alert severity="info" sx={{ width: '100%', fontWeight: 600 }}>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

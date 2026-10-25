@@ -273,3 +273,55 @@
   border-color: #38141c !important;
 }
 
+
+/* ============================================================ */
+/* Print Media Stylesheet (UIUX-REQ-018)                        */
+/* ============================================================ */
+@media print {
+  header,
+  nav,
+  aside,
+  footer,
+  [data-testid="shell-footer"],
+  .no-print,
+  [role="dialog"],
+  button:not(.print-preserve) {
+    display: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .overflow-hidden,
+  .overflow-x-auto,
+  .overflow-y-auto {
+    overflow: visible !important;
+  }
+
+  .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+}
