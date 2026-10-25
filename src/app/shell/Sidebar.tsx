@@ -180,12 +180,11 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         ) : (
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden' }}>
-              <Typography sx={{ fontSize: '0.9375rem', fontWeight: 900, letterSpacing: '-0.02em', color: isDark ? '#f8fafc' : '#0f172a' }}>
-                DentaLab
-              </Typography>
-              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, color: '#00706a', bgcolor: alpha('#00706a', 0.1), px: 0.75, py: 0.25, borderRadius: 1 }}>
-                CP Option A
-              </Typography>
+              <img
+                src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
+                alt="3DDX Brand Logo"
+                style={{ height: 22, width: 'auto', objectFit: 'contain' }}
+              />
             </Box>
             <Tooltip title="Collapse sidebar" arrow>
               <IconButton onClick={onToggle} size="small">
@@ -266,7 +265,9 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           display: { xs: 'none', lg: 'block' },
           height: '100vh',
           flexShrink: 0,
-          position: 'relative',
+          position: 'sticky',
+          top: 0,
+          alignSelf: 'flex-start',
           transition: 'width 0.2s ease',
           width: collapsed ? 80 : 256,
         }}
