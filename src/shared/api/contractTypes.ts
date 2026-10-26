@@ -87,6 +87,7 @@ export interface FieldConditionLeaf {
   attribute?: string;
   op: FieldConditionOp;
   value?: unknown;
+  values?: unknown[];
 }
 
 export interface FieldConditionAll {
@@ -198,6 +199,9 @@ export interface ServiceItem {
   canEditBilledParty?: boolean;
   isBillable: boolean;
   canEditBillability?: boolean;
+  canEditService?: boolean;
+  canTransition?: boolean;
+  isReadOnly?: boolean;
   isInvoiced?: boolean;
   currencyCode?: string;
   unitPrice?: string;
@@ -207,6 +211,7 @@ export interface ServiceItem {
   zeroChargeReasonCode?: string | null;
   zeroChargeNote?: string | null;
   isRedo?: boolean;
+  redoOfItemUuid?: string | null;
   serviceNotes?: string;
   holdType?: HoldType | null;
   holdReasonCode?: string | null;

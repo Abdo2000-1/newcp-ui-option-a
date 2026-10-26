@@ -19,7 +19,16 @@ import { PriorityBadge } from '@/shared/components/PriorityBadge';
 import { TeethChart } from '@/shared/components/TeethChart';
 import { formatDate } from '@/shared/utils/format';
 import { useStore } from '@/shared/hooks/useStore';
-import { serviceClient, type ServiceItem } from '@/shared/api';
+import {
+  serviceClient,
+  type ServiceItem,
+  useServiceItemConcurrency,
+  PreconditionFailedError,
+  PreconditionRequiredError,
+  PermissionDeniedError,
+  AuthenticationError,
+} from '@/shared/api';
+import { ShieldAlert, RefreshCw, Lock, GitCompare } from 'lucide-react';
 
 type SubOrderTab = 'overview' | 'forms' | 'scans' | 'activity';
 
@@ -40,15 +49,48 @@ export default function SubOrderDetail() {
   const [clinicalNotes, setClinicalNotes] = useState('Ensure tight proximal contact on distal aspect.');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [contractService, setContractService] = useState<ServiceItem | null>(null);
-  const [contractEtag, setContractEtag] = useState<string>('');
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [serverVersionSnapshot, setServerVersionSnapshot] = useState<ServiceItem | null>(null);
+
+  const serviceItemUuid = contractService?.uuid || subOrderId || 'srv-biomodel-001';
+
+  const {
+    currentEtag,
+    hasConflict,
+    conflictDetails,
+    unsavedDraft,
+    mutateWithConcurrency,
+    reconcile,
+    resetConflict,
+    setEtag,
+    saveDraft,
+  } = useServiceItemConcurrency<{
+    occlusalContact: string;
+    marginType: string;
+    material: string;
+    shade: string;
+    clinicalNotes: string;
+    selectedTeeth: number[];
+  }>(serviceItemUuid);
+
+  const fetchServiceItem = React.useCallback(async () => {
+    const key = subOrderId || 'srv-biomodel-001';
+    try {
+      const res = await serviceClient.get(key);
+      setContractService(res.data);
+      setEtag(res.etag);
+      return res;
+    } catch (err: any) {
+      console.warn('Could not fetch contract service item:', err);
+      throw err;
+    }
+  }, [subOrderId, setEtag]);
 
   React.useEffect(() => {
-    const key = subOrderId || 'srv-biomodel-001';
-    serviceClient.get(key).then(res => {
-      setContractService(res.data);
-      setContractEtag(res.etag);
-    }).catch(console.warn);
-  }, [subOrderId]);
+    fetchServiceItem().catch(console.warn);
+  }, [fetchServiceItem]);
 
   if (!order) {
     return (
@@ -59,18 +101,81 @@ export default function SubOrderDetail() {
     );
   }
 
+  const isReadOnly = Boolean(contractService?.isInvoiced || contractService?.canEditService === false || contractService?.isReadOnly === true);
+
   const handleSaveSpecs = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (contractService) {
-      try {
-        const etag = contractEtag || `W/"${contractService.uuid}-live"`;
-        await serviceClient.edit(contractService.uuid, { answers: subOrderAnswers }, etag);
-      } catch (err: any) {
-        console.warn('Error patching specs:', err);
-      }
+    if (!contractService) return;
+
+    if (isReadOnly) {
+      setEditError('This service item is invoiced and marked read-only. Further edits are not permitted.');
+      return;
     }
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+
+    setEditError(null);
+    setIsSaving(true);
+
+    const draft = {
+      occlusalContact,
+      marginType,
+      material,
+      shade,
+      clinicalNotes,
+      selectedTeeth,
+    };
+
+    try {
+      await mutateWithConcurrency(
+        async (activeEtag) => {
+          return await serviceClient.edit(
+            contractService.uuid,
+            {
+              answers: [
+                { fieldCode: 'occlusal_contact', value: occlusalContact },
+                { fieldCode: 'margin_type', value: marginType },
+                { fieldCode: 'material', value: material },
+                { fieldCode: 'shade', value: shade },
+              ],
+              serviceNotes: clinicalNotes,
+            },
+            activeEtag
+          );
+        },
+        currentEtag,
+        draft
+      );
+
+      setSavedSuccess(true);
+      resetConflict();
+      await fetchServiceItem();
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: any) {
+      if (err instanceof AuthenticationError || err?.status === 401) {
+        setEditError('401 Unauthorized: Session expired or invalid authentication credentials. Please re-authenticate.');
+      } else if (err instanceof PreconditionFailedError || err?.status === 412) {
+        setEditError('412 Precondition Failed: This service item was modified concurrently by another user. Your unsaved draft has been preserved below.');
+      } else if (err instanceof PreconditionRequiredError || err?.status === 428) {
+        setEditError('428 Precondition Required: Missing ETag. Reload entity before editing.');
+      } else if (err instanceof PermissionDeniedError || err?.status === 403) {
+        setEditError(`403 Forbidden: ${err.message || 'Permission denied on this service item.'}`);
+      } else if (err?.status === 409) {
+        setEditError(`409 Conflict: ${err.message || 'Workflow or business rule conflict.'}`);
+      } else {
+        setEditError(err.message || 'Failed to update service item specs');
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReloadAndCompare = async () => {
+    try {
+      const refreshed = await reconcile(fetchServiceItem);
+      setServerVersionSnapshot(refreshed.data);
+      setShowCompareModal(true);
+    } catch (err: any) {
+      setEditError(`Failed to reload latest server version: ${err.message}`);
+    }
   };
 
   return (
@@ -100,7 +205,70 @@ export default function SubOrderDetail() {
       {savedSuccess && (
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-xl flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
           <CheckCircle2 className="w-5 h-5" />
-          <span>Sub-order clinical specifications successfully updated!</span>
+          <span>Sub-order clinical specifications successfully updated with ETag rotation!</span>
+        </div>
+      )}
+
+      {/* 412 Stale Revision Conflict Banner with Draft Preservation */}
+      {hasConflict && (
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 rounded-xl border border-amber-300 dark:border-amber-800 space-y-3">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h4 className="font-bold text-sm">
+                412 Precondition Failed: Concurrency Conflict Detected
+              </h4>
+              <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300">
+                Another operator or background process updated this service item concurrently.
+                <strong> Your unsaved draft has been preserved in memory.</strong> Silent overwrites are prevented.
+              </p>
+              {conflictDetails && (
+                <p className="font-mono text-[11px] text-amber-700 dark:text-amber-400">
+                  Client ETag: {conflictDetails.clientEtag || 'unknown'} &bull; Server ETag: {conflictDetails.serverEtag || 'unknown'}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2 border-t border-amber-200 dark:border-amber-900">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReloadAndCompare}
+              className="gap-1.5 text-xs font-bold"
+            >
+              <GitCompare className="w-3.5 h-3.5" />
+              Reload Latest Server Version & Compare
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetConflict}
+              className="text-xs"
+            >
+              Dismiss Notice
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Generic Edit Error Banner (428, 403, 409, 422) */}
+      {editError && !hasConflict && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 rounded-xl flex items-start gap-3 border border-rose-300 dark:border-rose-800">
+          <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <span className="font-bold text-xs block">{editError}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Read-Only State Indicator */}
+      {isReadOnly && (
+        <div className="p-3 bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 rounded-xl flex items-center gap-2 border border-slate-300 dark:border-slate-700 text-xs font-semibold">
+          <Lock className="w-4 h-4 text-slate-500" />
+          <span>Read-Only Mode: This service item is locked by invoice or operator permissions. Edits are disabled.</span>
         </div>
       )}
 
@@ -166,7 +334,7 @@ export default function SubOrderDetail() {
 
                   </div>
                   <div className="text-[11px] text-emerald-900 dark:text-emerald-200 font-mono truncate">UUID: {contractService.uuid}</div>
-                  <div className="text-[10px] text-slate-500 font-mono">ETag: {contractEtag || 'W/"srv-live"'}</div>
+                  <div className="text-[10px] text-slate-500 font-mono">ETag: {currentEtag || 'W/"srv-live"'}</div>
                   <div className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">
                     Payer: {contractService.billedToContactUuid} ({contractService.billedPartyOrigin})
                   </div>
@@ -277,10 +445,13 @@ export default function SubOrderDetail() {
             />
           </div>
 
-          <div className="flex justify-end pt-3">
-            <Button type="submit" className="gap-2">
+          <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+            <span className="font-mono text-xs text-slate-400">
+              Aggregated ETag: <code>{currentEtag || 'Unversioned'}</code>
+            </span>
+            <Button type="submit" disabled={isSaving || isReadOnly} className="gap-2">
               <Save className="w-4 h-4" />
-              Save Sub-Order Specs
+              {isSaving ? 'Validating ETag & Saving...' : 'Save Sub-Order Specs (If-Match)'}
             </Button>
           </div>
         </form>

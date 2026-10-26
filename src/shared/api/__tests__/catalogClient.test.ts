@@ -58,8 +58,16 @@ describe('T-API-003: Catalog Services & Dynamic Form Schema Integration', () => 
     const schema = await client.getFormSchema('11111111-1111-4111-8111-111111111111');
 
     expect(schema.service.code).toBe('BIOMODEL');
-    expect(schema.fields.length).toBe(4);
-    expect(schema.fields.map(f => f.type)).toEqual(['single_select', 'number', 'text', 'tooth_chart']);
+    expect(schema.fields.length).toBe(7);
+    expect(schema.fields.map(f => f.type)).toEqual([
+      'single_select',
+      'number',
+      'boolean',
+      'single_select',
+      'tooth_chart',
+      'date',
+      'text',
+    ]);
   });
 
   it('correctly evaluates boolean tree conditions (leaf, all, any, not)', () => {

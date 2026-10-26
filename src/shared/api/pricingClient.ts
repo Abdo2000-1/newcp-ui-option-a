@@ -73,10 +73,30 @@ export class PricingClient implements IPricingClient {
     params: PriceUpdateParams,
     callerIsAuthorized = true
   ): void {
-    // 1. Authorization check
+    // 0. Financial lock & Invoiced status check
+    if (currentService.isInvoiced) {
+      if (
+        (params.unitPrice !== undefined && params.unitPrice !== currentService.unitPrice) ||
+        (params.quantity !== undefined && params.quantity !== currentService.quantity) ||
+        (params.isBillable !== undefined && params.isBillable !== currentService.isBillable)
+      ) {
+        throw new PermissionDeniedError(
+          `Cannot modify pricing or billability on invoiced service item "${currentService.uuid}".`
+        );
+      }
+    }
+
+    // 1. Authorization check for price
     if (params.unitPrice !== undefined && params.unitPrice !== currentService.unitPrice) {
       if (currentService.canEditPrice === false || !callerIsAuthorized) {
         throw new PermissionDeniedError('You do not have permission to override service pricing.');
+      }
+    }
+
+    // 1b. Authorization check for billability
+    if (params.isBillable !== undefined && params.isBillable !== currentService.isBillable) {
+      if (currentService.canEditBillability === false || !callerIsAuthorized) {
+        throw new PermissionDeniedError('You do not have permission to modify service billability.');
       }
     }
 

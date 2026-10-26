@@ -2,16 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { concurrencyManager, type ConcurrencyState } from './concurrencyManager';
 import type { WithVersion } from './types';
 
-export function useServiceItemConcurrency(serviceItemUuid?: string) {
-  const [state, setState] = useState<ConcurrencyState>(() =>
-    serviceItemUuid ? concurrencyManager.getState(serviceItemUuid) : { hasConflict: false }
+export function useServiceItemConcurrency<TDraft = unknown>(serviceItemUuid?: string) {
+  const [state, setState] = useState<ConcurrencyState<TDraft>>(() =>
+    serviceItemUuid ? concurrencyManager.getState(serviceItemUuid) as ConcurrencyState<TDraft> : { hasConflict: false }
   );
 
   useEffect(() => {
     if (!serviceItemUuid) return;
-    setState(concurrencyManager.getState(serviceItemUuid));
+    setState(concurrencyManager.getState(serviceItemUuid) as ConcurrencyState<TDraft>);
     const unsubscribe = concurrencyManager.subscribe(serviceItemUuid, (newState) => {
-      setState(newState);
+      setState(newState as ConcurrencyState<TDraft>);
     });
     return unsubscribe;
   }, [serviceItemUuid]);
@@ -19,12 +19,13 @@ export function useServiceItemConcurrency(serviceItemUuid?: string) {
   const mutateWithConcurrency = useCallback(
     async <T>(
       mutationFn: (etag: string) => Promise<WithVersion<T>>,
-      overrideEtag?: string
+      overrideEtag?: string,
+      draftData?: TDraft
     ): Promise<WithVersion<T>> => {
       if (!serviceItemUuid) {
         throw new Error('serviceItemUuid is required for concurrency mutation');
       }
-      return concurrencyManager.executeMutation(serviceItemUuid, mutationFn, overrideEtag);
+      return concurrencyManager.executeMutation(serviceItemUuid, mutationFn, overrideEtag, draftData);
     },
     [serviceItemUuid]
   );
@@ -54,13 +55,31 @@ export function useServiceItemConcurrency(serviceItemUuid?: string) {
     [serviceItemUuid]
   );
 
+  const saveDraft = useCallback(
+    (draft: TDraft) => {
+      if (serviceItemUuid) {
+        concurrencyManager.saveDraft(serviceItemUuid, draft);
+      }
+    },
+    [serviceItemUuid]
+  );
+
+  const clearDraft = useCallback(() => {
+    if (serviceItemUuid) {
+      concurrencyManager.clearDraft(serviceItemUuid);
+    }
+  }, [serviceItemUuid]);
+
   return {
     currentEtag: state.currentEtag,
     hasConflict: state.hasConflict,
     conflictDetails: state.conflictDetails,
+    unsavedDraft: state.unsavedDraft,
     mutateWithConcurrency,
     reconcile,
     resetConflict,
     setEtag,
+    saveDraft,
+    clearDraft,
   };
 }

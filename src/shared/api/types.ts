@@ -94,6 +94,9 @@ export interface ServiceItem {
   isRedo?: boolean;
   isBillable: boolean;
   canEditBillability?: boolean;
+  canEditService?: boolean;
+  canTransition?: boolean;
+  isReadOnly?: boolean;
   isInvoiced?: boolean;
   currencyCode?: string;
   unitPrice?: string;

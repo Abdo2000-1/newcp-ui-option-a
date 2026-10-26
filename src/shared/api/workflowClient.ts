@@ -14,6 +14,7 @@ import {
   PreconditionRequiredError,
   PreconditionFailedError,
   ValidationError,
+  PermissionDeniedError,
   ApiClientError,
 } from './errors';
 import { SYNTHETIC_DEMO_HOLD_REASONS } from './holdTransitionMockAdapter';
@@ -32,7 +33,7 @@ export interface IWorkflowClient {
 export class WorkflowClient implements IWorkflowClient {
   private transport?: IHttpTransport;
   private enableMocks: boolean;
-  private mockServices: Map<string, { status: string; holdType?: HoldType; holdReasonCode?: string; etag: string }> = new Map();
+  private mockServices: Map<string, { status: string; holdType?: HoldType; holdReasonCode?: string; etag: string; canTransition?: boolean; isReadOnly?: boolean }> = new Map();
   private mockHistory: Map<string, HistoryEvent[]> = new Map();
   private revisionCounter = 1;
 
@@ -91,6 +92,9 @@ export class WorkflowClient implements IWorkflowClient {
 
     // Explicit MOCK / NOT_INTEGRATED fallback
     const svc = this.mockServices.get(serviceItemUuid);
+    if (svc && (svc.canTransition === false || svc.isReadOnly === true)) {
+      return [];
+    }
     const currentStatus = svc ? svc.status : 'pending_intake';
 
     if (currentStatus === 'on_hold') {
@@ -190,6 +194,9 @@ export class WorkflowClient implements IWorkflowClient {
 
     // Explicit MOCK / NOT_INTEGRATED fallback
     let svc = this.mockServices.get(serviceItemUuid);
+    if (svc && (svc.canTransition === false || svc.isReadOnly === true)) {
+      throw new PermissionDeniedError(`Workflow transitions are not permitted on item "${serviceItemUuid}" (read-only mode).`);
+    }
     if (!svc) {
       svc = {
         status: 'pending_intake',
