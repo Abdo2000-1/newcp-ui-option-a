@@ -32,6 +32,7 @@ function renderWithRoute(route: string) {
 describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem('3ddx-auth', 'true');
   });
 
   describe('404 Not Found Page', () => {

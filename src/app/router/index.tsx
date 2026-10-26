@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { Layout } from '@/app/shell/Layout';
 import { LoadingState } from '@/shared/components/LoadingState';
+import { useAuth, PendingAccessView } from '@/features/auth';
 
 // Feature Pages - Lazy Loaded
 // Auth
@@ -84,6 +85,25 @@ export const ROUTES = {
   MAINTENANCE: '/503',
 } as const;
 
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { status, isAuthenticated, isPendingAccess } = useAuth();
+  const location = useLocation();
+  const isPublicSystemRoute = ['/503', '/maintenance', '/404'].includes(location.pathname);
+  if (isPublicSystemRoute) return <>{children}</>;
+  const legacyAuth = typeof window !== 'undefined' && localStorage.getItem('3ddx-auth') === 'true';
+
+  if (isPendingAccess) {
+    return <PendingAccessView />;
+  }
+
+  if (!isAuthenticated && !legacyAuth && status !== 'authenticating') {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingState text="Loading 3DDX CP Module..." />}>{children}</Suspense>;
 }
@@ -122,7 +142,7 @@ export function AppRouter() {
       <LegacyTaskQueryHandler />
       <Routes>
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           {/* Default landing: 3DDX CP Login */}
           <Route index element={<Navigate to="/login" replace />} />
           

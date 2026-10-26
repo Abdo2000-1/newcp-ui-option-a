@@ -34,6 +34,7 @@ import {
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { useTheme } from '@/shared/hooks/useTheme';
 import type { MockAuthRole } from '@/features/auth/types';
+import { useAuth, APPROVED_DEMO_IDENTITIES } from '@/features/auth/AuthContext';
 
 /**
  * UNINTEGRATED BOUNDARY NOTICE: Google Login / OAuth 2.0
@@ -43,6 +44,9 @@ import type { MockAuthRole } from '@/features/auth/types';
  */
 
 export default function Login() {
+  const { loginWithGoogle, status: authStatus, isPendingAccess } = useAuth();
+  const [googleEmail, setGoogleEmail] = useState('cs.demo@3ddx.com');
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [email, setEmail] = useState('jessica.ruiz@3ddx.com');
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,6 +63,21 @@ export default function Login() {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+
+  const handleGoogleSignIn = async (selectedIdentityEmail?: string) => {
+    const targetEmail = selectedIdentityEmail || googleEmail;
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle(targetEmail);
+      if (targetEmail === 'unassigned@3ddx.com') {
+        navigate('/flow'); // Will be caught by ProtectedRoute and show PendingAccessView
+      } else {
+        navigate('/flow');
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleRoleSelect = (role: MockAuthRole) => {
     setSelectedRole(role);
