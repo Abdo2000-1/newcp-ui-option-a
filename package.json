@@ -27,7 +27,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "mock:server": "node scripts/mock-server.cjs"
+    "mock:server": "node scripts/mock-server.cjs",
+    "verify:contract": "node scripts/verify-api-contract-integration.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

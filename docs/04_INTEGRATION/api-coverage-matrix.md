@@ -2,7 +2,8 @@
 
 **Document Status:** COMPLETE AUDIT  
 **OpenAPI Contract Reference:** `docs/newcp-ai/references/api/newcp.openapi.yaml` (v1.0.0, SHA256: `47f759ec4b406ffa350a7cc947fda0a5ed88d761f8a8fc9f4a16642285644394`)  
-**Mock Server Status:** UNAVAILABLE / BLOCKED (`http://localhost:3000` is offline; no active port listener or runner script)
+**Mock Server Status:** VERIFIED LIVE (`http://localhost:3000` running via `npm run mock:server` / `scripts/mock-server.cjs`; 31/31 live contract HTTP endpoints verified)
+**Detailed Audit Report:** [`docs/04_INTEGRATION/api-contract-mock-server-verification-report.md`](api-contract-mock-server-verification-report.md)
 
 ---
 
@@ -67,4 +68,4 @@
 
 3. **Blocked by Missing Backend / Database Behavior (2 Key Areas):**
    - **Live F07 Service-Level Bill To Persistence:** V204 migration is not applied to live MySQL/PostgreSQL databases; stage-90 ETL is unexecuted. Real database writes are strictly blocked.
-   - **Live Mock Server:** `http://localhost:3000` is offline; no active port listener or runner script exists in the environment.
+   - **Live Mock Server:** Fully verified and active (`http://localhost:3000` started via `npm run mock:server` / `scripts/mock-server.cjs`). 31 live HTTP tests verified against both the standalone mock server and the Vite reverse proxy (`http://localhost:5173/api/v1`). All 14 OpenAPI endpoints pass contract validation.
