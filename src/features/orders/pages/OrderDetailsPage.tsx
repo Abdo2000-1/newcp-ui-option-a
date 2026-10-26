@@ -2084,7 +2084,35 @@ Generated on: ${new Date().toLocaleString()}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-sans">
-                {contractServices.map((svc) => (
+                {isContractLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500 font-semibold text-xs">
+                      Loading service instances...
+                    </td>
+                  </tr>
+                ) : contractError ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-rose-500 font-semibold text-xs">
+                      <div className="flex flex-col items-center gap-2">
+                        <span>{contractError}</span>
+                        <button
+                          type="button"
+                          onClick={loadContractServices}
+                          className="px-3 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs font-bold hover:bg-slate-300 transition-colors"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : contractServices.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400 italic text-xs">
+                      No service instances recorded for this order.
+                    </td>
+                  </tr>
+                ) : (
+                  contractServices.map((svc) => (
                   <tr key={svc.uuid} className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors">
                     {/* Service UUID */}
                     <td className="py-3 px-3 align-top font-mono text-[11px]">
@@ -2096,7 +2124,7 @@ Generated on: ${new Date().toLocaleString()}
 
                     {/* Name & Category */}
                     <td className="py-3 px-3 align-top">
-                      <div className="font-bold text-slate-900 dark:text-white text-xs">{(svc as any).name || 'Biomodel 3D Print'}</div>
+                      <div className="font-bold text-slate-900 dark:text-white text-xs">{(svc as any).serviceName || (svc as any).name || (svc.sellableItemUuid?.includes('conversion') ? 'Conversion Service' : 'Biomodel Service')}</div>
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-black border border-sky-400 dark:border-sky-500/50 text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/30">
                           {(svc as any).categoryCode || 'RESTORATIVE'}
@@ -2138,17 +2166,17 @@ Generated on: ${new Date().toLocaleString()}
                           ))}
                         </div>
                       ) : (
-                        <span className="text-slate-400 text-[11px] italic">No custom answers</span>
+                        <span className="text-slate-400 text-[11px] italic">Not available</span>
                       )}
                     </td>
 
                     {/* F07 Payer Target */}
                     <td className="py-3 px-3 align-top">
                       <div className="text-slate-900 dark:text-slate-200 font-semibold text-xs truncate max-w-[150px]">
-                        {svc.billedToContactUuid || 'contact-dr-smith-01'}
+                        {svc.billedToContactUuid || 'Not available'}
                       </div>
                       <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
-                        Origin: <strong className="text-sky-600 dark:text-sky-400">{svc.billedPartyOrigin || 'order_default'}</strong>
+                        Origin: <strong className="text-sky-600 dark:text-sky-400">{svc.billedPartyOrigin || 'Not available'}</strong>
                       </span>
                     </td>
 
@@ -2162,7 +2190,7 @@ Generated on: ${new Date().toLocaleString()}
                       </div>
                       {parseFloat(svc.lineTotal || svc.unitPrice || '0') === 0 && (
                         <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 mt-1">
-                          ZERO: {svc.zeroChargeReasonCode || 'WARRANTY'}
+                          ZERO: {svc.zeroChargeReasonCode || 'Reason not provided'}
                         </span>
                       )}
                     </td>
@@ -2205,7 +2233,7 @@ Generated on: ${new Date().toLocaleString()}
                       </div>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
