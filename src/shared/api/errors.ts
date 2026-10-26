@@ -157,9 +157,13 @@ export class ValidationError extends ProblemError {
  * Normalizes an HTTP error response or Problem JSON payload into a typed error class.
  */
 export function normalizeProblemError(status: number, payload?: unknown): ApiClientError {
-  const isProblem = payload && typeof payload === 'object' && 'code' in payload && 'message' in payload;
+  const isProblem = payload && typeof payload === 'object' && ('code' in payload || 'message' in payload);
   const problem: Problem = isProblem
-    ? (payload as Problem)
+    ? {
+        code: (payload as Record<string, any>).code || `HTTP_${status}`,
+        message: (payload as Record<string, any>).message || `HTTP Error ${status}`,
+        ...(payload as Record<string, any>),
+      }
     : { code: `HTTP_${status}`, message: typeof payload === 'string' ? payload : `HTTP Error ${status}` };
 
   switch (status) {
