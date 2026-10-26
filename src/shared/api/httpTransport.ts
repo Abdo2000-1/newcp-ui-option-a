@@ -1,3 +1,4 @@
+import { getSentry } from '@/shared/observability';
 import { normalizeProblemError, ApiClientError } from './errors';
 import { getApiConfig, type ApiMode } from './config';
 import type { Problem } from './contractTypes';
@@ -149,7 +150,14 @@ export class HttpTransport implements IHttpTransport {
         errorPayload = `HTTP Error ${response.status}`;
       }
 
-      throw normalizeProblemError(response.status, errorPayload);
+      const normError = normalizeProblemError(response.status, errorPayload);
+      if (!getSentry().isExpectedDomainError(normError)) {
+        getSentry().captureException(normError, {
+          tags: { status: String(response.status), method },
+          extra: { path },
+        });
+      }
+      throw normError;
     }
 
     let responseData: T;
