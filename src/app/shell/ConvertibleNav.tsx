@@ -109,8 +109,7 @@ export function ConvertibleNav({
     { id: 'task47', label: t('nav.task47', 'Task 47: Models'), path: '/task-47', icon: Boxes },
     { id: 'task31', label: t('nav.task31', 'Task 31: Staff Targets'), path: '/task-31', icon: Users2 },
     { id: 'editCase', label: t('nav.editCase', 'Edit Case'), path: '/edit-case', icon: FileEdit },
-    { id: 'apiContract', label: 'OpenAPI 3.0.3 Contract', path: '/api-contract', icon: Code2 },
-  ];
+      ];
 
   // Close menus on outside click
   useEffect(() => {

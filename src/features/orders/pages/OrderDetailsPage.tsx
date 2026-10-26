@@ -1816,7 +1816,110 @@ Generated on: ${new Date().toLocaleString()}
       {/* ------------------------------------------------------------------ */}
       {activeTab === 'suborders' && (
         <div className="border border-slate-300 dark:border-slate-800 rounded-2xl p-5 bg-white dark:bg-[#0b101d] space-y-5 text-xs shadow-sm">
-          
+
+          {/* Sub-Orders Breakdown (Table / Cards View) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Case #{flowOrder.orderNum} Sub-Orders Breakdown
+              </h3>
+              <p className="text-xs text-slate-400">All services billed and tracked under this master order</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle: Table vs Cards */}
+              <div className="inline-flex items-center p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={() => setSubOrdersViewMode('table')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    subOrdersViewMode === 'table'
+                      ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Table View"
+                >
+                  <List size={13} />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSubOrdersViewMode('matrix')}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    subOrdersViewMode === 'matrix'
+                      ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                  title="Card Matrix View"
+                >
+                  <LayoutGrid size={13} />
+                  <span>Cards</span>
+                </button>
+              </div>
+
+              <span className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400">
+                Total: {flowOrder.services.some(s => typeof s.amount === 'number') ? `${flowOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
+              </span>
+            </div>
+          </div>
+
+          {subOrdersViewMode === 'table' ? (
+            <DataTable<SubServiceItem>
+              columns={subOrderColumns}
+              data={flowOrder.services}
+              rowKey={(sub, idx) => sub.id || `${sub.typeCode}-${idx}`}
+              onRowClick={(sub) => triggerToast(`[MOCK] Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
+              searchable
+              searchPlaceholder="Filter sub-orders by title or code..."
+              searchFilter={(sub, query) =>
+                sub.title.toLowerCase().includes(query) ||
+                sub.typeCode.toLowerCase().includes(query) ||
+                sub.format.toLowerCase().includes(query) ||
+                (sub.csTask?.assignee || '').toLowerCase().includes(query)
+              }
+              ariaLabel="Sub-orders Matrix Breakdown Table"
+              emptyState="No sub-orders recorded for this master order."
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {flowOrder.services.map((sub, srvIdx) => (
+                <div
+                  key={sub.id || srvIdx}
+                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/40"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black border border-sky-400 dark:border-sky-500/50 text-sky-700 dark:text-sky-400 bg-transparent">
+                        {sub.typeCode}
+                      </span>
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">
+                        {sub.title}
+                      </span>
+                    </div>
+                    <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
+                      {typeof sub.amount === 'number' ? `${sub.amount}.00` : 'Not available'}
+                    </span>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 space-y-1">
+                    <div>Format: <strong className="text-slate-700 dark:text-slate-300">{sub.format}</strong></div>
+                    <div>Anatomical Jaws: <strong className="text-slate-700 dark:text-slate-300">Max: {sub.maxilla} • Mand: {sub.mandible}</strong></div>
+                    <div>Bill To: <span className="text-slate-700 dark:text-slate-300 truncate block">{sub.billTo}</span></div>
+                    <div>Received: <span className="font-mono text-[10px] text-slate-400">{sub.receivedTime}</span></div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <span className="text-[10px] font-mono text-slate-400">CS Task: {sub.csTask.assignee || 'Unassigned'}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border border-sky-400 dark:border-sky-500/40 text-sky-700 dark:text-sky-400 bg-transparent">
+                      {sub.actionLabel}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <hr className="border-slate-200 dark:border-slate-800 my-4" />
+
           {/* Live OpenAPI Connection Header Banner */}
           <div className="p-3.5 rounded-xl border border-emerald-300/80 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -1826,15 +1929,15 @@ Generated on: ${new Date().toLocaleString()}
               </span>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-xs text-emerald-900 dark:text-emerald-300 uppercase tracking-wide">
-                    Live OpenAPI 3.0.3 Contract Stream Active
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wide">
+                    Service Line Items
                   </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                    HTTP 200 OK
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {contractServices.length} Active Lines
                   </span>
                 </div>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
-                  Connected to <strong className="font-mono">http://localhost:3000/api/v1/orders/{flowOrder.orderNum}/services</strong> • ETag: <code className="font-mono bg-emerald-100 dark:bg-emerald-900/40 px-1 rounded">{contractEtag || 'W/"ord-live-stream"'}</code>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Prescription sub-order instances attached to Order #{flowOrder.orderNum} • Version: <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{contractEtag || 'Current'}</code>
                 </p>
               </div>
             </div>
@@ -1846,24 +1949,16 @@ Generated on: ${new Date().toLocaleString()}
                 className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
               >
                 <Plus size={12} />
-                <span>+ Add Service Item (POST)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/api-contract')}
-                className="px-3 py-1.5 rounded-lg border border-cyan-400 dark:border-cyan-700 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-200 font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
-              >
-                <Code2 size={12} />
-                <span>Contract Explorer</span>
+                <span>+ Add Service Item</span>
               </button>
               <button
                 type="button"
                 onClick={loadContractServices}
                 disabled={isContractLoading}
-                className="px-3 py-1.5 rounded-lg border border-emerald-400 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
+                className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs text-slate-700 dark:text-slate-300"
               >
                 <RotateCw size={12} className={isContractLoading ? "animate-spin" : ""} />
-                <span>{isContractLoading ? 'Refreshing...' : 'Re-fetch from Server'}</span>
+                <span>{isContractLoading ? 'Refreshing...' : 'Refresh Services'}</span>
               </button>
             </div>
           </div>
@@ -1880,7 +1975,7 @@ Generated on: ${new Date().toLocaleString()}
                 Authoritative service items conforming strictly to New CP OpenAPI 3.0.3 specification
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400">
                 Total Line Value: ${contractServices.reduce((acc, s) => acc + (parseFloat(s.lineTotal || s.unitPrice || '0') * (s.quantity || 1)), 0).toFixed(2)} USD

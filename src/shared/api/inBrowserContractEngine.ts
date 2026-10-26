@@ -926,8 +926,12 @@ export async function handleInBrowserContractRequest(
  * If running on localhost and the node mock-server is up, it defers to network,
  * but falls back gracefully if the local server is down or when deployed on GitHub Pages.
  */
+import { getApiConfig } from './config';
+
 export function initInBrowserContractEngine(): void {
   if (typeof window === 'undefined') return;
+  const cfg = getApiConfig();
+  if (cfg.mode !== 'MOCK_BROWSER') return;
 
   const originalFetch = window.fetch.bind(window);
 

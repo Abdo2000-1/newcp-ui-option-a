@@ -1,3 +1,4 @@
+import { getApiConfig } from './config';
 import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { WithVersion } from './types';
 import type {
@@ -268,8 +269,4 @@ export class ServiceClient implements IServiceClient {
   }
 }
 
-const defaultTransport = new HttpTransport({
-  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
-});
-
-export const serviceClient = new ServiceClient(defaultTransport, true);
+export const serviceClient = new ServiceClient(new HttpTransport(), getApiConfig().enableMocks);

@@ -134,16 +134,14 @@ export const DynamicFormRenderer: React.FC<DynamicFormRendererProps> = ({
         <div className="flex items-center gap-2">
           <Sliders className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
           <span className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">
-            OpenAPI Dynamic Service Form Schema ({schema.service?.code || 'SERVICE'})
+            Clinical Specifications ({schema.service?.code || 'SERVICE'})
           </span>
         </div>
-        <span className="font-mono text-[9px] bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded font-black border border-cyan-500/30">
-          HTTP 200 OK
-        </span>
+
       </div>
 
       <p className="text-[11px] text-slate-600 dark:text-slate-400">
-        Clinical parameters dynamically validated from the OpenAPI service-instance contract:
+        Clinical parameters for the selected service:
       </p>
 
       {/* Dynamic Fields */}

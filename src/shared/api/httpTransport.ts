@@ -1,8 +1,10 @@
-import { normalizeProblemError } from './errors';
+import { normalizeProblemError, ApiClientError } from './errors';
+import { getApiConfig, type ApiMode } from './config';
 import type { Problem } from './contractTypes';
 
 export interface HttpTransportConfig {
   baseUrl?: string;
+  mode?: ApiMode;
   getAuthToken?: () => string | Promise<string | null> | null;
   customFetch?: typeof fetch;
   defaultHeaders?: Record<string, string>;
@@ -34,18 +36,38 @@ export interface IHttpTransport {
 
 export class HttpTransport implements IHttpTransport {
   private baseUrl: string;
+  private mode: ApiMode;
   private getAuthToken?: () => string | Promise<string | null> | null;
   private fetchFn: typeof fetch;
   private defaultHeaders: Record<string, string>;
 
   constructor(config?: HttpTransportConfig) {
-    this.baseUrl = (config?.baseUrl || (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1').replace(/\/+$/, '');
+    const apiCfg = getApiConfig();
+    this.mode = config?.mode || apiCfg.mode;
+    const resolvedBase = config?.baseUrl !== undefined ? config.baseUrl : apiCfg.baseUrl;
+    this.baseUrl = (resolvedBase || '').replace(/\/+$/, '');
     this.getAuthToken = config?.getAuthToken;
     this.fetchFn = config?.customFetch || fetch.bind(globalThis);
     this.defaultHeaders = config?.defaultHeaders || {};
   }
 
+  public getMode(): ApiMode {
+    return this.mode;
+  }
+
+  public getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
   public async request<T = unknown>(path: string, options: HttpRequestOptions = {}): Promise<HttpResponse<T>> {
+    // In LIVE_HTTP mode, baseUrl must be explicitly configured
+    if (this.mode === 'LIVE_HTTP' && !this.baseUrl) {
+      throw new ApiClientError(
+        500,
+        'Configuration Error: VITE_API_BASE_URL must be defined when running in LIVE_HTTP mode.'
+      );
+    }
+
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     let url = `${this.baseUrl}${cleanPath}`;
 

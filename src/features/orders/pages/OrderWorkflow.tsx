@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  Clock, 
-  User, 
-  Check, 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  User,
+  Check,
   ArrowRight,
   ShieldCheck,
   Play
@@ -97,7 +97,7 @@ export default function OrderWorkflow() {
   const order = orders.find((o) => o.id === orderId || o.orderNumber === orderId);
 
   const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
-  
+
   // OpenAPI 3.0.3 Contract Integration State
   const [contractServices, setContractServices] = useState<ServiceItem[]>([]);
   const [selectedServiceUuid, setSelectedServiceUuid] = useState<string>('');
@@ -238,20 +238,18 @@ export default function OrderWorkflow() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-extrabold text-cyan-200">
-                  OpenAPI 3.0.3 Service Instances Lifecycle & Concurrency
+                  Service Instances Lifecycle & Concurrency
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  LIVE PORT 3000
-                </span>
+
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Target: Q-B8..Q-B15 Concurrency (ETag/If-Match), Atomic On-Hold & F07 Payer Target
+                Concurrency (ETag/If-Match), Atomic On-Hold Requirements & Service-Line Payer Attribution
               </p>
             </div>
           </div>
 
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={loadServices}
             className="text-xs border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 gap-1.5 self-start sm:self-auto"
@@ -419,13 +417,13 @@ export default function OrderWorkflow() {
             const isCurrent = idx === currentStageIndex;
 
             return (
-              <div 
-                key={st.status} 
+              <div
+                key={st.status}
                 onClick={() => handleSetStage(st.status)}
                 className="flex flex-col items-center relative z-10 cursor-pointer group"
               >
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-transform group-hover:scale-110 ${
-                  isCompleted 
+                  isCompleted
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : isCurrent
                       ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/40 animate-pulse'
@@ -451,10 +449,10 @@ export default function OrderWorkflow() {
           const isPassed = idx < currentStageIndex;
 
           return (
-            <div 
+            <div
               key={st.status}
               className={`rounded-xl border transition-all ${
-                isCurrent 
+                isCurrent
                   ? 'bg-white dark:bg-gray-800 border-blue-500 shadow-md ring-1 ring-blue-500/20'
                   : isPassed
                     ? 'bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700'
@@ -464,7 +462,7 @@ export default function OrderWorkflow() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
                 <div className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
-                    isPassed 
+                    isPassed
                       ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
                       : isCurrent
                         ? 'bg-blue-600 text-white'
@@ -497,8 +495,8 @@ export default function OrderWorkflow() {
 
                 <div>
                   {!isCurrent && (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant={isPassed ? 'ghost' : 'outline'}
                       onClick={() => handleSetStage(st.status)}
                       className="text-xs gap-1"
@@ -508,8 +506,8 @@ export default function OrderWorkflow() {
                     </Button>
                   )}
                   {isCurrent && idx < STAGES.length - 1 && (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={() => handleSetStage(STAGES[idx + 1].status)}
                       className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
                     >
@@ -535,8 +533,8 @@ export default function OrderWorkflow() {
                     const isChecked = isPassed || Boolean(completedTasks[taskId]);
 
                     return (
-                      <label 
-                        key={tIdx} 
+                      <label
+                        key={tIdx}
                         className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-white"
                       >
                         <input
