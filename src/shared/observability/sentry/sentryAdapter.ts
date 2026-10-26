@@ -1,6 +1,5 @@
 import type { TelemetryConfig, TelemetryEnvironment } from '../types';
 import { scrubSentryData, scrubBreadcrumb, type SentryBreadcrumb } from './sentryScrubber';
-import { ApiClientError } from '@/shared/api/errors';
 
 export type SentryLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug';
 

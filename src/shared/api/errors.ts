@@ -73,6 +73,17 @@ export class AccessNotAssignedError extends ProblemError {
   }
 }
 
+export class TenantNotAssignedError extends ProblemError {
+  constructor(problem: Problem | string = 'Explicit internal tenant assignment is missing') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'TENANT_NOT_ASSIGNED', message: problem }
+      : problem;
+    super(403, p);
+    this.name = 'TenantNotAssignedError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 export class SessionExpiredError extends ProblemError {
   constructor(problem: Problem | string = 'Session has expired due to inactivity or max lifetime') {
     const p: Problem = typeof problem === 'string'
@@ -173,6 +184,7 @@ export function normalizeProblemError(status: number, payload?: unknown): ApiCli
       return new AuthenticationError(problem.message);
     case 403:
       if (problem.code === 'ACCESS_NOT_ASSIGNED') return new AccessNotAssignedError(problem);
+      if (problem.code === 'TENANT_NOT_ASSIGNED') return new TenantNotAssignedError(problem);
       if (problem.code === 'PERMISSION_DENIED') return new InsufficientPermissionsError(problem);
       return new TenantAccessDeniedError(problem.message);
     case 409:
