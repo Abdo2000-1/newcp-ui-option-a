@@ -189,13 +189,15 @@ describe('FE-FIN-001: Price Override and Independent Billability Boundary', () =
   });
 
   it('in LIVE_HTTP mode, propagates 403, 409, and 422 responses from transport without mock fallback', async () => {
-    const liveTransport: IHttpTransport = {
+    const liveTransport = {
+      request: vi.fn(),
       get: vi.fn().mockResolvedValue({ data: BASE_ITEM, etag: 'W/"test"' }),
       post: vi.fn(),
       patch: vi.fn().mockRejectedValueOnce(
         new ApiClientError(409, 'Conflict: item is locked for month-end close')
       ),
-    };
+      delete: vi.fn(),
+    } as unknown as IHttpTransport;
 
     const liveSrv = new ServiceClient(liveTransport, false);
     const livePricing = new PricingClient(liveTransport, liveSrv, false);

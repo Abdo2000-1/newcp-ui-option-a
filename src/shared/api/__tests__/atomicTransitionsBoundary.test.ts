@@ -155,13 +155,15 @@ describe('FE-WORKFLOW-001: Atomic Service Workflow Transitions Boundary', () => 
   });
 
   it('in LIVE_HTTP mode, propagates 403, 409, 412, and 422 responses from transport without fallback', async () => {
-    const liveTransport: IHttpTransport = {
+    const liveTransport = {
+      request: vi.fn(),
       get: vi.fn(),
       post: vi.fn().mockRejectedValueOnce(
         new ApiClientError(409, 'Conflict: clinical approval required before release from hold')
       ),
       patch: vi.fn(),
-    };
+      delete: vi.fn(),
+    } as unknown as IHttpTransport;
 
     const liveClient = new WorkflowClient(liveTransport, false);
 
