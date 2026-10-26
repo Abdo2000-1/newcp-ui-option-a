@@ -1,7 +1,7 @@
 import { PreconditionFailedError, PreconditionRequiredError } from './errors';
 import type { WithVersion } from './types';
 
-export interface ConcurrencyState {
+export interface ConcurrencyState<TDraft = unknown> {
   currentEtag?: string;
   hasConflict: boolean;
   conflictDetails?: {
@@ -10,12 +10,42 @@ export interface ConcurrencyState {
     serverEtag?: string;
     message: string;
   };
+  unsavedDraft?: TDraft;
 }
 
 export class ConcurrencyManager {
   private etags: Map<string, string> = new Map();
   private states: Map<string, ConcurrencyState> = new Map();
+  private drafts: Map<string, unknown> = new Map();
   private listeners: Map<string, Set<(state: ConcurrencyState) => void>> = new Map();
+
+  public saveDraft(key: string, draft: unknown): void {
+    this.drafts.set(key, draft);
+    const existing = this.states.get(key) || { hasConflict: false };
+    const nextState: ConcurrencyState = {
+      ...existing,
+      unsavedDraft: draft,
+    };
+    this.states.set(key, nextState);
+    this.notify(key, nextState);
+  }
+
+  public getDraft<T = unknown>(key: string): T | undefined {
+    return this.drafts.get(key) as T | undefined;
+  }
+
+  public clearDraft(key: string): void {
+    this.drafts.delete(key);
+    const existing = this.states.get(key);
+    if (existing && existing.unsavedDraft !== undefined) {
+      const nextState: ConcurrencyState = {
+        ...existing,
+        unsavedDraft: undefined,
+      };
+      this.states.set(key, nextState);
+      this.notify(key, nextState);
+    }
+  }
 
   public getEtag(key: string): string | undefined {
     return this.etags.get(key);
@@ -72,7 +102,17 @@ export class ConcurrencyManager {
     });
   }
 
-  public recordConflict(key: string, clientEtag?: string, serverEtag?: string, message?: string): ConcurrencyState {
+  public recordConflict(
+    key: string,
+    clientEtag?: string,
+    serverEtag?: string,
+    message?: string,
+    unsavedDraft?: unknown
+  ): ConcurrencyState {
+    const draft = unsavedDraft !== undefined ? unsavedDraft : this.drafts.get(key);
+    if (unsavedDraft !== undefined) {
+      this.drafts.set(key, unsavedDraft);
+    }
     const nextState: ConcurrencyState = {
       currentEtag: serverEtag || this.etags.get(key),
       hasConflict: true,
@@ -82,6 +122,7 @@ export class ConcurrencyManager {
         serverEtag,
         message: message || 'Stale revision conflict (412 Precondition Failed). The entity was modified concurrently.',
       },
+      unsavedDraft: draft,
     };
     this.states.set(key, nextState);
     this.notify(key, nextState);
@@ -107,10 +148,11 @@ export class ConcurrencyManager {
    * On 412: sets conflict state and re-throws the error.
    * On 428: validates precondition requirements and re-throws.
    */
-  public async executeMutation<T>(
+  public async executeMutation<T, TDraft = unknown>(
     key: string,
     mutation: (etag: string) => Promise<WithVersion<T>>,
-    overrideEtag?: string
+    overrideEtag?: string,
+    draftData?: TDraft
   ): Promise<WithVersion<T>> {
     const etag = overrideEtag || this.getEtag(key);
     if (!etag) {
@@ -123,13 +165,14 @@ export class ConcurrencyManager {
       const result = await mutation(etag);
       if (result && result.etag) {
         this.setEtag(key, result.etag);
+        this.clearDraft(key);
       }
       return result;
     } catch (err: unknown) {
       if (err instanceof PreconditionFailedError || (err as { status?: number }).status === 412) {
         const errorDetails = err as { details?: { currentETag?: string } };
         const serverEtag = errorDetails?.details?.currentETag;
-        this.recordConflict(key, etag, serverEtag, (err as Error).message);
+        this.recordConflict(key, etag, serverEtag, (err as Error).message, draftData);
       }
       throw err;
     }

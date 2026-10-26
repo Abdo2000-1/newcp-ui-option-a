@@ -11,6 +11,7 @@ import {
   PreconditionRequiredError,
   PreconditionFailedError,
   ValidationError,
+  PermissionDeniedError,
   ApiClientError
 } from './errors';
 
@@ -237,6 +238,14 @@ export class ServiceClient implements IServiceClient {
       throw new PreconditionRequiredError('An If-Match header containing the current ETag is required to edit a service item.');
     }
 
+    // Status mutation is strictly disallowed via generic PATCH (must use workflow transition endpoint)
+    if ((patch as Record<string, unknown>).status !== undefined) {
+      throw new ValidationError({
+        code: 'STATUS_MUTATION_DISALLOWED',
+        message: 'Service status cannot be modified via PATCH. Use the workflow transitions endpoint instead.',
+      });
+    }
+
     if (this.transport) {
       try {
         const res = await this.transport.patch<ServiceItem>(`/services/${serviceItemUuid}`, patch, { ifMatch });
@@ -255,8 +264,33 @@ export class ServiceClient implements IServiceClient {
       throw new ServiceItemNotFoundError(serviceItemUuid);
     }
 
+    // Read-only / financial locks check
+    if (entry.item.isInvoiced && (patch.unitPrice !== undefined || patch.quantity !== undefined || patch.isBillable !== undefined)) {
+      throw new PermissionDeniedError(`Cannot edit financial fields on invoiced service item "${serviceItemUuid}".`);
+    }
+
+    if (entry.item.canEditPrice === false && (patch.unitPrice !== undefined || patch.quantity !== undefined)) {
+      throw new PermissionDeniedError(`Price editing is not permitted on service item "${serviceItemUuid}".`);
+    }
+
+    if (entry.item.canEditBillability === false && patch.isBillable !== undefined) {
+      throw new PermissionDeniedError(`Billability editing is not permitted on service item "${serviceItemUuid}".`);
+    }
+
+    if (entry.item.canEditBilledParty === false && patch.billedToContactUuid !== undefined) {
+      throw new PermissionDeniedError(`Payer editing is not permitted on service item "${serviceItemUuid}".`);
+    }
+
     if (entry.etag !== ifMatch) {
-      throw new PreconditionFailedError('The provided If-Match tag does not match the current service item revision.');
+      throw new PreconditionFailedError({
+        code: 'STALE_PRECONDITION',
+        message: 'The provided If-Match tag does not match the current service item revision.',
+        details: {
+          serviceItemUuid,
+          providedETag: ifMatch,
+          currentETag: entry.etag,
+        },
+      });
     }
 
     // Rotate ETag on mutation
@@ -268,6 +302,15 @@ export class ServiceClient implements IServiceClient {
     let computedLineTotal = entry.item.lineTotal;
     if (effectiveUnitPrice !== undefined && effectiveQuantity !== undefined) {
       computedLineTotal = (parseFloat(effectiveUnitPrice) * effectiveQuantity).toFixed(2);
+    }
+
+    // Zero charge constraint
+    if (effectiveUnitPrice !== undefined && parseFloat(effectiveUnitPrice) === 0 && !patch.zeroChargeReasonCode && !entry.item.zeroChargeReasonCode) {
+      throw new ValidationError({
+        code: 'ZERO_CHARGE_REASON_REQUIRED',
+        message: 'zeroChargeReasonCode is mandatory when unitPrice is 0.00',
+        details: { field: 'zeroChargeReasonCode' },
+      });
     }
 
     const updated: ServiceItem = {
