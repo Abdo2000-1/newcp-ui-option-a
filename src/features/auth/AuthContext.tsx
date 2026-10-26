@@ -1,3 +1,4 @@
+import { getPostHog } from '@/shared/observability';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 /**
@@ -235,6 +236,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
       };
       persistSession(createdSession);
+      getPostHog().identify(createdSession.userId, {
+        role: createdSession.roles[0],
+        family: createdSession.family,
+        tenantId: createdSession.tenantId,
+      });
+      getPostHog().capture('user_logged_in', {
+        user_id: createdSession.userId,
+        role: createdSession.roles[0],
+      });
     } else {
       // Default: Authenticated with Google, but unassigned in V3 PostgreSQL IAM
       const unassignedSession: UserSession = {
@@ -250,11 +260,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
       };
       persistSession(unassignedSession);
+      getPostHog().identify(unassignedSession.userId, {
+        tenantId: unassignedSession.tenantId,
+      });
+      getPostHog().capture('user_logged_in', {
+        user_id: unassignedSession.userId,
+      });
     }
   };
 
   const logout = async () => {
     // In future LIVE_HTTP mode, call POST /api/v1/auth/logout for server-side token revocation
+    if (sessionRef.current?.userId) {
+      getPostHog().capture('user_logged_out', {
+        user_id: sessionRef.current.userId,
+      });
+    }
+    getPostHog().reset();
     persistSession(null);
   };
 
