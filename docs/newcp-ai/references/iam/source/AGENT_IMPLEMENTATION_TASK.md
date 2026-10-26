@@ -1,3 +1,10 @@
+## v0.9.7 mandatory tenant context distinction
+
+DO NOT derive authorization from `session.activeTenant` or from `DEMO_SEED_TENANT_ID`. Use PostgreSQL V3 internal user→tenant grants for authorization, store the validated active tenant in backend-managed session, revalidate user grant and Casbin on *every protected request*, and set `app.tenant_id` transaction-locally for each SQL unit of work. Frontend reads the backend context only, never provides tenant selection. See `TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md` and tests TEN-23+.
+
+## v0.9.6 mandatory October tenant scope
+Read `TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md` and `TENANT_OCT_DEMO_ACCEPTANCE_TESTS.csv` before coding. Use central validated config (`TENANT_OCT_DEMO_CONFIG.example.env` as illustration). Google OIDC identity is not an authorization grant; no Google Groups. Tenant1 assignment only from trusted internal IAM grant. Expose safe normalized session context to BOTH React variants; do not accept a client-supplied demo tenant ID, and do not hardcode tenant1 in middleware. Use transaction-local RLS context on `tx`, check the `threeddx_app` role's RLS behavior, provide tenant2 negative fixtures. No role/tenant fallback; no automatic domain mapping. Align example routes/DTOs/error codes with existing API rather than independently adding duplicate endpoints. Report PASS/FAIL/NOT_RUN; do not claim live validation.
+
 # AI coding agent implementation brief — IAM v1.2
 
 ## Read in order

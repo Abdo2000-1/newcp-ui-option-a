@@ -18,11 +18,13 @@ The files in this directory are reference and workflow controls. They do not, by
 8. The smallest task file that matches the approved work.
 9. Only the versioned references required by that task.
 
-For IAM/authentication work, additionally read:
+For IAM/authentication and tenant work, additionally read:
 
 10. `policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`.
-11. `references/iam/README.md` and the relevant IAM reference files.
-12. `tasks/iam/IAM-001-read-only-assessment.md` or a later approved IAM task.
+11. `references/iam/tenant-context-integration.md` (v0.9.7 tenant clarification).
+12. `references/iam/TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md` (authoritative October tenant spec).
+13. `references/iam/README.md` and the relevant IAM reference files.
+14. `tasks/iam/IAM-001-read-only-assessment.md` or a later approved IAM task.
 
 For PostHog, Sentry, telemetry, feature-flag, replay, or error-monitoring work,
 also read `docs/06_OPERATIONS/observability/README.md`, the applicable provider
@@ -48,6 +50,11 @@ provider configuration, production delivery, or backend changes.
 | `references/f07/fixtures/` | Synthetic examples | Safe development/test examples only. They do not prove persistence, tenant isolation, finance correctness, or production readiness. |
 | `scripts/check_handoff.py` | Local integrity check | Offline validator for the integrated file layout and reference data. It does not access a database, network, or production system. |
 | `policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md` | IAM business baseline | Approved Google-only authentication, internal V3 IAM/Casbin authorization, tenant, session, audit, capability, and same-family inheritance rules. It does not prove runtime implementation. |
+| `references/iam/tenant-context-integration.md` | v0.9.7 Tenant Specification | Details user grants ≠ active session tenant ≠ transaction-local RLS separation, non-negotiable constraints, and TEN-01..30 scenarios. |
+| `references/iam/TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md` | Authoritative October tenant spec | Defines backend request/RLS rules, session context, frontend expectations, and configuration. |
+| `references/iam/TENANT_OCT_DEMO_ACCEPTANCE_TESTS.csv` | Tenant acceptance matrix | Contains TEN-01 through TEN-30 acceptance cases (all marked NOT_RUN). |
+| `references/iam/TENANT_OCT_DEMO_CONFIG.example.env` | Tenant configuration template | Central typed config reference illustrating `DEMO_SEED_TENANT_ID=1` as seed-only setting. |
+| `archive/superseded_v0.9.6_tenant_refs/` | Archived v0.9.6 references | Preserved for traceability; superseded by v0.9.7 for tenant handling. |
 | `references/iam/` | IAM engineering references | Role discovery, capability boundaries, journeys, acceptance groups, and implementation gaps. Exact role codes and hierarchy edges remain evidence-dependent. |
 | `tasks/iam/IAM-001-read-only-assessment.md` | IAM first task | Requires a read-only comparison of the repository with the v0.9.5 IAM baseline before code changes. |
 | `docs/06_OPERATIONS/observability/` | Observability control package | React/Vite-adapted PostHog and Sentry boundaries, proposed telemetry vocabulary, privacy controls, and verification gates. It is not provider delivery evidence. |
@@ -66,6 +73,7 @@ Use the package labels instead of vague claims:
 - `MOCK`
 - `INTEGRATED`
 - `NOT VERIFIED`
+- `NOT_RUN`
 
 ## What these references do not authorize
 

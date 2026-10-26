@@ -2,9 +2,9 @@
 
 Status: approved business requirements; runtime, OAuth, IAM, Casbin, database, and acceptance execution are not verified by this document.
 
-Source package: `NewCP_Approved_IAM_Developer_Handoff_v0.9.5_2026-10-26`.
-Primary source: `payload/policy/IAM_APPROVED_BUSINESS_SPEC_v1.2.md`.
-Related sources: `payload/references/iam/`, the v0.9.5 changelog, and the repository OpenAPI contract.
+Source package: `NewCP_Approved_IAM_Developer_Handoff_v0.9.5_2026-10-26` and `NewCP_Approved_IAM_Developer_Handoff_v0.9.7_2026-10-26`.
+Primary source: `payload/policy/IAM_APPROVED_BUSINESS_SPEC_v1.2.md` and `references/iam/TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md`.
+Related sources: `payload/references/iam/`, the v0.9.5 and v0.9.7 changelogs, and the repository OpenAPI contract.
 
 ## Authority and non-goals
 
@@ -47,6 +47,9 @@ Related sources: `payload/references/iam/`, the v0.9.5 changelog, and the reposi
 | IAM-025 | Mapping evidence | Discover exact role codes, direct grants, and parent-child links; names alone are not evidence. |
 | IAM-026 | Effective closure | Same-family parent roles receive all direct and transitively inherited child grants through a reviewed implementation. |
 | IAM-HIER-001 | Mandatory hierarchy | Every verified Senior/Manager role inherits every direct and inherited permission of verified subordinate roles in the same family, plus its own grants. No reverse, cross-family, or cross-tenant inheritance. |
+| IAM-027 | Tenant Separation | User authorization (IAM grants) ≠ active session tenant context ≠ transaction-local PostgreSQL RLS context. |
+| IAM-028 | Seed Tenant Non-Fallback | `DEMO_SEED_TENANT_ID=1` is fixture/seed only; never login, session, middleware, or API authorization fallback. |
+| IAM-029 | No Client-Supplied Tenant | Client-supplied `tenantId` or `X-Tenant-Id` is rejected/ignored; no tenant selector UI; backend context is authoritative. |
 
 ## Role and capability boundaries
 
@@ -71,6 +74,25 @@ Before activating granular hierarchy:
 4. Calculate transitive effective permissions.
 5. Test positive inheritance, reverse denial, family/tenant/service boundaries, cycle rejection, and next-request revocation.
 
+## v0.9.7 Tenant Separation & Enforcement Guardrails
+
+Keep three concepts strictly separate:
+1. **User authorization:** PostgreSQL V3 IAM user-to-tenant grants determine which tenants the user may access.
+2. **Active session context:** The backend session stores one active tenant only after validating the user's grant.
+3. **Request/transaction enforcement:** Every protected request revalidates the current grant and Casbin permissions. The backend sets PostgreSQL transaction-local `app.tenant_id` and relies on RLS.
+
+Non-negotiable constraints:
+- Google Sign-In authenticates identity only.
+- Google Groups must not be used.
+- `@3ddx.com` is provisioning eligibility only, not tenant authorization.
+- `DEMO_SEED_TENANT_ID=1` is seed/test configuration only; never a login, session, middleware, or API authorization fallback.
+- Never hardcode `tenantId: 1` as a default grant.
+- Never introduce `DEFAULT_TENANT_ID=1` or `ACTIVE_TENANT_ID=1`.
+- Do not add a tenant selector or tenant switcher.
+- Do not accept client-controlled `tenantId` or `X-Tenant-Id` as authorization.
+- Frontend consumes validated backend session context only.
+- Backend remains authoritative for tenant access, roles, capabilities, Casbin, and RLS.
+
 ## API error behavior
 
 The frontend must distinguish `401` authentication/session failure, `403 ACCESS_NOT_ASSIGNED`, other `403` permission denial, `404` masked inaccessible resources, `409` workflow/financial conflict, `412` stale ETag, `422` validation, and `428` missing If-Match. Proposed IAM error envelopes must be reconciled with the actual OpenAPI contract before client code treats them as canonical.
@@ -80,3 +102,5 @@ The frontend must distinguish `401` authentication/session failure, `403 ACCESS_
 - Google Groups integration is excluded.
 - Domain-to-tenant automatic grants, external email policy, tenant switching, report field masking, sensitive-action step-up, multi-role demo tests, cross-tenant super-admin, and non-Google login are deferred.
 - Live IAM, OAuth, Casbin, V3 schema, F07, and staging behavior remain `NOT VERIFIED` until evidence exists.
+- Canonical OpenAPI contract lacks `GET /api/v1/session/context` endpoint and DTOs; frontend uses typed offline boundary (`MOCK`/`NOT_INTEGRATED`).
+- F07 live Bill To remains blocked by missing V3 schema fields (`orders.order_items.billed_to_contact_id` and `billed_party_origin`).
