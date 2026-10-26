@@ -17,7 +17,15 @@ This repository contains the CP PRO MAX frontend and its project-specific AI-ass
 
 For work covered by the integrated New CP V0.9 handoff, also read `docs/newcp-ai/REFERENCE_INDEX.md`, `docs/newcp-ai/INTEGRATION_WITH_REPOSITORY.md`, and the applicable task under `docs/newcp-ai/tasks/`. The handoff is source material and a controlled workflow reference; it does not authorize backend, database, production, or unapproved application changes.
 
-For Google authentication, PostgreSQL IAM, Casbin, tenant, session, audit, role, or permission work, also read `docs/newcp-ai/policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`, `docs/newcp-ai/references/iam/README.md`, and the applicable IAM task. Apply `.agents/rules/iam-authorization.md` and the corresponding IAM skill; never treat frontend visibility as authorization.
+For Google authentication, PostgreSQL IAM, Casbin, tenant, session, audit, role, or permission work, also read `docs/newcp-ai/policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`, `docs/newcp-ai/references/iam/tenant-context-integration.md`, `docs/newcp-ai/references/iam/TENANT_OCT_DEMO_IMPLEMENTATION_SPEC_v1.1.md`, `docs/newcp-ai/references/iam/README.md`, and the applicable IAM task. Apply `.agents/rules/iam-authorization.md` and the corresponding IAM skill; never treat frontend visibility as authorization.
+
+### Mandatory v0.9.7 Tenant Handling Clarification:
+- Keep three concepts strictly separate: (1) **User authorization** via PostgreSQL V3 IAM user-to-tenant grants; (2) **Active session context** holding one validated active tenant; (3) **Request/transaction enforcement** with revalidation on every request and transaction-local `set_config('app.tenant_id', ..., true)` under PostgreSQL RLS. Never substitute one layer for another.
+- `DEMO_SEED_TENANT_ID=1` is fixture/seed setup only; NEVER a login, session, middleware, or API authorization fallback.
+- Never hardcode `tenantId: 1` as a default grant. Never introduce `DEFAULT_TENANT_ID=1` or `ACTIVE_TENANT_ID=1`.
+- Do not add a tenant selector or switcher. Do not accept client-controlled `tenantId` or `X-Tenant-Id` as authorization.
+- The frontend consumes backend-validated session context only (`GET /api/v1/session/context`); report missing OpenAPI endpoints as blockers (`MOCK`/`NOT_INTEGRATED`).
+- F07 live Bill To remains blocked by missing V3 schema fields (`orders.order_items.billed_to_contact_id` and `billed_party_origin`).
 
 For PostHog, Sentry, telemetry, feature-flag, session-replay, or error-monitoring work, also read `docs/06_OPERATIONS/observability/README.md`, the relevant provider contract, `telemetry-event-contract.md`, and `readiness-checklist.md`. Apply `.claude/rules/observability.md` and the observability skill. The company references are methodology only; do not copy their Vue/Node paths, production settings, credentials, or claims into New CP.
 
