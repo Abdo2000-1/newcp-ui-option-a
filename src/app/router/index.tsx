@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useSearchParams, useNavigate, useLocation } fr
 import { Layout } from '@/app/shell/Layout';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { useAuth, PendingAccessView } from '@/features/auth';
+import { getPostHog } from '@/shared/observability';
 
 // Feature Pages - Lazy Loaded
 // Auth
@@ -136,9 +137,20 @@ export function LegacyTaskQueryHandler() {
   return null;
 }
 
+function RouteTelemetryTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    getPostHog().capturePageView(location.pathname);
+  }, [location.pathname]);
+
+  return null;
+}
+
 export function AppRouter() {
   return (
     <>
+      <RouteTelemetryTracker />
       <LegacyTaskQueryHandler />
       <Routes>
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
