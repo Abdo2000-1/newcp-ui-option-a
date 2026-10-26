@@ -1,0 +1,53 @@
+test_id,execution_mode,journey,scenario,preconditions_fixture,action,expected_result,category,run_status
+AT-001,DEMO_LIVE,J-01,Google sign in with eligible @3ddx.com CS identity,Google sign-in succeeds; assigned role/tenant exist,Start sign-in,Internal identity and authorized workspace; no password form,Identity login,NOT_RUN
+AT-002,AUTOMATED,J-01,Provisioning pending user,"New eligible @3ddx.com identity, no roles",Complete Google callback,Identity created/linked; no operational role inferred,Provisioning,NOT_RUN
+AT-003,AUTOMATED,J-01,Explicit approved demo identity,"Approved allowlisted identity outside domain, no roles",Complete Google callback,Identity eligible for provisioning only; operational access withheld,Provisioning,NOT_RUN
+AT-004,AUTOMATED,J-01,Unapproved external identity,"Outside domain, not in approved demo allowlist",Complete Google callback,No automatic provisioning/access,Identity deny,NOT_RUN
+AT-005,AUTOMATED,J-01,Groupless protected API,Authenticated identity with no roles,GET protected orders,403 ACCESS_NOT_ASSIGNED; no sensitive data,Authorization deny,NOT_RUN
+AT-006,AUTOMATED,J-01,Groupless frontend,Authenticated no-role employee,Open app,Pending Access screen only,UI,NOT_RUN
+AT-007,AUTOMATED,J-02,Explicit tenant mapping,Role but no tenant assignment,GET tenant-1 order,Denied; @3ddx.com does not auto-grant tenant,Tenant deny,NOT_RUN
+AT-008,AUTOMATED,J-02,One active tenant,CS with tenant-1 permission,Start session,Only tenant 1 active for session,Tenant,NOT_RUN
+AT-009,DEMO_LIVE,J-02,Authorized CS/OPS workspace,CS/OPS with tenant 1,Open Model/Conversion service,Appropriate operational actions visible and enforced,UI and API,NOT_RUN
+AT-010,AUTOMATED,J-03,Admin assigns CS role,ADMIN and pending user tenant 1,Assign CS role,Role persists and audited; next protected request authorized,Admin,NOT_RUN
+AT-011,AUTOMATED,J-03,Non-admin cannot grant role,CS user,Attempt role grant API,403; role not changed; denial logged,Role security,NOT_RUN
+AT-012,AUTOMATED,J-03,Role revoked mid-session,Active CS session,Admin removes CS; CS next request,CS capability denied next request; no relogin dependency,Revocation,NOT_RUN
+AT-013,DEMO_LIVE,J-04,CS authorized commercial override,CS + unlocked Model tenant 1,Override contract price and save with If-Match,Price retained (not reset to contract); audit success,Commercial,NOT_RUN
+AT-014,DEMO_LIVE,J-04,OPS scoped commercial override,OPS + unlocked Conversion tenant 1,Override price,Success; no financial transaction granted,Commercial,NOT_RUN
+AT-015,DEMO_LIVE,J-04,Bill To contact change,CS + unlocked service; valid Doc/Scan contacts,Select valid alternative Bill To; PATCH with If-Match,"billed_to_contact_id updates, is_billable unchanged, audited",F07,NOT_RUN
+AT-016,AUTOMATED,J-04,OPS wrong service type,OPS + Restoration service,Attempt override/edit,403; no mutation,Scope,NOT_RUN
+AT-017,AUTOMATED,J-04,CS financial action denied,CS,Attempt invoice or charge,403; no financial write,Finance deny,NOT_RUN
+AT-018,AUTOMATED,J-04,QC price override denied,QC fixture,Override service price,403; no write,QC deny,NOT_RUN
+AT-019,AUTOMATED,J-04,Financial lock,CS + financially locked service,Attempt payer/price/billability edit,409 or approved lock contract; unchanged,Financial lock,NOT_RUN
+AT-020,AUTOMATED,J-04,Concurrent update guard,CS + stale ETag,PATCH with stale If-Match,412; no overwrite; UI recoverable,Concurrency,NOT_RUN
+AT-021,AUTOMATED,J-04,Required hold / zero reasons,Service transition or final zero line,Omit hold type/reason or zero reason,422; zero final total uses ZERO_CHARGE_REASON_REQUIRED,Validation,NOT_RUN
+AT-022,AUTOMATED,J-05,View report all five roles,Separate isolated role fixtures,GET sanitized tenant report,200 each CS OPS FINANCE QC ADMIN,Reports,NOT_RUN
+AT-023,AUTOMATED,J-05,CS/OPS cannot export,CS/OPS fixtures,Call export endpoints directly,403 each; no output file,Exports deny,NOT_RUN
+AT-024,AUTOMATED,J-05,FINANCE/QC/ADMIN export,Finance QC Admin fixtures,Call export within assigned tenant,Authorized; audit data_export event,Exports allow,NOT_RUN
+AT-025,AUTOMATED,J-05,Role not bypassed via API,CS fixture export UI hidden,Call raw export URL,403 independent of UI,API security,NOT_RUN
+AT-026,DEMO_LIVE,J-06,Cross-tenant denial,CS tenant 1 and isolated second tenant fixture,Try tenant-2 resource,403/404 with no existence leak or mutation,Tenant deny,NOT_RUN
+AT-027,AUTOMATED,J-06,Untrusted tenant parameter,CS tenant 1,Send tenant_id=2 in request,Server rejects unauthorized tenant; session tenant unchanged,Tenant deny,NOT_RUN
+AT-028,AUTOMATED,J-06,Connection pool RLS isolation,Two disjoint tenant scoped request fixtures,Alternate transactions on pooled connections,No prior tenant leaks; RLS enforced,Database isolation,NOT_RUN
+AT-029,AUTOMATED,J-07,Idle expiry,Active session; idle clock advanced 31 min,Invoke API,401; re-login required,Session,NOT_RUN
+AT-030,AUTOMATED,J-07,Absolute lifetime,Session age >8 h despite activity,Invoke API,401,Session,NOT_RUN
+AT-031,AUTOMATED,J-07,Logout revokes,Valid session,Log out then reuse old token/cookie,401; session revoked,Session,NOT_RUN
+AT-032,AUTOMATED,J-07,Config values,Change approved config in nonproduction test,Restart/test session config,30m/8h defaults operational; override works,Config,NOT_RUN
+AT-033,AUTOMATED,Security,Unauthenticated protected request,No session,GET protected orders,401,Auth,NOT_RUN
+AT-034,AUTOMATED,Security,Denied action audited,Valid but insufficient role,Attempt privileged action,No write and security denial recorded via approved audit sink,Audit,NOT_RUN
+AT-035,AUTOMATED,Security,Sensitive audit payload filtering,"Audit trigger for service change, token-bearing request",Inspect security event,"Internal actor, tenant, resource, time, role context present; no secrets/patient data",Audit,NOT_RUN
+AT-036,AUTOMATED,Business,Independent instances,Two Models same order,Change one with If-Match,Other instance unchanged,Data,NOT_RUN
+AT-037,AUTOMATED,Business,If-Match required,Service update,Omit If-Match,428; no mutation,Concurrency,NOT_RUN
+AT-038,AUTOMATED,J-01,Google login does not require Google Groups API,Verified eligible user; Groups API unavailable or no group claims,Complete sign-in,"Identity verified, resolved via internal IAM; no Workspace Groups dependency",Authentication boundary,NOT_RUN
+AT-039,AUTOMATED,J-02,Google token group claim cannot elevate privileges,Signed-in user with no internal role but forged/spurious group claim,Request Admin API,"403, no role granted, security denial logged",Privilege escalation,NOT_RUN
+AT-040,AUTOMATED,J-08,Granular internal Ops role recognized,Approved seeded Ops grade role and tenant 1 grant,Request capability explicitly granted to that grade,Allowed only for explicitly approved capability and service type,Granular role,NOT_RUN
+AT-041,AUTOMATED,J-08,Senior automatically inherits confirmed same-family Junior grant,Verified OPS_SENIOR -> OPS_JUNIOR role edge in tenant 1 and Junior direct read/create capability; Senior identity has no direct duplicate grant,As Senior Ops invoke child-granted Models/Conversion action,Allowed by transitive same-family inherited permission without assigning the Junior role; tenant/service guards still enforced,Approved inheritance,NOT_RUN
+AT-042,AUTOMATED,J-09,Admin assigns internal grade role,Admin tenant 1; approved grade role code and pending user,Assign internal role; next protected request,"Role granted/audited and effective on next request, no Google Group mutation",Group administration,NOT_RUN
+AT-043,AUTOMATED,J-09,Non-admin cannot assign internal grade role,CS tenant 1,Attempt to grant Senior Ops,"403, no IAM assignment mutation; security denial audited",Group administration,NOT_RUN
+AT-044,AUTOMATED,J-08,Unknown legacy/V3 group mapping defaults to deny,Legacy group with no approved mapped capability,Request protected commercial/financial action,No role elevation; denied pending business mapping,Migration safety,NOT_RUN
+AT-045,AUTOMATED,J-02,Role change during session independent of Google groups,Active session; Admin alters internal IAM user_roles,Retry protected request,Effective permission updated next protected request without Google login,Role refresh,NOT_RUN
+AT-046,AUTOMATED,J-02,Teams do not silently grant role permissions,"User team membership only, no relevant approved IAM role grant",Request protected Admin capability,403 unless independently approved team policy explicitly grants it,Team separation,NOT_RUN
+AT-047,AUTOMATED,J-08,Same-family Manager transitive inheritance,Verified OPS_MANAGER -> OPS_SENIOR -> OPS_JUNIOR; Junior has a capability not directly granted to Manager or Senior,As Ops Manager invoke Junior-only Models action,Allowed via transitive closure; policy projection includes Junior grant,Inheritance positive,NOT_RUN
+AT-048,AUTOMATED,J-08,Reverse inheritance denied,Verified OPS_SENIOR -> OPS_JUNIOR; Senior has management-only capability,As Junior Ops invoke Senior-only action,"403, no reverse escalation",Inheritance negative,NOT_RUN
+AT-049,AUTOMATED,J-08,Cross-family inheritance prohibited,OPS Senior and FINANCE Junior both exist; no same-family child link,As Ops Senior invoke Finance invoice operation,403; no cross-family role link or capability inheritance,Inheritance boundary,NOT_RUN
+AT-050,AUTOMATED,J-08,Tenant and scope remain enforced under inheritance,"Senior Ops inherits Junior Ops service update, but request targets unauthorized tenant or unsupported service type",Attempt cross-tenant or non-Models/Conversion update,403 or non-leaking 404; no change; inheritance never bypasses scope,Tenant/service boundary,NOT_RUN
+AT-051,AUTOMATED,J-08,Hierarchy cycle rejected,Proposed A->B->A role links or a self-parent link,Submit hierarchy mapping through Admin-approved change path,"Validation rejects cycle atomically, logs failed change, policy remains unchanged",Hierarchy integrity,NOT_RUN
+AT-052,AUTOMATED,J-08,Hierarchy change and revocation effective next request,Authenticated Senior Ops session; Admin removes Senior->Junior approved role link,Attempt formerly inherited action on next protected request,403 after re-evaluation/cache invalidation; no privilege until relinked,Role refresh,NOT_RUN

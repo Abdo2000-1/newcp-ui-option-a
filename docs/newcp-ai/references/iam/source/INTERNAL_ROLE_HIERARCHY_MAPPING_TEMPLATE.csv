@@ -1,0 +1,3 @@
+legacy_authgroup_id,legacy_authgroup_name,legacy_parent_group_id_if_verified,v3_tenant_id,v3_role_code,business_access_family,child_role_code_verified,explicit_capability_codes,difference_from_related_grade,source_evidence,business_owner,approval_status
+,Senior Ops (illustrative),,1,TBD,OPS,VERIFY_CHILD_ROLE_CODE,TBD,TBD,Verify exact parent-child graph from actual legacy AuthGroup and approved role mapping; IAM-HIER-001 transitive inheritance approved,TBD,EDGE_AND_GRANTS_UNVERIFIED
+,Junior Ops (illustrative),,1,TBD,OPS,VERIFY_CHILD_ROLE_CODE,TBD,TBD,Verify exact parent-child graph from actual legacy AuthGroup and approved role mapping; IAM-HIER-001 transitive inheritance approved,TBD,EDGE_AND_GRANTS_UNVERIFIED

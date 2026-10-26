@@ -18,6 +18,12 @@ The files in this directory are reference and workflow controls. They do not, by
 8. The smallest task file that matches the approved work.
 9. Only the versioned references required by that task.
 
+For IAM/authentication work, additionally read:
+
+10. `policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`.
+11. `references/iam/README.md` and the relevant IAM reference files.
+12. `tasks/iam/IAM-001-read-only-assessment.md` or a later approved IAM task.
+
 ## Source and authority map
 
 | Resource | Role | Authority and use |
@@ -35,6 +41,9 @@ The files in this directory are reference and workflow controls. They do not, by
 | `references/v06/form_biomodel.json` and `form_conversion.json` | Form field sources | Use the source-grounded controls and validation matrix; do not activate unattached validators. |
 | `references/f07/fixtures/` | Synthetic examples | Safe development/test examples only. They do not prove persistence, tenant isolation, finance correctness, or production readiness. |
 | `scripts/check_handoff.py` | Local integrity check | Offline validator for the integrated file layout and reference data. It does not access a database, network, or production system. |
+| `policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md` | IAM business baseline | Approved Google-only authentication, internal V3 IAM/Casbin authorization, tenant, session, audit, capability, and same-family inheritance rules. It does not prove runtime implementation. |
+| `references/iam/` | IAM engineering references | Role discovery, capability boundaries, journeys, acceptance groups, and implementation gaps. Exact role codes and hierarchy edges remain evidence-dependent. |
+| `tasks/iam/IAM-001-read-only-assessment.md` | IAM first task | Requires a read-only comparison of the repository with the v0.9.5 IAM baseline before code changes. |
 
 ## Status labels required in plans and evidence
 
