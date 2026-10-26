@@ -65,4 +65,3 @@ Either approach MUST implement IAM-HIER-001 when verified hierarchy relationship
 - Tenant 1 grants explicit, report export only Finance/QC/Admin.
 - Role update next request, logout revokes session, 30-minute idle/8-hour max configurable.
 - Negative tests for missing group, wrong tenant, unseeded grade, unauthorized commercial edits.
-

@@ -16,4 +16,3 @@ qc.audit.execute,Execute QC audit,N,N,N,Y,Y,QC and Admin only
 iam.assign_role,Grant internal IAM group membership,N,N,N,N,Y,Only within ADMIN authorized tenant
 iam.revoke_role,Revoke internal IAM group membership,N,N,N,N,Y,Effect on next protected request
 tenant.cross_admin,Cross-tenant super-admin,N,N,N,N,SEPARATE,ADMIN does not automatically include cross-tenant authority
-

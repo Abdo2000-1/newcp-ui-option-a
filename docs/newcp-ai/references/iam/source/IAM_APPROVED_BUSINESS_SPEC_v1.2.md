@@ -230,4 +230,3 @@ No identified business owner for future-phase policy as of the current approval.
 **QA:** automated role matrix and negative tests, tenant isolation, price/Bill To/On Hold locks, session changes, export denial, security-denial audit, and provenance coverage; label NOT RUN where appropriate.
 
 **Do not claim production or demo runtime readiness** without passing authorized integration tests. Earlier handoff v0.9.2.2 described the **old populated V3 instance** missing F07 payer columns; the separately provided F07-integrated fresh ETL targets **a newly created PostgreSQL V3**. This IAM addendum does **not** change deployment status or execute ETL; before Bill To demo operations, verify that the currently selected demo DB has applied F07 V204 and reconciled its migrated historical data.
-

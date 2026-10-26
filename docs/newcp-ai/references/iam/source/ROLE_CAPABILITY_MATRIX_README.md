@@ -9,4 +9,3 @@ The CS/OPS/FINANCE/QC/ADMIN columns in `ROLE_CAPABILITY_MATRIX.csv` encode **app
 - A user's effective permissions are a union of assigned roles’ own grants and mandatory transitive child grants across verified same-family role links; mandatory tenant/business guards still apply.
 - Google Group membership and `groups` claims are not authorization inputs.
 - Current V3 V006 has no explicit role inheritance table. A flattened effective-capability projection can implement the approved hierarchy for demo, if backed by evidenced role links and timely invalidation; do not skip inheritance or invent edges.
-

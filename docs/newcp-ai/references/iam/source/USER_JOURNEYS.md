@@ -19,4 +19,3 @@ Detailed step-by-step and validation rules are in sections 4–6 of the approved
 
 ## J-09 — Admin assigns a granular internal group
 **Actor:** tenant-authorized ADMIN. **Flow:** choose internal V3 role/code from approved list; assign/revoke to target user; audit user, role, tenant and effective scope; new permissions take effect on next protected request. Group codes are internal role IDs and may be grade-specific. **Negative:** unapproved group/code, non-admin, or wrong-tenant update denied and security audited.
-

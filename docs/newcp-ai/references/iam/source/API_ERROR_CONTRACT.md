@@ -7,4 +7,3 @@ Recommended application error codes (require consistency with OpenAPI): `AUTHENT
 Proposed envelope: `{ "error": { "code": "PERMISSION_DENIED", "message": "You do not have access to this action", "requestId": "request-ref" } }`. Reconcile this *proposed shape* against actual implemented OpenAPI. Never return patient data, hidden resource existence, internal provider tokens, or detailed role-policy expressions to clients.
 
 Frontend must differentiate: `401` => sign-in; `403 ACCESS_NOT_ASSIGNED` => Pending Access; other `403` => forbidden action; `412` => concurrent edit reload; `428` => missing precondition implementation error; `422` => show field errors; `409 FINANCIAL_LOCK_CONFLICT` => locked-state message. Both React options must implement identical business behavior.
-

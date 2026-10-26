@@ -31,4 +31,3 @@
 - Read `ROLE_HIERARCHY_DESIGN_AND_DISCOVERY.md` and `INTERNAL_ROLE_HIERARCHY_MAPPING_TEMPLATE.csv`. The five business access families do **not** mean the only five role codes. Inspect Senior/Junior Ops and other legacy grades before designing inheritance or seeds.
 - `iam.roles` + `iam.role_capabilities` support a flat explicit grant model for the demo; there is no verified native role-parent table in V006. IAM-HIER-001 MANDATES transitive same-family inheritance along verified edges: calculate effective-capability closure with controlled mapping or propose approved role-link persistence. Test that parents inherit all child permissions, juniors do not inherit parent-only grants, and no cross-family grants occur.
 - Provide read-only evidence for existing IAM role seed codes and a change plan; no invented Senior/Junior permissions. Negative tests should verify no unintended permission from similarly named groups.
-

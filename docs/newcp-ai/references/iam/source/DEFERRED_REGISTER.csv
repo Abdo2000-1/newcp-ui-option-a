@@ -8,4 +8,3 @@ F06,Sensitive action step-up Google authentication,Security/finance owners TBD,L
 F07,Multi-role assignment union integration tests,QA owner TBD,After October demo,Architecture must support role union; no demo multi-role test
 F08,Cross-tenant super-admin privilege workflow,Business/security owners TBD,Later phase,ADMIN by itself tenant-scoped
 F09,Non-Google interactive login methods / production identity strategy,Security/business owner TBD,Later phase,Google-only interactive sign-in for October demo
-
