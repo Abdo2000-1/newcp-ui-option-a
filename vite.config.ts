@@ -7,6 +7,15 @@ const isGithubPages = process.env.GITHUB_PAGES === 'true' || process.env.CI === 
 
 export default defineConfig({
   base: isGithubPages ? '/newcp-ui-option-a/' : '/',
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
