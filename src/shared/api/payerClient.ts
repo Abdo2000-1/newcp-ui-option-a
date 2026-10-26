@@ -1,4 +1,4 @@
-import type { IHttpTransport } from './httpTransport';
+import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { IServiceClient } from './serviceClient';
 import { serviceClient } from './serviceClient';
 import type { WithVersion } from './types';
@@ -120,4 +120,8 @@ export class PayerClient implements IPayerClient {
   }
 }
 
-export const payerClient = new PayerClient();
+const defaultTransport = new HttpTransport({
+  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
+});
+
+export const payerClient = new PayerClient(defaultTransport, serviceClient, true);

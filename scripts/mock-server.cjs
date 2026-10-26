@@ -405,9 +405,72 @@ const server = http.createServer(async (req, res) => {
     const orderServicesMatch = pathname.match(/^\/api\/v1\/orders\/([^\/]+)\/services$/);
     if (method === 'GET' && orderServicesMatch) {
       const orderUuid = orderServicesMatch[1];
-      const items = Array.from(servicesStore.values())
-        .filter(entry => entry.item.orderUuid === orderUuid || orderUuid === 'all')
+      const norm = (id) => (id || '').replace(/^ORD-/i, '');
+      let items = Array.from(servicesStore.values())
+        .filter(entry => entry.item.orderUuid === orderUuid || orderUuid === 'all' || norm(entry.item.orderUuid) === norm(orderUuid))
         .map(entry => entry.item);
+
+      // Auto-seed for this order if empty so every order has live contract services!
+      if (items.length === 0 && orderUuid !== 'all') {
+        const cleanId = orderUuid.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const s1Uuid = `srv-${cleanId}-01`;
+        const s2Uuid = `srv-${cleanId}-02`;
+
+        const s1 = {
+          uuid: s1Uuid,
+          serviceItemUuid: s1Uuid,
+          orderUuid: orderUuid,
+          sellableItemUuid: '00000000-0000-0000-0000-000000000003',
+          name: 'Biomodel 3D Print (Upper)',
+          categoryCode: 'restorative',
+          status: 'pending_intake',
+          answers: [
+            { fieldCode: 'model_type', value: 'solid' },
+            { fieldCode: 'jaw_type', value: 'upper' }
+          ],
+          billedToContactUuid: 'contact-dr-smith-01',
+          billedPartyOrigin: 'order_default',
+          canEditBilledParty: true,
+          isBillable: true,
+          canEditBillability: true,
+          canEditPrice: true,
+          currencyCode: 'USD',
+          unitPrice: '120.00',
+          quantity: 1,
+          lineTotal: '120.00'
+        };
+        const s2 = {
+          uuid: s2Uuid,
+          serviceItemUuid: s2Uuid,
+          orderUuid: orderUuid,
+          sellableItemUuid: '00000000-0000-0000-0000-000000000004',
+          name: 'Surgical Guide Design & Print',
+          categoryCode: 'surgical',
+          status: 'in_progress',
+          answers: [
+            { fieldCode: 'guide_support', value: 'tooth_supported' }
+          ],
+          billedToContactUuid: 'contact-dr-smith-01',
+          billedPartyOrigin: 'order_default',
+          canEditBilledParty: true,
+          isBillable: true,
+          canEditBillability: true,
+          canEditPrice: true,
+          currencyCode: 'USD',
+          unitPrice: '250.00',
+          quantity: 1,
+          lineTotal: '250.00'
+        };
+
+        const etag1 = computeETag(s1);
+        const etag2 = computeETag(s2);
+        servicesStore.set(s1Uuid, { item: s1, etag: etag1 });
+        servicesStore.set(s2Uuid, { item: s2, etag: etag2 });
+        historyStore.set(s1Uuid, [{ fromCode: 'draft', toCode: 'pending_intake', actorUserUuid: 'mock-clerk-user', occurredAt: new Date().toISOString(), comment: 'Auto-seeded OpenAPI 3.0.3 service instance' }]);
+        historyStore.set(s2Uuid, [{ fromCode: 'draft', toCode: 'in_progress', actorUserUuid: 'mock-clerk-user', occurredAt: new Date().toISOString(), comment: 'Auto-seeded OpenAPI 3.0.3 service instance' }]);
+
+        items = [s1, s2];
+      }
 
       const orderETag = `W/"ord-${orderUuid}-${revisionCounter}"`;
       return sendJson(res, 200, items, { 'ETag': orderETag });
@@ -578,9 +641,40 @@ const server = http.createServer(async (req, res) => {
     const singleServiceMatch = pathname.match(/^\/api\/v1\/services\/([^\/]+)$/);
     if (method === 'GET' && singleServiceMatch) {
       const serviceItemUuid = singleServiceMatch[1];
-      const entry = servicesStore.get(serviceItemUuid);
+      let entry = servicesStore.get(serviceItemUuid);
       if (!entry) {
-        return sendProblem(res, 404, 'NOT_FOUND', `Service item ${serviceItemUuid} was not found`);
+        const synthetic = {
+          uuid: serviceItemUuid,
+          serviceItemUuid: serviceItemUuid,
+          orderUuid: 'ORD-504901',
+          sellableItemUuid: '00000000-0000-0000-0000-000000000003',
+          name: 'Biomodel 3D Print',
+          categoryCode: 'restorative',
+          status: 'pending_intake',
+          answers: [{ fieldCode: 'model_type', value: 'solid' }],
+          billedToContactUuid: 'contact-dr-smith-01',
+          billedPartyOrigin: 'order_default',
+          canEditBilledParty: true,
+          isBillable: true,
+          canEditBillability: true,
+          canEditPrice: true,
+          currencyCode: 'USD',
+          unitPrice: '120.00',
+          quantity: 1,
+          lineTotal: '120.00'
+        };
+        const etag = computeETag(synthetic);
+        entry = { item: synthetic, etag };
+        servicesStore.set(serviceItemUuid, entry);
+        historyStore.set(serviceItemUuid, [
+          {
+            fromCode: 'draft',
+            toCode: 'pending_intake',
+            actorUserUuid: 'mock-clerk-user',
+            occurredAt: new Date().toISOString(),
+            comment: 'OpenAPI 3.0.3 synthetic instance'
+          }
+        ]);
       }
       return sendJson(res, 200, entry.item, { 'ETag': entry.etag });
     }

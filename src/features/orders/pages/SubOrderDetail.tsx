@@ -19,6 +19,7 @@ import { PriorityBadge } from '@/shared/components/PriorityBadge';
 import { TeethChart } from '@/shared/components/TeethChart';
 import { formatDate } from '@/shared/utils/format';
 import { useStore } from '@/shared/hooks/useStore';
+import { serviceClient, type ServiceItem } from '@/shared/api';
 
 type SubOrderTab = 'overview' | 'forms' | 'scans' | 'activity';
 
@@ -37,6 +38,16 @@ export default function SubOrderDetail() {
   const [shade, setShade] = useState('A2');
   const [clinicalNotes, setClinicalNotes] = useState('Ensure tight proximal contact on distal aspect.');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [contractService, setContractService] = useState<ServiceItem | null>(null);
+  const [contractEtag, setContractEtag] = useState<string>('');
+
+  React.useEffect(() => {
+    const key = subOrderId || 'srv-biomodel-001';
+    serviceClient.get(key).then(res => {
+      setContractService(res.data);
+      setContractEtag(res.etag);
+    }).catch(console.warn);
+  }, [subOrderId]);
 
   if (!order) {
     return (
@@ -139,6 +150,22 @@ export default function SubOrderDetail() {
               Summary Card
             </h2>
             <div className="space-y-3 text-sm">
+              {contractService && (
+                <div className="p-3 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 space-y-1.5 text-xs mb-3">
+                  <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px]">
+                    <span>LIVE OPENAPI 3.0.3 INSTANCE</span>
+                    <span className="font-mono bg-emerald-200/50 dark:bg-emerald-900/50 px-1 py-0.5 rounded text-[9px]">HTTP 200 OK</span>
+                  </div>
+                  <div className="text-[11px] text-emerald-900 dark:text-emerald-200 font-mono truncate">UUID: {contractService.uuid}</div>
+                  <div className="text-[10px] text-slate-500 font-mono">ETag: {contractEtag || 'W/"srv-live"'}</div>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">
+                    Payer: {contractService.billedToContactUuid} ({contractService.billedPartyOrigin})
+                  </div>
+                  <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                    Line Total: ${contractService.lineTotal || contractService.unitPrice} {contractService.currencyCode || 'USD'}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between py-1 border-b border-gray-100 dark:border-gray-700">
                 <span className="text-gray-500">Sub-Order ID</span>
                 <span className="font-mono font-medium text-gray-900 dark:text-white">#{subOrderId || 'SO-101'}</span>

@@ -1,4 +1,4 @@
-import type { IHttpTransport } from './httpTransport';
+import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { WithVersion } from './types';
 import type {
   AvailableTransition,
@@ -266,4 +266,8 @@ export class WorkflowClient implements IWorkflowClient {
   }
 }
 
-export const workflowClient = new WorkflowClient();
+const defaultTransport = new HttpTransport({
+  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
+});
+
+export const workflowClient = new WorkflowClient(defaultTransport, true);

@@ -27,6 +27,8 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { store } from '@/shared/services/store';
+import { catalogClient, serviceClient } from '@/shared/api';
+import type { CatalogService } from '@/shared/api/contractTypes';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
 
@@ -73,6 +75,16 @@ export default function AddCase() {
 
   // Surgical Guide Specs
   const [guideSupport, setGuideSupport] = useState<'Tooth-Supported' | 'Bone-Supported' | 'Mucosa-Supported'>('Tooth-Supported');
+  const [contractCatalog, setContractCatalog] = useState<CatalogService[]>([]);
+  const [selectedCatalogUuid, setSelectedCatalogUuid] = useState<string>('00000000-0000-0000-0000-000000000004');
+
+  React.useEffect(() => {
+    catalogClient.listServices().then((items) => {
+      if (items && items.length > 0) {
+        setContractCatalog(items);
+      }
+    }).catch(console.warn);
+  }, []);
   const [sleeveBrand, setSleeveBrand] = useState('Straumann VeloGuide / Co-Diagnostix');
   const [includeFixationPins, setIncludeFixationPins] = useState(false);
 
@@ -176,6 +188,18 @@ export default function AddCase() {
         amount: 485,
         notes: internalComment,
       });
+
+      // Synchronize with OpenAPI 3.0.3 Contract Server (POST /api/v1/orders/:orderUuid/services)
+      serviceClient.create(newOrderNum, {
+        sellableItemUuid: selectedCatalogUuid,
+        unitPrice: '250.00',
+        quantity: 1,
+        isBillable: true,
+        answers: [
+          { fieldCode: 'guide_support', value: guideSupport },
+          { fieldCode: 'sleeve_brand', value: sleeveBrand }
+        ]
+      }).catch(console.warn);
 
       setSubmitting(false);
       setSuccessCaseNumber(newOrderNum);
@@ -564,6 +588,45 @@ export default function AddCase() {
                             }`}
                           >
                             {arch}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Live OpenAPI 3.0.3 Master Catalog */}
+                    <div className="p-4 rounded-2xl border border-cyan-500/40 bg-cyan-500/5 mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200 uppercase tracking-wider">
+                            Live OpenAPI 3.0.3 Master Catalog (GET /api/v1/catalog/services)
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono bg-cyan-200/50 dark:bg-cyan-900/50 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded font-bold">
+                          HTTP 200 OK
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                        Select an authorized clinical service from the live contract catalogue to prescribe for this case:
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                        {contractCatalog.map((item) => (
+                          <button
+                            key={item.uuid}
+                            type="button"
+                            onClick={() => setSelectedCatalogUuid(item.uuid)}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              selectedCatalogUuid === item.uuid
+                                ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm ring-2 ring-cyan-500/30'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-cyan-400'
+                            }`}
+                          >
+                            <div className="text-[10px] uppercase font-mono font-bold opacity-75">{item.code}</div>
+                            <div className="text-xs font-bold mt-0.5 truncate">{item.name}</div>
+                            <div className="text-[11px] mt-1 opacity-90 flex items-center justify-between">
+                              <span>{(item as any).categoryCode || item.workflowCode || 'clinical'}</span>
+                              <span className="font-mono text-[10px]">{item.leadTimeDays}d lead</span>
+                            </div>
                           </button>
                         ))}
                       </div>

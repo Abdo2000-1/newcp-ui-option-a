@@ -1,4 +1,4 @@
-import type { IHttpTransport } from './httpTransport';
+import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { WithVersion } from './types';
 import type {
   ServiceItem,
@@ -268,4 +268,8 @@ export class ServiceClient implements IServiceClient {
   }
 }
 
-export const serviceClient = new ServiceClient();
+const defaultTransport = new HttpTransport({
+  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
+});
+
+export const serviceClient = new ServiceClient(defaultTransport, true);

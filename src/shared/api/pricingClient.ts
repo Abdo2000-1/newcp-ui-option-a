@@ -1,4 +1,4 @@
-import type { IHttpTransport } from './httpTransport';
+import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { IServiceClient } from './serviceClient';
 import { serviceClient } from './serviceClient';
 import type { WithVersion } from './types';
@@ -147,4 +147,8 @@ export class PricingClient implements IPricingClient {
   }
 }
 
-export const pricingClient = new PricingClient();
+const defaultTransport = new HttpTransport({
+  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
+});
+
+export const pricingClient = new PricingClient(defaultTransport, serviceClient, true);
