@@ -1,7 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getApiConfig } from '../config';
 import { HttpTransport } from '../httpTransport';
 import { ServiceClient } from '../serviceClient';
+import { WorkflowClient } from '../workflowClient';
+import { PricingClient } from '../pricingClient';
+import { PayerClient, PROPOSAL_PENDING_BACKEND_REVIEW } from '../payerClient';
 import {
   ApiClientError,
   PreconditionRequiredError,
@@ -14,12 +17,12 @@ import {
 } from '../errors';
 import { ROUTES } from '@/app/router';
 
-describe('T-API-016: API Mode Switching and LIVE_HTTP Contract Transport', () => {
+describe('FE-API-001: OpenAPI Contract Runtime Boundary', () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  describe('1. Mode Selection Configuration', () => {
+  describe('1. Mode Selection & Configuration Derivation', () => {
     it('selects MOCK_BROWSER when mode is explicitly set or defaulted without mock port', () => {
       const config = getApiConfig();
       expect(['MOCK_BROWSER', 'MOCK_HTTP', 'LIVE_HTTP']).toContain(config.mode);
@@ -42,9 +45,17 @@ describe('T-API-016: API Mode Switching and LIVE_HTTP Contract Transport', () =>
       expect(mockHttpTransport.getMode()).toBe('MOCK_HTTP');
       expect(mockHttpTransport.getBaseUrl()).toBe('http://localhost:3000/api/v1');
     });
+
+    it('normalizes base URL by stripping trailing slashes cleanly', () => {
+      const transport = new HttpTransport({
+        mode: 'LIVE_HTTP',
+        baseUrl: 'https://gateway.3ddx.com/v1///',
+      });
+      expect(transport.getBaseUrl()).toBe('https://gateway.3ddx.com/v1');
+    });
   });
 
-  describe('2. LIVE_HTTP Request Construction and Validation', () => {
+  describe('2. LIVE_HTTP Request Construction & Validation', () => {
     it('throws ApiClientError if baseUrl is missing in LIVE_HTTP mode', async () => {
       const transportWithoutUrl = new HttpTransport({
         mode: 'LIVE_HTTP',
@@ -184,8 +195,8 @@ describe('T-API-016: API Mode Switching and LIVE_HTTP Contract Transport', () =>
     });
   });
 
-  describe('4. LIVE_HTTP Strict Boundary (No Mock Fallback)', () => {
-    it('throws immediately on network failure in LIVE_HTTP and never returns mock data', async () => {
+  describe('4. LIVE_HTTP Strict Boundary (No Mock Fallback / No Silent localStorage)', () => {
+    it('serviceClient throws immediately on network failure in LIVE_HTTP and never returns mock data', async () => {
       const mockFetch = vi.fn().mockRejectedValueOnce(new Error('Connection refused by backend gateway'));
 
       const liveTransport = new HttpTransport({
@@ -199,6 +210,39 @@ describe('T-API-016: API Mode Switching and LIVE_HTTP Contract Transport', () =>
       await expect(client.get('non-existent-uuid')).rejects.toThrow(
         /Connection refused by backend gateway/
       );
+    });
+
+    it('workflowClient throws immediately on network failure in LIVE_HTTP without fallback', async () => {
+      const mockFetch = vi.fn().mockRejectedValueOnce(new Error('Network error during workflow transition'));
+
+      const liveTransport = new HttpTransport({
+        mode: 'LIVE_HTTP',
+        baseUrl: 'https://live-gateway.3ddx.com/api/v1',
+        customFetch: mockFetch as unknown as typeof fetch,
+      });
+
+      const workflow = new WorkflowClient(liveTransport, false);
+
+      await expect(workflow.getAvailableTransitions('srv-123')).rejects.toThrow(
+        /Network error during workflow transition/
+      );
+    });
+
+    it('pricingClient throws immediately when If-Match is missing', async () => {
+      const liveTransport = new HttpTransport({
+        mode: 'LIVE_HTTP',
+        baseUrl: 'https://live-gateway.3ddx.com/api/v1',
+      });
+      const pricing = new PricingClient(liveTransport, undefined, false);
+
+      await expect(
+        pricing.updatePricing('srv-123', { unitPrice: '150.00' }, undefined)
+      ).rejects.toThrow(PreconditionRequiredError);
+    });
+
+    it('maintains F07 Bill To proposal review safety gate', () => {
+      const payer = new PayerClient(undefined, undefined, false);
+      expect(payer.status).toBe(PROPOSAL_PENDING_BACKEND_REVIEW);
     });
   });
 
