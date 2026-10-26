@@ -1,8 +1,8 @@
 # New CP — Approved IAM, Google Authentication & Casbin Requirements
 
-**Specification:** IAM-BR v1.2 · **Approval basis:** Technical Lead decisions through 26 October 2026, including IAM-HIER-001  
-**Delivery scope:** October CEO demo (Models and Conversion, internal-clerk journeys) plus explicitly deferred requirements  
-**Business authority:** User-approved decisions D01–D13 and M01–M04, latest clarifications; earlier CP/CS naming, Admin export and demo-identity assumptions superseded.  
+**Specification:** IAM-BR v1.2 · **Approval basis:** Technical Lead decisions through 26 October 2026, including IAM-HIER-001
+**Delivery scope:** October CEO demo (Models and Conversion, internal-clerk journeys) plus explicitly deferred requirements
+**Business authority:** User-approved decisions D01–D13 and M01–M04, latest clarifications; earlier CP/CS naming, Admin export and demo-identity assumptions superseded.
 **Implementation status:** This is an APPROVED BUSINESS REQUIREMENTS reference and engineering acceptance baseline. **It is not evidence that the live backend, OAuth adapter, Casbin policies, V3 schemas, ETL, or QA tests have been executed.**
 
 ## UPDATE v1.2 — Approved same-family transitive inheritance (supersedes v1.1 hierarchy uncertainty)
@@ -111,7 +111,7 @@ V3 source DDL (`V006__iam_tables.sql`) defines `iam.users`, `iam.roles`, `iam.us
 
 ### J-01 — First-time Google sign-in, eligible company account, no role
 
-**Actor:** employee using approved `@3ddx.com` identity; **preconditions:** Google identity successfully verified; employee has no New CP internal user identity.  
+**Actor:** employee using approved `@3ddx.com` identity; **preconditions:** Google identity successfully verified; employee has no New CP internal user identity.
 1. Employee opens New CP; app redirects to Google Sign-In. Google returns a verifiable identity assertion to the backend.
 2. Backend validates provider, token signature/audience/issuer/expiry, and appropriate identity claim. Do **not** authorize on an unverified email string.
 3. If the account meets approved provisioning eligibility, create/link a durable New CP user identity (no privileged role). Internal identity and email must be linked safely; don't overwrite an unrelated existing staff identity based on untrusted matching alone.
@@ -125,7 +125,7 @@ V3 source DDL (`V006__iam_tables.sql`) defines `iam.users`, `iam.roles`, `iam.us
 
 1. Google-authenticated employee resolves to a linked internal `iam.users` employee identity, active account and authorized tenant.
 2. Backend obtains current internal role grants, computes applicable capabilities for that tenant, and starts/refreshes the application session with one active tenant.
-3. UI renders the authorized navigation and permitted actions; backend checks every protected request independently. 
+3. UI renders the authorized navigation and permitted actions; backend checks every protected request independently.
 4. For roles CS / OPS / ADMIN, employee operates within the role's resource scope. Finance/QC access their relevant reporting/finance/audit functions according to matrix.
 5. Session ends on logout, idle expiration, absolute expiration or revocation. No silent continuation through expired/revoked session.
 
@@ -224,9 +224,9 @@ No identified business owner for future-phase policy as of the current approval.
 
 ## 9. Developer implementation ownership and release checklist
 
-**Backend:** Google login callback/adaptor, secure internal identity resolution/provisioning, tenant-scoped role lookup, Casbin policy checks, protected API error envelope, revocable sessions, effective-next-request role updates, audit/security events, server-side report export authorization, F07/financial-lock guards.  
-**Frontend (both React versions):** same shared API contract, Google login, pending-access/forbidden/expired states, capability-driven navigation, role-aware action affordances, accurate server-denial feedback, no client-trust for billing/tenant security. Both variants preserve identical business behavior.  
-**DB/architecture owner:** verify V3 tables, role seed codes, tenant mappings, Google identity link strategy, session idle support, denied-event persistence, RLS, and F07 applied schema/fresh-ETL outcomes; propose migrations for review before executing.  
+**Backend:** Google login callback/adaptor, secure internal identity resolution/provisioning, tenant-scoped role lookup, Casbin policy checks, protected API error envelope, revocable sessions, effective-next-request role updates, audit/security events, server-side report export authorization, F07/financial-lock guards.
+**Frontend (both React versions):** same shared API contract, Google login, pending-access/forbidden/expired states, capability-driven navigation, role-aware action affordances, accurate server-denial feedback, no client-trust for billing/tenant security. Both variants preserve identical business behavior.
+**DB/architecture owner:** verify V3 tables, role seed codes, tenant mappings, Google identity link strategy, session idle support, denied-event persistence, RLS, and F07 applied schema/fresh-ETL outcomes; propose migrations for review before executing.
 **QA:** automated role matrix and negative tests, tenant isolation, price/Bill To/On Hold locks, session changes, export denial, security-denial audit, and provenance coverage; label NOT RUN where appropriate.
 
 **Do not claim production or demo runtime readiness** without passing authorized integration tests. Earlier handoff v0.9.2.2 described the **old populated V3 instance** missing F07 payer columns; the separately provided F07-integrated fresh ETL targets **a newly created PostgreSQL V3**. This IAM addendum does **not** change deployment status or execute ETL; before Bill To demo operations, verify that the currently selected demo DB has applied F07 V204 and reconciled its migrated historical data.
