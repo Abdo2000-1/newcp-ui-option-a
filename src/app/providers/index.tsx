@@ -6,6 +6,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { ConfigProvider } from './contexts/ConfigContext';
 import { ErrorBoundary } from './ErrorBoundary';
 import { QueryProvider } from './QueryProvider';
+import { AuthProvider } from '@/features/auth/AuthContext';
 import { getMuiTheme } from '@/theme/muiTheme';
 
 export interface AppProvidersProps {
@@ -31,9 +32,11 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <ThemeProvider>
           <MuiThemeBridge>
             <LanguageProvider>
-              <QueryProvider>
-                {children}
-              </QueryProvider>
+              <AuthProvider>
+                <QueryProvider>
+                  {children}
+                </QueryProvider>
+              </AuthProvider>
             </LanguageProvider>
           </MuiThemeBridge>
         </ThemeProvider>
