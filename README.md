@@ -209,5 +209,6 @@ newcp-ui-option-a/
 - [`CLAUDE.md`](CLAUDE.md) — Claude Code compatibility instructions retained for the original workflow.
 - [`docs/00_READ_FIRST.md`](docs/00_READ_FIRST.md) — Numbered navigation and reading order.
 - [`docs/00_SOURCE_INVENTORY.md`](docs/00_SOURCE_INVENTORY.md) — Source precedence and availability record.
+- [`docs/06_OPERATIONS/observability/README.md`](docs/06_OPERATIONS/observability/README.md) — PostHog/Sentry preparation, privacy boundaries, and verification gates.
 - [`docs/01_PROJECT/tailwind-exception-report.md`](docs/01_PROJECT/tailwind-exception-report.md) — Justified technical exceptions for Three.js & DICOM Canvas.
 - [`docs/03_WORKFLOW/ownership/abdo.md`](docs/03_WORKFLOW/ownership/abdo.md) — Abdo's Full Stack allocation and React Option A boundary.
