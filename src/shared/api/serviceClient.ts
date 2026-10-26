@@ -137,6 +137,24 @@ export class ServiceClient implements IServiceClient {
       throw new ValidationError({ code: 'VALIDATION_ERROR', message: 'sellableItemUuid is required' });
     }
 
+    const unitPrice = payload.unitPrice !== undefined ? payload.unitPrice : '100.00';
+    const numPrice = parseFloat(unitPrice);
+    const isZeroCharge = !isNaN(numPrice) && numPrice === 0;
+
+    if (isZeroCharge && !payload.zeroChargeReasonCode) {
+      throw new ValidationError({
+        code: 'ZERO_CHARGE_REASON_REQUIRED',
+        message: 'zeroChargeReasonCode is mandatory when unitPrice is 0.00',
+      });
+    }
+
+    if (payload.isRedo && !payload.redoOfItemUuid) {
+      throw new ValidationError({
+        code: 'REDO_SOURCE_REQUIRED',
+        message: 'redoOfItemUuid is required when creating a redo service instance',
+      });
+    }
+
     const cleanPayload = sanitizeCreatePayload(payload);
 
     if (this.transport) {
@@ -152,7 +170,11 @@ export class ServiceClient implements IServiceClient {
     }
 
     // Explicit MOCK / NOT_INTEGRATED fallback: create independent instance identity
-    const instanceUuid = `srv-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const instanceUuid = `srv-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const quantity = payload.quantity !== undefined ? payload.quantity : 1;
+    const isBillable = payload.isBillable !== undefined ? payload.isBillable : true;
+    const lineTotal = (isNaN(numPrice) ? 0 : numPrice * quantity).toFixed(2);
+
     const createdItem: ServiceItem = {
       uuid: instanceUuid,
       orderUuid,
@@ -161,11 +183,12 @@ export class ServiceClient implements IServiceClient {
       answers: payload.answers ? JSON.parse(JSON.stringify(payload.answers)) : [],
       billedToContactUuid: payload.billedToContactUuid || 'contact-default-order',
       billedPartyOrigin: payload.billedToContactUuid ? 'user_selected' : 'order_default',
-      isBillable: payload.isBillable !== undefined ? payload.isBillable : true,
-      unitPrice: payload.unitPrice || '100.00',
-      quantity: payload.quantity || 1,
-      lineTotal: payload.unitPrice ? (Number(payload.unitPrice) * (payload.quantity || 1)).toFixed(2) : '100.00',
+      isBillable,
+      unitPrice,
+      quantity,
+      lineTotal,
       isRedo: payload.isRedo || false,
+      redoOfItemUuid: payload.redoOfItemUuid || null,
       serviceNotes: payload.serviceNotes,
       zeroChargeReasonCode: payload.zeroChargeReasonCode || null,
       zeroChargeNote: payload.zeroChargeNote || null,

@@ -69,6 +69,7 @@ import {
   type BilledPartyChoice,
   type HistoryEvent,
 } from '@/shared/api';
+import { DynamicFormRenderer } from '@/shared/components/DynamicFormRenderer';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { PriorityBadge } from '@/shared/components/PriorityBadge';
@@ -354,27 +355,72 @@ export default function OrderDetailsPage() {
   const [selectedServiceForHistory, setSelectedServiceForHistory] = useState<ServiceItem | null>(null);
   const [serviceHistoryList, setServiceHistoryList] = useState<HistoryEvent[]>([]);
 
-  // State for Add Service Item Modal
+  // State for Add Service Item Modal (Biomodel & Conversion Independent Instances)
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState<boolean>(false);
-  const [addServiceCatalogUuid, setAddServiceCatalogUuid] = useState<string>('00000000-0000-0000-0000-000000000003');
+  const [addServiceCatalogUuid, setAddServiceCatalogUuid] = useState<string>('11111111-1111-4111-8111-111111111111');
   const [addServicePrice, setAddServicePrice] = useState<string>('120.00');
+  const [addServiceQuantity, setAddServiceQuantity] = useState<number>(1);
+  const [addServiceIsBillable, setAddServiceIsBillable] = useState<boolean>(true);
+  const [addServiceZeroReason, setAddServiceZeroReason] = useState<string>('');
+  const [addServiceZeroNote, setAddServiceZeroNote] = useState<string>('');
+  const [addServiceIsRedo, setAddServiceIsRedo] = useState<boolean>(false);
+  const [addServiceRedoOfUuid, setAddServiceRedoOfUuid] = useState<string>('');
   const [addServiceAnswers, setAddServiceAnswers] = useState<any[]>([]);
+  const [addServiceError, setAddServiceError] = useState<string | null>(null);
   const [isSubmittingAddService, setIsSubmittingAddService] = useState<boolean>(false);
 
+  const handleOpenAddServiceModal = async () => {
+    setIsAddServiceModalOpen(true);
+    setAddServiceError(null);
+    setAddServiceAnswers([]);
+    setAddServiceQuantity(1);
+    setAddServiceIsBillable(true);
+    setAddServiceZeroReason('');
+    setAddServiceZeroNote('');
+    setAddServiceIsRedo(false);
+    setAddServiceRedoOfUuid('');
+    try {
+      const reasons = await pricingClient.getZeroChargeReasons();
+      setZeroChargeReasonsList(reasons);
+    } catch {
+      // safe fallback
+    }
+  };
+
   const handleCreateServiceItem = async () => {
+    setAddServiceError(null);
+    const numPrice = parseFloat(addServicePrice || '0');
+    if (numPrice === 0 && !addServiceZeroReason) {
+      setAddServiceError('Zero-charge reason is required when price is $0.00 (ck_order_items__zero_charge_has_reason)');
+      return;
+    }
+    if (addServiceIsRedo && !addServiceRedoOfUuid) {
+      setAddServiceError('Please select the original service instance being redone');
+      return;
+    }
+
     setIsSubmittingAddService(true);
     try {
+      const sellableUuid = addServiceCatalogUuid === '22222222-2222-4222-8222-222222222222'
+        ? 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+        : 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
       await serviceClient.create(flowOrder?.orderNum || '504901', {
-        sellableItemUuid: addServiceCatalogUuid,
+        sellableItemUuid: sellableUuid,
         unitPrice: addServicePrice,
-        quantity: 1,
-        isBillable: true,
+        quantity: addServiceQuantity || 1,
+        isBillable: addServiceIsBillable,
         answers: addServiceAnswers,
+        zeroChargeReasonCode: numPrice === 0 ? addServiceZeroReason : undefined,
+        zeroChargeNote: numPrice === 0 && addServiceZeroNote ? addServiceZeroNote : undefined,
+        isRedo: addServiceIsRedo,
+        redoOfItemUuid: addServiceIsRedo ? addServiceRedoOfUuid : undefined,
       });
       triggerToast('Service item created successfully (POST /api/v1/orders/{orderUuid}/services)');
       setIsAddServiceModalOpen(false);
       await loadContractServices();
     } catch (err: any) {
+      setAddServiceError(err.message || 'Failed to create service item');
       triggerToast(`[OpenAPI Error] ${err.message}`);
     } finally {
       setIsSubmittingAddService(false);
@@ -1945,7 +1991,7 @@ Generated on: ${new Date().toLocaleString()}
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => setIsAddServiceModalOpen(true)}
+                onClick={handleOpenAddServiceModal}
                 className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
               >
                 <Plus size={12} />
@@ -2529,6 +2575,235 @@ Generated on: ${new Date().toLocaleString()}
                   className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 font-bold text-xs"
                 >
                   Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ================================================================== */}
+      {/* MODAL 5: CREATE BIOMODEL / CONVERSION SERVICE INSTANCE (OPENAPI)   */}
+      {/* ================================================================== */}
+      <AnimatePresence>
+        {isAddServiceModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] p-6 shadow-2xl space-y-4 overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">
+                    Add Independent Service Instance
+                  </h3>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">
+                    Order #{flowOrder?.orderNum} &bull; Biomodel & Conversion Contract Target
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddServiceModalOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {addServiceError && (
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+                  <ShieldAlert size={14} className="shrink-0" />
+                  <span>{addServiceError}</span>
+                </div>
+              )}
+
+              <div className="overflow-y-auto pr-2 space-y-4 text-xs">
+                {/* Service Selection */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Select Service Archetype:
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddServiceCatalogUuid('11111111-1111-4111-8111-111111111111');
+                        setAddServicePrice('120.00');
+                        setAddServiceAnswers([]);
+                      }}
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                        addServiceCatalogUuid === '11111111-1111-4111-8111-111111111111'
+                          ? 'border-sky-500 bg-sky-50/60 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 shadow-xs'
+                          : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900'
+                      }`}
+                    >
+                      <span className="font-bold text-xs block">Biomodel 3D Printing</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Code: BIOMODEL (Physical)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddServiceCatalogUuid('22222222-2222-4222-8222-222222222222');
+                        setAddServicePrice('90.00');
+                        setAddServiceAnswers([]);
+                      }}
+                      className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                        addServiceCatalogUuid === '22222222-2222-4222-8222-222222222222'
+                          ? 'border-sky-500 bg-sky-50/60 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 shadow-xs'
+                          : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900'
+                      }`}
+                    >
+                      <span className="font-bold text-xs block">Dicom to CAD Conversion</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Code: CONVERSION (Digital)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dynamic Metadata Form Questionnaire */}
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                      Catalog Dynamic Form Specification
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      Target: {addServiceCatalogUuid.slice(0, 8)}...
+                    </span>
+                  </div>
+
+                  <DynamicFormRenderer
+                    key={addServiceCatalogUuid}
+                    serviceUuid={addServiceCatalogUuid}
+                    onChange={(answers) => setAddServiceAnswers(answers)}
+                  />
+                </div>
+
+                {/* Instance Parameters: Quantity & Billable */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Unit Price (USD):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={addServicePrice}
+                      onChange={(e) => setAddServicePrice(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Quantity (Default: 1):
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={addServiceQuantity}
+                      onChange={(e) => setAddServiceQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                  <input
+                    type="checkbox"
+                    id="add-service-billable"
+                    checked={addServiceIsBillable}
+                    onChange={(e) => setAddServiceIsBillable(e.target.checked)}
+                    className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  <label htmlFor="add-service-billable" className="font-semibold text-xs cursor-pointer select-none">
+                    Is Billable (evaluated independently of Bill To contact)
+                  </label>
+                </div>
+
+                {/* Zero-Charge Section when Price = 0 */}
+                {parseFloat(addServicePrice || '0') === 0 && (
+                  <div className="p-3.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 space-y-2">
+                    <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 block">
+                      ⚠️ Zero-Charge Reason Required (ck_order_items__zero_charge_has_reason):
+                    </span>
+                    <select
+                      value={addServiceZeroReason}
+                      onChange={(e) => setAddServiceZeroReason(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-900 text-xs"
+                    >
+                      <option value="">-- Select Zero-Charge Reason --</option>
+                      {zeroChargeReasonsList.map((z) => (
+                        <option key={z.code} value={z.code}>
+                          {z.label} ({z.code})
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Optional Zero-charge note..."
+                      value={addServiceZeroNote}
+                      onChange={(e) => setAddServiceZeroNote(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-900 text-xs"
+                    />
+                  </div>
+                )}
+
+                {/* Redo Flag and Reference */}
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="add-service-redo"
+                      checked={addServiceIsRedo}
+                      onChange={(e) => setAddServiceIsRedo(e.target.checked)}
+                      className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                    />
+                    <label htmlFor="add-service-redo" className="font-semibold text-xs cursor-pointer select-none">
+                      Is Redo of Existing Service Instance
+                    </label>
+                  </div>
+
+                  {addServiceIsRedo && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Select Original Service Instance (Mandatory for Redo):
+                      </label>
+                      <select
+                        value={addServiceRedoOfUuid}
+                        onChange={(e) => setAddServiceRedoOfUuid(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                      >
+                        <option value="">-- Select Original Service --</option>
+                        {contractServices.map((svc) => (
+                          <option key={svc.uuid} value={svc.uuid}>
+                            {svc.uuid} - {(svc as any).name || 'Service Item'} ({svc.status})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddServiceModalOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 font-bold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateServiceItem}
+                  disabled={isSubmittingAddService}
+                  className="px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {isSubmittingAddService ? 'Creating Instance...' : 'Create Service Item (POST)'}
                 </button>
               </div>
             </motion.div>
