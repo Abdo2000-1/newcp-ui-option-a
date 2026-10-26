@@ -46,6 +46,7 @@ import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { useAppConfig } from '@/app/providers/contexts/ConfigContext';
+import { useAuthorization } from '@/shared/hooks';
 
 // Real quarterly targets & performance data
 const QUARTER_DATA = [
@@ -84,6 +85,7 @@ const TOP_CLIENT_REPORTS = [
 
 export default function QuarterTargetsReport() {
   const { t } = useLanguage();
+  const { canExportReports, exportDisabledReason } = useAuthorization();
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
   // Default to the native interactive Power BI analytics dashboard so it ALWAYS works smoothly!
   const [activeView, setActiveView] = useState<'dashboard' | 'matrix' | 'powerbi' | 'embed' | 'config'>('dashboard');

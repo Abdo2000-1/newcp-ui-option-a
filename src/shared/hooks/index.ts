@@ -3,3 +3,4 @@ export * from '@/shared/hooks/useStore';
 export * from '@/shared/hooks/useTableState';
 export * from '@/shared/hooks/useTheme';
 export * from '@/shared/hooks/useAdvancedTable';
+export * from '@/shared/hooks/useAuthorization';

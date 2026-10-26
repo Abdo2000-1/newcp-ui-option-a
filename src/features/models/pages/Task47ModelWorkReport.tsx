@@ -23,6 +23,7 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
+import { useAuthorization } from '@/shared/hooks';
 
 interface Task47Row {
   serial: number;
@@ -51,6 +52,7 @@ const SAMPLE_TASK47_ROWS: Task47Row[] = [
 ];
 
 export default function Task47ModelWorkReport() {
+  const { canExportReports, exportDisabledReason } = useAuthorization();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [uiState, setUiState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
