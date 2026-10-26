@@ -24,6 +24,12 @@ For IAM/authentication work, additionally read:
 11. `references/iam/README.md` and the relevant IAM reference files.
 12. `tasks/iam/IAM-001-read-only-assessment.md` or a later approved IAM task.
 
+For PostHog, Sentry, telemetry, feature-flag, replay, or error-monitoring work,
+also read `docs/06_OPERATIONS/observability/README.md`, the applicable provider
+contract, the telemetry event contract, and the readiness checklist. The
+company reference documents are methodology sources only; they do not authorize
+provider configuration, production delivery, or backend changes.
+
 ## Source and authority map
 
 | Resource | Role | Authority and use |
@@ -44,6 +50,7 @@ For IAM/authentication work, additionally read:
 | `policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md` | IAM business baseline | Approved Google-only authentication, internal V3 IAM/Casbin authorization, tenant, session, audit, capability, and same-family inheritance rules. It does not prove runtime implementation. |
 | `references/iam/` | IAM engineering references | Role discovery, capability boundaries, journeys, acceptance groups, and implementation gaps. Exact role codes and hierarchy edges remain evidence-dependent. |
 | `tasks/iam/IAM-001-read-only-assessment.md` | IAM first task | Requires a read-only comparison of the repository with the v0.9.5 IAM baseline before code changes. |
+| `docs/06_OPERATIONS/observability/` | Observability control package | React/Vite-adapted PostHog and Sentry boundaries, proposed telemetry vocabulary, privacy controls, and verification gates. It is not provider delivery evidence. |
 
 ## Status labels required in plans and evidence
 

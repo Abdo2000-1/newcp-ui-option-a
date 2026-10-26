@@ -9,7 +9,8 @@ This repository contains the existing CP PRO MAX frontend plus the merged engine
 5. `docs/03_WORKFLOW/` — task lifecycle, Definition of Done, ownership, decisions, and AI-tool compatibility.
 6. `docs/04_INTEGRATION/` — OpenAPI and frontend/backend integration status.
 7. `docs/05_QUALITY/` — testing strategy, quality gates, and evidence procedures.
-8. `docs/90_PRODUCT_REFERENCE/` — original frontend product specifications and design references.
+8. `docs/06_OPERATIONS/observability/` — PostHog/Sentry contracts, privacy boundaries, and verification gates.
+9. `docs/90_PRODUCT_REFERENCE/` — original frontend product specifications and design references.
 
 ## New CP AI handoff
 

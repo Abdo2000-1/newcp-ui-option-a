@@ -18,6 +18,8 @@ For work covered by the integrated New CP V0.9 handoff, also read `docs/newcp-ai
 
 For authentication, IAM, Casbin, tenant, session, audit, role, or permission work, also read `docs/newcp-ai/policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`, `docs/newcp-ai/references/iam/README.md`, and the applicable IAM task. Use `.agents/rules/iam-authorization.md` and the IAM skills before any related planning or review.
 
+For PostHog, Sentry, telemetry, feature-flag, session-replay, or error-monitoring work, also read `docs/06_OPERATIONS/observability/README.md`, the relevant provider contract, `telemetry-event-contract.md`, and `readiness-checklist.md`. Use `.agents/rules/observability.md` and the observability skill. The company reference documents were adapted as methodology only; they do not authorize provider delivery, backend changes, or production verification.
+
 Use the relevant skill under `.agents/skills/`. The normal lifecycle is `plan-task` → `groom-task` → `implement-task` → `code-review-task` → human review/approval → `finalize-task`.
 
 ## Source of truth and scope

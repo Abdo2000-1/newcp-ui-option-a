@@ -19,6 +19,8 @@ For work covered by the integrated New CP V0.9 handoff, also read `docs/newcp-ai
 
 For Google authentication, PostgreSQL IAM, Casbin, tenant, session, audit, role, or permission work, also read `docs/newcp-ai/policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`, `docs/newcp-ai/references/iam/README.md`, and the applicable IAM task. Apply `.agents/rules/iam-authorization.md` and the corresponding IAM skill; never treat frontend visibility as authorization.
 
+For PostHog, Sentry, telemetry, feature-flag, session-replay, or error-monitoring work, also read `docs/06_OPERATIONS/observability/README.md`, the relevant provider contract, `telemetry-event-contract.md`, and `readiness-checklist.md`. Apply `.claude/rules/observability.md` and the observability skill. The company references are methodology only; do not copy their Vue/Node paths, production settings, credentials, or claims into New CP.
+
 Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `implement-task`, `code-review-task`, and `finalize-task`. Use specialist subagents only for the bounded read-only analysis described in `.claude/agents/`.
 
 ## Source of truth and scope
