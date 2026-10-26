@@ -1,0 +1,10 @@
+id,topic,decision,status,responsible_next_action
+IAM-022,Google Groups,Exclude Google Groups entirely from current authentication and authorization design,APPROVED,BE audit removes group lookup/sync assumptions
+IAM-023,Authorization authority,V3 PostgreSQL iam assigns roles and capability grants; Casbin enforces,APPROVED,BE verify seed and enforce in API
+IAM-024,Granular internal groups,Support senior/junior internal groups/grades rather than exactly five physical roles,APPROVED_PRINCIPLE,BE and lead inventory legacy + V3 roles
+IAM-025,Hierarchy exact grants,No exact grade capabilities or inheritance direction established,PENDING_EVIDENCE_AND_BUSINESS_SIGNOFF,Operations/CS business owner + lead validate mapping
+IAM-026,Hierarchy persistence,V006 no native parent-role relation; flat capability grants acceptable as technical option,TECHNICAL_RECOMMENDATION,Architect/DB owner choose and approve design
+IAM-020,Live identities,"Only CS, OPS, ADMIN 3 Google demo accounts",APPROVED,QA prepare with authorized internal V3 IAM assignments
+IAM-018,Multi-role,Support permissions union; test after demo,APPROVED_WITH_TEST_DEFERRED,Do not enforce single-role in schema
+IAM-HIER-001,,Senior/Manager inherits all confirmed subordinate same-family role permissions transitively,Approved 2026-10-26,Actual parent/child role edges and direct grants require discovery; no cross-family inheritance
+

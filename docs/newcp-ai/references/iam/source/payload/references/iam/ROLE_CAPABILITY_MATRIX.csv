@@ -1,0 +1,19 @@
+capability_code_PROPOSED,description,CS,OPS,FINANCE,QC,ADMIN,constraints_or_gates
+orders.read,Read authorized orders,Y,S,REPORT,REPORT,Y,OPS service-type scope; Finance/QC through reports only
+service.read,Read service instance,Y,S,REPORT,REPORT,Y,Operational view for CS/OPS; Finance/QC via reports only
+service.create,Create service instance,Y,S,N,N,Y,Same-type multiple instances independent
+service.update,Edit operational details,Y,S,N,N,Y,"Business validation, If-Match and audit"
+service.status.transition,Transition status,Y,S,N,N,Y,On Hold type+reason mandatory
+service.on_hold,Place service on hold,Y,S,N,N,Y,Requires customer/internal holdType and holdReasonCode
+service.price.override,Override contract price,Y,S,Y,N,Y,Financial-lock guard; no backend resetting legitimate override
+service.billing.bill_to.edit,Choose eligible billing contact,Y,S,Y,N,Y,F07 payer independent of isBillable; not after financial lock
+service.billing.is_billable.edit,Toggle per-item billability,Y,S,Y,N,Y,Independent of price & payer
+service.zero_charge_reason.edit,Set reason for final zero charge,Y,S,Y,N,Y,Mandatory when new service final line total zero
+reports.view_all,Open tenant report,Y,Y,Y,Y,Y,Sanitized demo only; deferred field visibility
+reports.export,Download/export report,N,N,Y,Y,Y,Separate API permission; audit data_export
+financials.transaction,"Charging, invoicing, financial transactions",N,N,Y,N,Y,Not conferred by operational commercial edit
+qc.audit.execute,Execute QC audit,N,N,N,Y,Y,QC and Admin only
+iam.assign_role,Grant internal IAM group membership,N,N,N,N,Y,Only within ADMIN authorized tenant
+iam.revoke_role,Revoke internal IAM group membership,N,N,N,N,Y,Effect on next protected request
+tenant.cross_admin,Cross-tenant super-admin,N,N,N,N,SEPARATE,ADMIN does not automatically include cross-tenant authority
+

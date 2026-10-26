@@ -1,0 +1,11 @@
+id,requirement,decision_owner,phase,current_guardrail
+F01,Domain-to-tenant automatic eligibility/grant rules,Business owner TBD,Later phase,Do not infer tenant 1 from @3ddx.com; explicit mapping now
+F02,External email allowlist lookup with tenant and group permissions,Business owner TBD,Later phase,Approved demo identity provision exception is not a permanent group/tenant grant policy
+F03,Multiple authorized tenants and tenant switching journey,Business owner TBD,Later phase,One authorized active tenant per session now
+F04,Google Groups integration explicitly excluded; future request requires separate approval,"New change request, owner TBD",Not planned under current IAM design,"No Google Groups API, lookup, mapping or sync; internal V3 IAM only"
+F05,"Report-level/field-level data masking, filtering and export contents",Report/business owners TBD,Later phase,Sanitized demo data; cannot claim production unrestricted access
+F06,Sensitive action step-up Google authentication,Security/finance owners TBD,Later phase,Do not invent threshold/prompt now
+F07,Multi-role assignment union integration tests,QA owner TBD,After October demo,Architecture must support role union; no demo multi-role test
+F08,Cross-tenant super-admin privilege workflow,Business/security owners TBD,Later phase,ADMIN by itself tenant-scoped
+F09,Non-Google interactive login methods / production identity strategy,Security/business owner TBD,Later phase,Google-only interactive sign-in for October demo
+

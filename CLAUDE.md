@@ -17,6 +17,8 @@ This repository contains the CP PRO MAX frontend and its project-specific AI-ass
 
 For work covered by the integrated New CP V0.9 handoff, also read `docs/newcp-ai/REFERENCE_INDEX.md`, `docs/newcp-ai/INTEGRATION_WITH_REPOSITORY.md`, and the applicable task under `docs/newcp-ai/tasks/`. The handoff is source material and a controlled workflow reference; it does not authorize backend, database, production, or unapproved application changes.
 
+For Google authentication, PostgreSQL IAM, Casbin, tenant, session, audit, role, or permission work, also read `docs/newcp-ai/policy/IAM_APPROVED_BUSINESS_BASELINE_v1.2.md`, `docs/newcp-ai/references/iam/README.md`, and the applicable IAM task. Apply `.agents/rules/iam-authorization.md` and the corresponding IAM skill; never treat frontend visibility as authorization.
+
 Use the relevant skill for each workflow stage: `plan-task`, `groom-task`, `implement-task`, `code-review-task`, and `finalize-task`. Use specialist subagents only for the bounded read-only analysis described in `.claude/agents/`.
 
 ## Source of truth and scope
