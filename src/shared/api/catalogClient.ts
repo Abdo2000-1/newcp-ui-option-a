@@ -1,3 +1,4 @@
+import { getApiConfig } from './config';
 import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type {
   CatalogService,
@@ -233,8 +234,4 @@ export class CatalogClient implements ICatalogClient {
   }
 }
 
-const defaultTransport = new HttpTransport({
-  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
-});
-
-export const catalogClient = new CatalogClient(defaultTransport, true);
+export const catalogClient = new CatalogClient(new HttpTransport(), getApiConfig().enableMocks);

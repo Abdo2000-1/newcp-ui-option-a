@@ -53,8 +53,7 @@ const navItems = [
   { icon: FormInput, label: 'Forms', path: '/forms' },
   { icon: BarChart3, label: 'Reports', path: '/reports' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
-  { icon: Code2, label: 'OpenAPI 3.0.3', path: '/api-contract' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {

@@ -602,7 +602,7 @@ export default function AddCase() {
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200 uppercase tracking-wider">
-                            Live OpenAPI 3.0.3 Master Catalog (GET /api/v1/catalog/services)
+                            Prescribed Clinical Services Catalog
                           </span>
                         </div>
                         <span className="text-[10px] font-mono bg-cyan-200/50 dark:bg-cyan-900/50 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded font-bold">
@@ -610,7 +610,7 @@ export default function AddCase() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
-                        Select an authorized clinical service from the live contract catalogue to prescribe for this case:
+                        Select an authorized clinical service to prescribe for this case:
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                         {contractCatalog.map((item) => (

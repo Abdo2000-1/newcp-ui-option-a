@@ -98,22 +98,6 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Live OpenAPI 3.0.3 Contract Banner */}
-      <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold text-emerald-900 dark:text-emerald-200">
-            OpenAPI 3.0.3 Contract Mock Server Active (http://localhost:3000/api/v1)
-          </span>
-          <span className="font-mono text-[10px] bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded font-black">
-            HTTP 200 OK
-          </span>
-        </div>
-        <div className="text-[11px] text-slate-600 dark:text-slate-400">
-          Enforcing Q-B8..Q-B15 Concurrency (ETag), Transitions & F07 Payer Target
-        </div>
-      </div>
-
       {/* Advanced Table Tools */}
       <TableTools
         searchTerm={table.searchTerm}

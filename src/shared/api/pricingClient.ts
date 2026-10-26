@@ -1,3 +1,4 @@
+import { getApiConfig } from './config';
 import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { IServiceClient } from './serviceClient';
 import { serviceClient } from './serviceClient';
@@ -147,8 +148,4 @@ export class PricingClient implements IPricingClient {
   }
 }
 
-const defaultTransport = new HttpTransport({
-  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
-});
-
-export const pricingClient = new PricingClient(defaultTransport, serviceClient, true);
+export const pricingClient = new PricingClient(new HttpTransport(), serviceClient, getApiConfig().enableMocks);

@@ -1,3 +1,4 @@
+import { getApiConfig } from './config';
 import { HttpTransport, type IHttpTransport } from './httpTransport';
 import type { WithVersion } from './types';
 import type {
@@ -266,8 +267,4 @@ export class WorkflowClient implements IWorkflowClient {
   }
 }
 
-const defaultTransport = new HttpTransport({
-  baseUrl: (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1',
-});
-
-export const workflowClient = new WorkflowClient(defaultTransport, true);
+export const workflowClient = new WorkflowClient(new HttpTransport(), getApiConfig().enableMocks);

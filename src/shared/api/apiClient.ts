@@ -1,3 +1,4 @@
+import { getApiConfig } from './config';
 import { api } from '@/shared/services/api';
 import type {
   IApiClient,
@@ -38,14 +39,14 @@ export class ApiClient implements IApiClient {
     mockServiceInstances?: IServiceInstanceMockAdapter
   ) {
     if (typeof baseUrlOrOptions === 'object' && baseUrlOrOptions !== null) {
-      this.baseUrl = baseUrlOrOptions.baseUrl || (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1';
+      this.baseUrl = (typeof baseUrlOrOptions === 'object' ? baseUrlOrOptions.baseUrl : undefined) || getApiConfig().baseUrl;
       this.adapter = baseUrlOrOptions.mockServiceInstances ?? new ServiceInstanceMockAdapter();
     } else {
-      this.baseUrl = baseUrlOrOptions || (import.meta.env?.VITE_API_BASE_URL as string) || '/api/v1';
+      this.baseUrl = (typeof baseUrlOrOptions === 'string' ? baseUrlOrOptions : undefined) || getApiConfig().baseUrl;
       this.adapter = mockServiceInstances ?? new ServiceInstanceMockAdapter();
     }
 
-    this.transport = new HttpTransport({ baseUrl: this.baseUrl });
+    this.transport = new HttpTransport({ baseUrl: this.baseUrl, mode: getApiConfig().mode });
 
     this.offlineMockServiceInstances = {
       item: (serviceItemUuid: string): Promise<WithVersion<ServiceItem>> => {

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  Clock, 
-  FileText, 
-  Layers, 
-  Activity, 
-  Save, 
-  Check, 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Layers,
+  Activity,
+  Save,
+  Check,
   Scan,
   Calendar,
   AlertCircle
@@ -143,7 +143,7 @@ export default function SubOrderDetail() {
             <TeethChart
               selectedTeeth={selectedTeeth}
               onToggleTooth={(tooth: number) => {
-                setSelectedTeeth((prev) => 
+                setSelectedTeeth((prev) =>
                   prev.includes(tooth) ? prev.filter((t) => t !== tooth) : [...prev, tooth]
                 );
               }}
@@ -162,8 +162,8 @@ export default function SubOrderDetail() {
               {contractService && (
                 <div className="p-3 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 space-y-1.5 text-xs mb-3">
                   <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px]">
-                    <span>LIVE OPENAPI 3.0.3 INSTANCE</span>
-                    <span className="font-mono bg-emerald-200/50 dark:bg-emerald-900/50 px-1 py-0.5 rounded text-[9px]">HTTP 200 OK</span>
+                    <span>SERVICE LINE SPECIFICATION</span>
+
                   </div>
                   <div className="text-[11px] text-emerald-900 dark:text-emerald-200 font-mono truncate">UUID: {contractService.uuid}</div>
                   <div className="text-[10px] text-slate-500 font-mono">ETag: {contractEtag || 'W/"srv-live"'}</div>
