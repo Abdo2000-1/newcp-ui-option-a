@@ -87,6 +87,7 @@ export interface FieldConditionLeaf {
   attribute?: string;
   op: FieldConditionOp;
   value?: unknown;
+  values?: unknown[];
 }
 
 export interface FieldConditionAll {
