@@ -10,7 +10,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Badge from '@mui/material/Badge';
 import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import { 
-  Menu, 
+  Menu,
+  Zap, 
   Search, 
   Bell, 
   Sun, 
@@ -247,6 +248,31 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Right: Quick Action Buttons & Profile */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
+        {/* OpenAPI 3.0.3 Contract Indicator Pill */}
+        <Tooltip title="OpenAPI 3.0.3 Contract Explorer & Live Diagnostics" arrow>
+          <Button
+            onClick={() => navigate('/api-contract')}
+            size="small"
+            startIcon={<Zap size={14} className="text-emerald-500 animate-pulse" />}
+            sx={{
+              display: { xs: 'none', md: 'inline-flex' },
+              bgcolor: 'rgba(16, 185, 129, 0.1)',
+              color: '#059669',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              fontWeight: 800,
+              fontSize: '0.72rem',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'rgba(16, 185, 129, 0.2)',
+              }
+            }}
+          >
+            OpenAPI 3.0.3 Active
+          </Button>
+        </Tooltip>
         {/* Cohesive, Modern Header Action Button */}
         <Button
           onClick={() => navigate('/add-case')}

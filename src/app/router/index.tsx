@@ -50,6 +50,7 @@ const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 // System & Error Views (UIUX-REQ-021)
 const NotFoundPage = lazy(() => import('@/features/system/pages/NotFoundPage'));
 const Maintenance503Page = lazy(() => import('@/features/system/pages/Maintenance503Page'));
+const ContractExplorerPage = lazy(() => import('@/features/system/pages/ContractExplorerPage'));
 
 export const ROUTES = {
   HOME: '/',
@@ -80,6 +81,7 @@ export const ROUTES = {
   SETTINGS: '/settings',
   GRID: '/grid',
   FORMS: '/forms',
+  API_CONTRACT: '/api-contract',
   NOT_FOUND: '/404',
   MAINTENANCE: '/503',
 } as const;
@@ -163,6 +165,8 @@ export function AppRouter() {
           <Route path="change-requests" element={<SuspenseWrapper><ChangeRequests /></SuspenseWrapper>} />
           <Route path="scan-center" element={<SuspenseWrapper><ScanCenter /></SuspenseWrapper>} />
           <Route path="workflow-board" element={<SuspenseWrapper><WorkflowBoard /></SuspenseWrapper>} />
+          <Route path="api-contract" element={<SuspenseWrapper><ContractExplorerPage /></SuspenseWrapper>} />
+          <Route path="contract" element={<Navigate to="/api-contract" replace />} />
           <Route path="documents" element={<SuspenseWrapper><Documents /></SuspenseWrapper>} />
           <Route path="503" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />
           <Route path="maintenance" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />

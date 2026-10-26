@@ -35,6 +35,7 @@ export default function SubOrderDetail() {
   const [occlusalContact, setOcclusalContact] = useState('Light contact');
   const [marginType, setMarginType] = useState('Chamfer');
   const [material, setMaterial] = useState('Zirconia (Multilayer)');
+  const [subOrderAnswers, setSubOrderAnswers] = useState<any[]>([]);
   const [shade, setShade] = useState('A2');
   const [clinicalNotes, setClinicalNotes] = useState('Ensure tight proximal contact on distal aspect.');
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -58,8 +59,16 @@ export default function SubOrderDetail() {
     );
   }
 
-  const handleSaveSpecs = (e: React.FormEvent) => {
+  const handleSaveSpecs = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (contractService) {
+      try {
+        const etag = contractEtag || `W/"${contractService.uuid}-live"`;
+        await serviceClient.edit(contractService.uuid, { answers: subOrderAnswers }, etag);
+      } catch (err: any) {
+        console.warn('Error patching specs:', err);
+      }
+    }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };

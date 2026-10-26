@@ -8,6 +8,7 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import { 
+  Code2,
   LayoutDashboard, 
   Package, 
   FolderOpen, 
@@ -52,6 +53,7 @@ const navItems = [
   { icon: FormInput, label: 'Forms', path: '/forms' },
   { icon: BarChart3, label: 'Reports', path: '/reports' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
+  { icon: Code2, label: 'OpenAPI 3.0.3', path: '/api-contract' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 

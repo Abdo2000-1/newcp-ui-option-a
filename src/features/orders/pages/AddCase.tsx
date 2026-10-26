@@ -28,6 +28,8 @@ import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { store } from '@/shared/services/store';
 import { catalogClient, serviceClient } from '@/shared/api';
+import { DynamicFormRenderer } from '@/shared/components/DynamicFormRenderer';
+import type { FormAnswer } from '@/shared/api/contractTypes';
 import type { CatalogService } from '@/shared/api/contractTypes';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -77,6 +79,7 @@ export default function AddCase() {
   const [guideSupport, setGuideSupport] = useState<'Tooth-Supported' | 'Bone-Supported' | 'Mucosa-Supported'>('Tooth-Supported');
   const [contractCatalog, setContractCatalog] = useState<CatalogService[]>([]);
   const [selectedCatalogUuid, setSelectedCatalogUuid] = useState<string>('00000000-0000-0000-0000-000000000004');
+  const [dynamicAnswers, setDynamicAnswers] = useState<FormAnswer[]>([]);
 
   React.useEffect(() => {
     catalogClient.listServices().then((items) => {
@@ -195,7 +198,7 @@ export default function AddCase() {
         unitPrice: '250.00',
         quantity: 1,
         isBillable: true,
-        answers: [
+        answers: dynamicAnswers.length > 0 ? dynamicAnswers : [
           { fieldCode: 'guide_support', value: guideSupport },
           { fieldCode: 'sleeve_brand', value: sleeveBrand }
         ]
@@ -629,6 +632,14 @@ export default function AddCase() {
                             </div>
                           </button>
                         ))}
+                      </div>
+
+                      {/* Dynamic Form Questionnaire according to OpenAPI Schema */}
+                      <div className="mt-4">
+                        <DynamicFormRenderer
+                          serviceUuid={selectedCatalogUuid}
+                          onChange={(ans) => setDynamicAnswers(ans)}
+                        />
                       </div>
                     </div>
 

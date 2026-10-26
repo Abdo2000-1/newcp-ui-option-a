@@ -28,6 +28,8 @@ import {
   ZoomIn,
   ZoomOut,
   Sliders,
+  Plus,
+  Code2,
   Sparkles,
   Printer,
   Mail,
@@ -351,6 +353,33 @@ export default function OrderDetailsPage() {
   // History Modal State
   const [selectedServiceForHistory, setSelectedServiceForHistory] = useState<ServiceItem | null>(null);
   const [serviceHistoryList, setServiceHistoryList] = useState<HistoryEvent[]>([]);
+
+  // State for Add Service Item Modal
+  const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState<boolean>(false);
+  const [addServiceCatalogUuid, setAddServiceCatalogUuid] = useState<string>('00000000-0000-0000-0000-000000000003');
+  const [addServicePrice, setAddServicePrice] = useState<string>('120.00');
+  const [addServiceAnswers, setAddServiceAnswers] = useState<any[]>([]);
+  const [isSubmittingAddService, setIsSubmittingAddService] = useState<boolean>(false);
+
+  const handleCreateServiceItem = async () => {
+    setIsSubmittingAddService(true);
+    try {
+      await serviceClient.create(flowOrder?.orderNum || '504901', {
+        sellableItemUuid: addServiceCatalogUuid,
+        unitPrice: addServicePrice,
+        quantity: 1,
+        isBillable: true,
+        answers: addServiceAnswers,
+      });
+      triggerToast('Service item created successfully (POST /api/v1/orders/{orderUuid}/services)');
+      setIsAddServiceModalOpen(false);
+      await loadContractServices();
+    } catch (err: any) {
+      triggerToast(`[OpenAPI Error] ${err.message}`);
+    } finally {
+      setIsSubmittingAddService(false);
+    }
+  };
 
   // Payer Selection Modal State
   const [selectedServiceForPayer, setSelectedServiceForPayer] = useState<ServiceItem | null>(null);
@@ -1811,6 +1840,22 @@ Generated on: ${new Date().toLocaleString()}
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAddServiceModalOpen(true)}
+                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
+              >
+                <Plus size={12} />
+                <span>+ Add Service Item (POST)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/api-contract')}
+                className="px-3 py-1.5 rounded-lg border border-cyan-400 dark:border-cyan-700 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-200 font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
+              >
+                <Code2 size={12} />
+                <span>Contract Explorer</span>
+              </button>
               <button
                 type="button"
                 onClick={loadContractServices}
