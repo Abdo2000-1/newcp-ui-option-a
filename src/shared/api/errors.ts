@@ -42,7 +42,7 @@ export class ClinicalApprovalRequiredError extends ApiClientError {
 }
 
 // ============================================================================
-// Contract-Specific RFC 7807 Problem Errors (OpenAPI 3.0.3)
+// Contract-Specific RFC 7807 Problem Errors (OpenAPI 3.0.3 & IAM Supplement)
 // ============================================================================
 
 export class ProblemError extends ApiClientError {
@@ -58,6 +58,50 @@ export class ProblemError extends ApiClientError {
     this.requestId = problem.requestId;
     this.details = problem.details;
     this.problem = problem;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class AccessNotAssignedError extends ProblemError {
+  constructor(problem: Problem | string = 'Account is authenticated with Google but lacks assigned V3 roles') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'ACCESS_NOT_ASSIGNED', message: problem }
+      : problem;
+    super(403, p);
+    this.name = 'AccessNotAssignedError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class SessionExpiredError extends ProblemError {
+  constructor(problem: Problem | string = 'Session has expired due to inactivity or max lifetime') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'SESSION_EXPIRED', message: problem }
+      : problem;
+    super(401, p);
+    this.name = 'SessionExpiredError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class AuthenticationRequiredError extends ProblemError {
+  constructor(problem: Problem | string = 'Authentication is required to access this resource') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'AUTHENTICATION_REQUIRED', message: problem }
+      : problem;
+    super(401, p);
+    this.name = 'AuthenticationRequiredError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export class InsufficientPermissionsError extends ProblemError {
+  constructor(problem: Problem | string = 'You do not have access to this action') {
+    const p: Problem = typeof problem === 'string'
+      ? { code: 'PERMISSION_DENIED', message: problem }
+      : problem;
+    super(403, p);
+    this.name = 'InsufficientPermissionsError';
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -120,8 +164,12 @@ export function normalizeProblemError(status: number, payload?: unknown): ApiCli
 
   switch (status) {
     case 401:
+      if (problem.code === 'SESSION_EXPIRED') return new SessionExpiredError(problem);
+      if (problem.code === 'AUTHENTICATION_REQUIRED') return new AuthenticationRequiredError(problem);
       return new AuthenticationError(problem.message);
     case 403:
+      if (problem.code === 'ACCESS_NOT_ASSIGNED') return new AccessNotAssignedError(problem);
+      if (problem.code === 'PERMISSION_DENIED') return new InsufficientPermissionsError(problem);
       return new TenantAccessDeniedError(problem.message);
     case 409:
       return new ClinicalApprovalRequiredError(problem.message);

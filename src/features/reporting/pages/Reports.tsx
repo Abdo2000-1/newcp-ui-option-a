@@ -8,6 +8,7 @@ import { formatCurrency } from '@/shared/utils/format';
 import { api } from '@/shared/services/api';
 import { useFetch } from '@/shared/hooks/useFetch';
 import { useStore } from '@/shared/hooks/useStore';
+import { useAuthorization } from '@/shared/hooks';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { 
   TrendingUp, DollarSign, Award, Clock, Activity, Download, 
@@ -95,6 +96,7 @@ import { sound } from '@/shared/utils/sound';
 
 export default function Reports() {
   const { t } = useLanguage();
+  const { canExportReports, exportDisabledReason } = useAuthorization();
   const [selectedWeek, setSelectedWeek] = useState('Week 4');
   const [calendarMonth, setCalendarMonth] = useState('January 2026');
   const [searchQuery, setSearchQuery] = useState('');
