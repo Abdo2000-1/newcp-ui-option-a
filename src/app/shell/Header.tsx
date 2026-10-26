@@ -24,6 +24,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
 import { timeAgo } from '@/shared/utils/format';
@@ -87,7 +88,10 @@ export function Header({ onMenuClick }: HeaderProps) {
     ? pathSegments[0].charAt(0).toUpperCase() + pathSegments[0].slice(1).replace(/-/g, ' ') 
     : 'Dashboard';
 
+  const authContext = useAuth();
+
   const handleLogout = () => {
+    authContext?.logout();
     localStorage.removeItem('dentalab-auth');
     localStorage.removeItem('dentalab-auth-token');
     navigate('/login');
@@ -446,11 +450,29 @@ export function Header({ onMenuClick }: HeaderProps) {
             >
               <Box sx={{ px: 1.5, py: 1, borderBottom: `1px solid ${headerBorder}` }}>
                 <Typography sx={{ fontWeight: 800, fontSize: '0.8125rem' }}>
-                  {profile.firstName} {profile.lastName}
+                  {authContext?.session?.fullName || `${profile.firstName} ${profile.lastName}`}
                 </Typography>
                 <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
-                  {profile.role} • Pro
+                  {authContext?.session?.roles[0] || profile.role} • Pro
                 </Typography>
+                {authContext?.session?.activeTenant && (
+                  <Typography
+                    data-testid="header-tenant-badge"
+                    sx={{
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      color: '#00706a',
+                      mt: 0.5,
+                      bgcolor: isDark ? 'rgba(0,112,106,0.2)' : 'rgba(0,112,106,0.08)',
+                      px: 0.75,
+                      py: 0.25,
+                      borderRadius: 1,
+                      display: 'inline-block',
+                    }}
+                  >
+                    Tenant: {authContext.session.activeTenant.label} (ID: {authContext.session.activeTenant.id})
+                  </Typography>
+                )}
               </Box>
               <Box sx={{ py: 0.5 }}>
                 <Button
