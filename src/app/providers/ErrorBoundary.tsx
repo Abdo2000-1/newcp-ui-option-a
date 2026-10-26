@@ -1,5 +1,6 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { getSentry } from '@/shared/observability';
 
 interface Props {
   children: ReactNode;
@@ -23,6 +24,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error inside clinical component boundary:', error, errorInfo);
+    try {
+      getSentry().captureException(error, {
+        extra: {
+          componentStack: errorInfo.componentStack,
+        },
+      });
+    } catch (err) {
+      // Telemetry failure must never disrupt error boundary rendering
+      console.warn('[ErrorBoundary] Sentry capture failed:', err);
+    }
   }
 
   public handleReset = () => {

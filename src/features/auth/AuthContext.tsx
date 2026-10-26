@@ -1,4 +1,4 @@
-import { getPostHog } from '@/shared/observability';
+import { getPostHog, getSentry } from '@/shared/observability';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 /**
@@ -236,6 +236,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
       };
       persistSession(createdSession);
+      getSentry().setUser({
+        id: createdSession.userId,
+        role: createdSession.roles[0],
+        tenantId: createdSession.tenantId,
+      });
       getPostHog().identify(createdSession.userId, {
         role: createdSession.roles[0],
         family: createdSession.family,
@@ -260,6 +265,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
       };
       persistSession(unassignedSession);
+      getSentry().setUser({
+        id: unassignedSession.userId,
+        tenantId: unassignedSession.tenantId,
+      });
       getPostHog().identify(unassignedSession.userId, {
         tenantId: unassignedSession.tenantId,
       });
@@ -276,6 +285,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user_id: sessionRef.current.userId,
       });
     }
+    getSentry().setUser(null);
     getPostHog().reset();
     persistSession(null);
   };
