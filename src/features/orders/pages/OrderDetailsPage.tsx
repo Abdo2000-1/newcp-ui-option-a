@@ -460,6 +460,10 @@ export default function OrderDetailsPage() {
   }, [loadContractServices]);
 
   const handleOpenTransitionModal = async (svc: ServiceItem) => {
+    if (svc.canTransition === false || svc.isReadOnly === true) {
+      triggerToast(`[403 Forbidden] Workflow transitions are locked for ${svc.uuid} (read-only mode).`);
+      return;
+    }
     setSelectedServiceForTransition(svc);
     setSelectedTransitionId(null);
     setTransitionComment('');
@@ -498,7 +502,13 @@ export default function OrderDetailsPage() {
       setSelectedServiceForTransition(null);
       await loadContractServices();
     } catch (err: any) {
-      triggerToast(`[OpenAPI Error] ${err.message}`);
+      if (err?.status === 401) {
+        triggerToast('[401 Unauthorized] Session expired or invalid authentication credentials.');
+      } else if (err?.status === 403) {
+        triggerToast(`[403 Forbidden] ${err.message || 'Permission denied on this transition.'}`);
+      } else {
+        triggerToast(`[OpenAPI Error] ${err.message}`);
+      }
     } finally {
       setIsSubmittingTransition(false);
     }
@@ -598,7 +608,13 @@ export default function OrderDetailsPage() {
       setSelectedServiceForPayer(null);
       await loadContractServices();
     } catch (err: any) {
-      triggerToast(`[OpenAPI Error] ${err.message}`);
+      if (err?.status === 401) {
+        triggerToast('[401 Unauthorized] Session expired or invalid authentication credentials.');
+      } else if (err?.status === 403) {
+        triggerToast(`[403 Forbidden] ${err.message || 'Permission denied on this transition.'}`);
+      } else {
+        triggerToast(`[OpenAPI Error] ${err.message}`);
+      }
     } finally {
       setIsSubmittingPayer(false);
     }

@@ -264,6 +264,15 @@ export class ServiceClient implements IServiceClient {
       throw new ServiceItemNotFoundError(serviceItemUuid);
     }
 
+    if ('billedPartyOrigin' in (patch as any)) {
+      delete (patch as any).billedPartyOrigin;
+    }
+
+    // General service edit permission / read-only check
+    if (entry.item.canEditService === false || entry.item.isReadOnly === true) {
+      throw new PermissionDeniedError(`Service editing is not permitted on item "${serviceItemUuid}" (read-only mode).`);
+    }
+
     // Read-only / financial locks check
     if (entry.item.isInvoiced && (patch.unitPrice !== undefined || patch.quantity !== undefined || patch.isBillable !== undefined)) {
       throw new PermissionDeniedError(`Cannot edit financial fields on invoiced service item "${serviceItemUuid}".`);

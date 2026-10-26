@@ -26,6 +26,7 @@ import {
   PreconditionFailedError,
   PreconditionRequiredError,
   PermissionDeniedError,
+  AuthenticationError,
 } from '@/shared/api';
 import { ShieldAlert, RefreshCw, Lock, GitCompare } from 'lucide-react';
 
@@ -100,7 +101,7 @@ export default function SubOrderDetail() {
     );
   }
 
-  const isReadOnly = Boolean(contractService?.isInvoiced);
+  const isReadOnly = Boolean(contractService?.isInvoiced || contractService?.canEditService === false || contractService?.isReadOnly === true);
 
   const handleSaveSpecs = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +150,9 @@ export default function SubOrderDetail() {
       await fetchServiceItem();
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: any) {
-      if (err instanceof PreconditionFailedError || err?.status === 412) {
+      if (err instanceof AuthenticationError || err?.status === 401) {
+        setEditError('401 Unauthorized: Session expired or invalid authentication credentials. Please re-authenticate.');
+      } else if (err instanceof PreconditionFailedError || err?.status === 412) {
         setEditError('412 Precondition Failed: This service item was modified concurrently by another user. Your unsaved draft has been preserved below.');
       } else if (err instanceof PreconditionRequiredError || err?.status === 428) {
         setEditError('428 Precondition Required: Missing ETag. Reload entity before editing.');
@@ -265,7 +268,7 @@ export default function SubOrderDetail() {
       {isReadOnly && (
         <div className="p-3 bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 rounded-xl flex items-center gap-2 border border-slate-300 dark:border-slate-700 text-xs font-semibold">
           <Lock className="w-4 h-4 text-slate-500" />
-          <span>Read-Only Mode: This service item has financial locks or is invoiced. Changes cannot be submitted.</span>
+          <span>Read-Only Mode: This service item is locked by invoice or operator permissions. Edits are disabled.</span>
         </div>
       )}
 
