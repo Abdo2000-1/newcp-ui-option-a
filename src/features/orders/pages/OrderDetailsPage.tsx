@@ -53,6 +53,7 @@ import {
   List,
   DollarSign,
   ShieldAlert,
+  Lock,
   Tag,
   RotateCcw,
   CheckCircle
@@ -343,12 +344,14 @@ export default function OrderDetailsPage() {
   const [transitionComment, setTransitionComment] = useState<string>('');
   const [isSubmittingTransition, setIsSubmittingTransition] = useState<boolean>(false);
 
-  // Price Override Modal State
+  // Price Override & Billability Modal State (Q-B10 & Independent Billability)
   const [selectedServiceForPricing, setSelectedServiceForPricing] = useState<ServiceItem | null>(null);
   const [editUnitPrice, setEditUnitPrice] = useState<string>('');
   const [editQuantity, setEditQuantity] = useState<number>(1);
+  const [editIsBillable, setEditIsBillable] = useState<boolean>(true);
   const [zeroChargeReasonsList, setZeroChargeReasonsList] = useState<ZeroChargeReason[]>([]);
   const [selectedZeroChargeReason, setSelectedZeroChargeReason] = useState<string>('');
+  const [pricingError, setPricingError] = useState<{ message: string; field?: string } | null>(null);
   const [isSubmittingPricing, setIsSubmittingPricing] = useState<boolean>(false);
 
   // History Modal State
@@ -505,7 +508,9 @@ export default function OrderDetailsPage() {
     setSelectedServiceForPricing(svc);
     setEditUnitPrice(svc.unitPrice || '0.00');
     setEditQuantity(svc.quantity || 1);
+    setEditIsBillable(svc.isBillable !== false);
     setSelectedZeroChargeReason(svc.zeroChargeReasonCode || '');
+    setPricingError(null);
     try {
       const reasons = await pricingClient.getZeroChargeReasons();
       setZeroChargeReasonsList(reasons);
@@ -516,6 +521,22 @@ export default function OrderDetailsPage() {
 
   const handleExecutePricing = async () => {
     if (!selectedServiceForPricing) return;
+    setPricingError(null);
+
+    const priceNum = parseFloat(editUnitPrice);
+    if (isNaN(priceNum) || priceNum < 0) {
+      setPricingError({ message: 'Unit price must be a valid non-negative number.', field: 'unitPrice' });
+      return;
+    }
+
+    if (priceNum === 0 && !selectedZeroChargeReason) {
+      setPricingError({
+        message: 'When unit price is $0.00, a zero-charge reason code is strictly mandatory (ck_order_items__zero_charge_has_reason).',
+        field: 'zeroChargeReasonCode',
+      });
+      return;
+    }
+
     setIsSubmittingPricing(true);
     try {
       const itemEtag = contractEtag || `W/"${selectedServiceForPricing.uuid}-1"`;
@@ -524,15 +545,18 @@ export default function OrderDetailsPage() {
         {
           unitPrice: editUnitPrice,
           quantity: editQuantity,
-          zeroChargeReasonCode: parseFloat(editUnitPrice) === 0 ? selectedZeroChargeReason : null
+          isBillable: editIsBillable,
+          zeroChargeReasonCode: priceNum === 0 ? selectedZeroChargeReason : null,
         },
         itemEtag,
         true
       );
-      triggerToast(`[OpenAPI 200 OK] Price updated for ${selectedServiceForPricing.uuid}!`);
+      triggerToast(`[OpenAPI 200 OK] Price & billability updated for ${selectedServiceForPricing.uuid}!`);
       setSelectedServiceForPricing(null);
       await loadContractServices();
     } catch (err: any) {
+      const field = err?.details?.field || (err?.code === 'ZERO_CHARGE_REASON_REQUIRED' ? 'zeroChargeReasonCode' : undefined);
+      setPricingError({ message: err.message || 'Pricing update failed', field });
       triggerToast(`[OpenAPI Error] ${err.message}`);
     } finally {
       setIsSubmittingPricing(false);
@@ -2334,101 +2358,188 @@ Generated on: ${new Date().toLocaleString()}
       {/* MODAL 2: PRICING & ZERO-CHARGE OVERRIDE (OPENAPI 3.0.3)           */}
       {/* ================================================================== */}
       <AnimatePresence>
-        {selectedServiceForPricing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] p-6 shadow-2xl space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">
-                    Service Price Override (Q-B10)
-                  </h3>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">
-                    UUID: {selectedServiceForPricing.uuid}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedServiceForPricing(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+        {selectedServiceForPricing && (() => {
+          const isPriceLocked = selectedServiceForPricing.canEditPrice === false || Boolean(selectedServiceForPricing.isInvoiced);
+          const isBillabilityLocked = selectedServiceForPricing.canEditBillability === false || Boolean(selectedServiceForPricing.isInvoiced);
 
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Unit Price (USD):
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={editUnitPrice}
-                    onChange={(e) => setEditUnitPrice(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs font-bold"
-                  />
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-md rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f172a] p-6 shadow-2xl space-y-4"
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">
+                      Service Price Override (Q-B10)
+                    </h3>
+                    <p className="text-xs text-slate-500 font-mono mt-0.5">
+                      UUID: {selectedServiceForPricing.uuid}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedServiceForPricing(null)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Quantity:
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={editQuantity}
-                    onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs"
-                  />
-                </div>
-
-                {parseFloat(editUnitPrice || '0') === 0 && (
-                  <div className="p-3.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 space-y-2">
-                    <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 block">
-                      ⚠️ Zero-Charge Reason Required (DB constraint ck_order_items__zero_charge_has_reason):
-                    </span>
-                    <select
-                      value={selectedZeroChargeReason}
-                      onChange={(e) => setSelectedZeroChargeReason(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-900 text-xs"
-                    >
-                      <option value="">-- Select Zero-Charge Reason --</option>
-                      {zeroChargeReasonsList.map((z) => (
-                        <option key={z.code} value={z.code}>
-                          {z.label} ({z.code})
-                        </option>
-                      ))}
-                    </select>
+                {pricingError && (
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+                    <ShieldAlert size={14} className="shrink-0" />
+                    <span>{pricingError.message}</span>
                   </div>
                 )}
-              </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setSelectedServiceForPricing(null)}
-                  className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 font-bold text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExecutePricing}
-                  disabled={isSubmittingPricing || (parseFloat(editUnitPrice || '0') === 0 && !selectedZeroChargeReason)}
-                  className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md disabled:opacity-50 cursor-pointer"
-                >
-                  {isSubmittingPricing ? 'Saving...' : 'Apply Price (PATCH)'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Unit Price (USD):
+                      </label>
+                      {isPriceLocked && (
+                        <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <Lock size={10} /> Locked (canEditPrice: false)
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      disabled={isPriceLocked}
+                      value={editUnitPrice}
+                      onChange={(e) => setEditUnitPrice(e.target.value)}
+                      className={`w-full px-3 py-2 rounded-lg border font-mono text-xs font-bold ${
+                        isPriceLocked
+                          ? 'border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-500 cursor-not-allowed'
+                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Quantity:
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      disabled={isPriceLocked}
+                      value={editQuantity}
+                      onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs disabled:opacity-60"
+                    />
+                  </div>
+
+                  {/* Independent Billable Control (Q-B9 / Q-B11) */}
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        Billable to Client? (Independent of Bill To):
+                      </span>
+                      {isBillabilityLocked && (
+                        <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <Lock size={10} /> Locked
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs font-semibold">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="pricingBillableToggle"
+                          disabled={isBillabilityLocked}
+                          checked={editIsBillable}
+                          onChange={() => setEditIsBillable(true)}
+                        />
+                        <span className={editIsBillable ? "text-emerald-600 font-bold" : "text-slate-600"}>
+                          Yes (Billable)
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="pricingBillableToggle"
+                          disabled={isBillabilityLocked}
+                          checked={!editIsBillable}
+                          onChange={() => setEditIsBillable(false)}
+                        />
+                        <span className={!editIsBillable ? "text-rose-600 font-bold" : "text-slate-600"}>
+                          No (Non-Billable)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Bill To Reference Display (Distinct from Billable) */}
+                  <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                      Bill To Contact (Payer Assignment):
+                    </span>
+                    <div className="font-mono text-xs text-sky-700 dark:text-sky-300 font-bold mt-0.5">
+                      {selectedServiceForPricing.billedToContactUuid || 'contact-dr-smith-01'}
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      Origin: {selectedServiceForPricing.billedPartyOrigin || 'order_default'} &bull; Managed via Payer Target Modal
+                    </span>
+                  </div>
+
+                  {parseFloat(editUnitPrice || '0') === 0 && (
+                    <div className="p-3.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 space-y-2">
+                      <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300 block">
+                        ⚠️ Zero-Charge Reason Required (ck_order_items__zero_charge_has_reason):
+                      </span>
+                      <select
+                        value={selectedZeroChargeReason}
+                        onChange={(e) => setSelectedZeroChargeReason(e.target.value)}
+                        className={`w-full px-3 py-2 rounded-lg border text-xs ${
+                          pricingError?.field === 'zeroChargeReasonCode'
+                            ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/80 dark:bg-rose-950/80'
+                            : 'border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-900'
+                        }`}
+                      >
+                        <option value="">-- Select Zero-Charge Reason --</option>
+                        {zeroChargeReasonsList.map((z) => (
+                          <option key={z.code} value={z.code}>
+                            {z.label} ({z.code})
+                          </option>
+                        ))}
+                      </select>
+                      {pricingError?.field === 'zeroChargeReasonCode' && (
+                        <p className="text-[11px] text-rose-700 dark:text-rose-300 font-semibold">
+                          Reason code must be selected when unit price is 0.00
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedServiceForPricing(null)}
+                    className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 font-bold text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExecutePricing}
+                    disabled={isSubmittingPricing || (parseFloat(editUnitPrice || '0') === 0 && !selectedZeroChargeReason)}
+                    className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmittingPricing ? 'Saving...' : 'Apply Price (PATCH)'}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* ================================================================== */}

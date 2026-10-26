@@ -75,8 +75,8 @@ export class ConcurrencyManager {
     this.states.clear();
   }
 
-  public getState(key: string): ConcurrencyState {
-    return this.states.get(key) || {
+  public getState<TDraft = unknown>(key: string): ConcurrencyState<TDraft> {
+    return (this.states.get(key) as ConcurrencyState<TDraft>) || {
       currentEtag: this.etags.get(key),
       hasConflict: false,
     };
