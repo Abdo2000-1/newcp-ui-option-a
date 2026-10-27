@@ -47,3 +47,4 @@ PostHogAdapter           SentryAdapter
 4. [Telemetry Event Contract](./telemetry-event-contract.md) — The 9 approved low-volume canonical events.
 5. [Readiness Checklist](./readiness-checklist.md) — Implementation, verification, and release gates.
 6. [Reference Analysis](./company-reference-analysis.md) — Architecture decisions and company reference comparison.
+7. [Local Setup & Verification Guide](./local-setup-guide.md) — Safe local environment configuration, placeholder usage, and test verification procedures.

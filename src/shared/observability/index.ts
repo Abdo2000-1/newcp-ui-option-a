@@ -1,6 +1,6 @@
 import { loadTelemetryConfig } from './config';
-import { initPostHog, getPostHog, resetPostHog, type IPostHogAdapter } from './posthog';
-import { initSentry, getSentry, resetSentry, type ISentryAdapter } from './sentry';
+import { initPostHog, resetPostHog, type IPostHogAdapter } from './posthog';
+import { initSentry, resetSentry, type ISentryAdapter } from './sentry';
 import type { TelemetryConfig } from './types';
 
 export * from './types';
@@ -9,6 +9,7 @@ export * from './posthog';
 export * from './sentry';
 export * from './diagnostics';
 export * from './testUtils';
+export * from './verification';
 
 export interface ObservabilityInstance {
   posthog: IPostHogAdapter;
