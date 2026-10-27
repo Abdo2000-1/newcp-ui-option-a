@@ -8,3 +8,5 @@ export type {
 } from './types';
 export * from './AuthContext';
 export { default as PendingAccessView } from './pages/PendingAccessView';
+
+export * from './authAdapter';
