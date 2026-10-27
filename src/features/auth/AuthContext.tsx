@@ -52,6 +52,8 @@ export interface UserSession {
   fullName: string;
   activeTenant: ActiveTenantContext | null; // null if unassigned or pending
   tenantId: number | null; // strictly null when not authorized; never fallback to 1
+  sessionToken?: string;
+  tokenType?: 'Bearer';
   family?: BusinessFamily;
   roles: string[];
   capabilities: string[];
@@ -71,7 +73,8 @@ export interface AuthContextType {
   isPendingAccess: boolean;
   activeTenant: ActiveTenantContext | null;
   tenantId: number | null; // null when unassigned/pending; never defaults to 1
-  loginWithGoogle: (email: string) => Promise<void>;
+  sessionToken: string | null;
+  loginWithGoogle: (emailOrToken?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -258,18 +261,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(timer);
   }, [persistSession]);
 
-  const loginWithGoogle = async (email: string) => {
+  const loginWithGoogle = async (emailOrToken: string = 'cs.demo@3ddx.com') => {
     setStatus('authenticating');
     // Simulate interactive Google Sign-In identity resolution (client-side demo boundary)
     await new Promise((r) => setTimeout(r, 400));
 
-    const normalized = email.trim().toLowerCase();
+    const normalized = emailOrToken.trim().toLowerCase();
     const preset = APPROVED_DEMO_IDENTITIES[normalized];
 
     const now = Date.now();
     if (preset) {
       const createdSession: UserSession = {
         ...preset,
+        sessionToken: `sess-${now}-${normalized.split('@')[0]}`,
+        tokenType: 'Bearer',
         issuedAt: now,
         lastActivityAt: now,
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
@@ -307,6 +312,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fullName: normalized.split('@')[0].replace('.', ' ').toUpperCase(),
         activeTenant: null, // Strictly null; no grant exists
         tenantId: null, // Strictly null; never defaults to 1
+        sessionToken: `sess-${now}-unassigned`,
+        tokenType: 'Bearer',
         roles: [],
         capabilities: [],
         status: 'pending_access',
@@ -356,6 +363,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isPendingAccess: status === 'pending_access' || session?.accessStatus === 'PENDING',
     activeTenant: session?.activeTenant ?? null,
     tenantId: session?.tenantId ?? null, // Strictly null when unassigned or pending; NEVER || 1
+    sessionToken: session?.sessionToken ?? null,
     loginWithGoogle,
     logout,
     refreshSession,
