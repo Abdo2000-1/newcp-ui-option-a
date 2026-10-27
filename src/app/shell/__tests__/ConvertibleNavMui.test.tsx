@@ -112,13 +112,13 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
       expect(screen.queryByText(/security & preferences/i)).not.toBeInTheDocument();
     });
 
-    it('renders Tier 2 navigation items and Primary + Add Case CTA', () => {
+    it('renders Tier 2 navigation items and omits duplicate + Add Case CTA', () => {
       renderConvertibleNav({ position: 'top' });
 
       expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
       expect(screen.getByText(/orders & cases/i)).toBeInTheDocument();
       expect(screen.getByText(/operations & reports/i)).toBeInTheDocument();
-      expect(screen.getByText(/\+ add case/i)).toBeInTheDocument();
+      expect(screen.queryByText(/\+ add case/i)).not.toBeInTheDocument();
     });
   });
 

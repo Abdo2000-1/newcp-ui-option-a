@@ -1056,37 +1056,6 @@ export function ConvertibleNav({
                 </Box>
               </Box>
 
-              {/* Right: Primary Call to Action Button */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                <NavLink
-                  to="/add-case"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <ButtonBase
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      px: 2,
-                      py: 0.75,
-                      borderRadius: 2,
-                      bgcolor: '#00706a',
-                      color: '#ffffff',
-                      fontSize: '0.75rem',
-                      fontWeight: 800,
-                      boxShadow: '0 1px 3px rgba(0, 112, 106, 0.3)',
-                      transition: 'all 0.15s ease',
-                      '&:hover': {
-                        bgcolor: '#008b84',
-                        boxShadow: '0 2px 6px rgba(0, 112, 106, 0.4)',
-                      },
-                    }}
-                  >
-                    <FilePlus2 size={14} />
-                    <span>+ Add Case</span>
-                  </ButtonBase>
-                </NavLink>
-              </Box>
             </div>
           </Box>
         </Box>
