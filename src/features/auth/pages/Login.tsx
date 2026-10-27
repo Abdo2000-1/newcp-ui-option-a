@@ -14,7 +14,6 @@ import {
   Globe,
   Sun,
   Moon,
-  Sparkles,
   AlertCircle,
   Clock,
   ShieldAlert,
@@ -230,12 +229,8 @@ export default function Login() {
           </div>
 
           <div>
-            <div className="flex items-center justify-center gap-1.5 text-xs font-mono font-black text-[#0284c7] dark:text-sky-400 uppercase tracking-widest">
-              <Sparkles size={13} className="text-[#ea580c]" />
-              <span>CP PRO MAX PLATFORM</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
-              Clinical Control Panel
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              New CP
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Sign in with your enterprise Google account to access clinical cases and service workflows
@@ -433,11 +428,8 @@ export default function Login() {
         </div>
 
         {/* Footer Info */}
-        <div className="pt-2 text-center text-[10px] text-slate-400 space-y-1">
+        <div className="pt-2 text-center text-[10px] text-slate-400">
           <p>© 2026 3D Diagnostix Inc. All rights reserved.</p>
-          <p className="font-mono text-slate-500 dark:text-slate-500">
-            PostgreSQL V3 IAM + Casbin Authorized • Google OIDC Authentication
-          </p>
         </div>
       </motion.div>
     </div>
