@@ -158,7 +158,7 @@ export function AppRouter() {
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           {/* Default landing: 3DDX CP Login */}
-          <Route index element={<Navigate to="/login" replace />} />
+          <Route index element={<Navigate to="/home" replace />} />
           
           {/* 8 Target Modernized Pages */}
           <Route path="home" element={<SuspenseWrapper><HomePage /></SuspenseWrapper>} />
