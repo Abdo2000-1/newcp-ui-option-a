@@ -1,60 +1,49 @@
-# New CP Observability
+# New CP Observability — Provider-Ready Runtime Foundation
 
 ## Status
 
-This is a preparation and control package. PostHog and Sentry are **not
-installed, initialized, enabled, or verified** by this package.
+The New CP React Option A repository is **runtime-ready** for PostHog and Sentry integration:
+- Official SDKs (`posthog-js` and `@sentry/react`) are installed and wired through central adapters.
+- Provider initialization, error isolation, privacy scrubbing, expected-domain filtering, and runtime diagnostics are fully implemented and verified with tests.
+- Both providers are **disabled by default**.
+- **No real keys, DSNs, tokens, or credentials exist in this repository.**
 
-Current status: `NOT VERIFIED` / `BLOCKED` for live provider delivery.
+Current status: `RUNTIME READY` / `PENDING SENIOR ENGINEER CONFIGURATION` (Live external delivery is `NOT VERIFIED` until real credentials and network traffic are confirmed).
 
 ## Responsibilities
 
 | Concern | Provider | New CP use | Default |
 | --- | --- | --- | --- |
-| Product usage and deliberate business interaction analytics | PostHog | Approved, sanitized client events only | Disabled |
-| Unexpected frontend errors and bounded performance context | Sentry | React/runtime/API-boundary errors with safe context | Disabled |
+| Product usage and deliberate business interaction analytics | PostHog | Approved, sanitized client events only | Disabled (`VITE_POSTHOG_ENABLED=false`) |
+| Unexpected frontend errors and bounded performance context | Sentry | React/runtime/API-boundary errors with safe context | Disabled (`VITE_SENTRY_ENABLED=false`) |
 | Structured application logs | Existing repository/application | Remains the source for normal diagnostics | Existing behavior |
 | Backend errors and distributed traces | Sentry backend project | Separate backend task and owner | Not in this repo |
 
-PostHog answers “what did the user deliberately do?” Sentry answers “what
-unexpectedly failed?” Neither replaces authorization, audit logging, API
-validation, or business records.
+PostHog answers “what did the user deliberately do?” Sentry answers “what unexpectedly failed?” Neither replaces authorization, audit logging, API validation, or business records.
 
-## Read in this order
+## Architecture Boundary
 
-1. [Reference analysis](./company-reference-analysis.md)
-2. [PostHog integration contract](./posthog.md)
-3. [Sentry integration contract](./sentry.md)
-4. [Telemetry event contract](./telemetry-event-contract.md)
-5. [Readiness checklist](./readiness-checklist.md)
-6. `.agents/rules/observability.md` or `.claude/rules/observability.md`
-7. The relevant observability skill before implementation or verification.
-
-## Architecture boundary
-
-Future code should have provider-specific adapters under a shared observability
-boundary. Feature components should call typed, no-op-safe helpers rather than
-importing `posthog-js` or `@sentry/react` directly. Provider failure must never
-break navigation, authentication, forms, mock data, or API workflows.
+Application components never import `posthog-js` or `@sentry/react` directly. All telemetry flows through typed, no-op-safe adapters under `@/shared/observability`. Provider failure never breaks navigation, authentication, forms, mock data, or API workflows.
 
 ```text
 React routes/components
         |
         v
-shared observability port (no-op-safe)
+@/shared/observability (safe No-Op by default)
         |----------------------|
         v                      v
-PostHog adapter           Sentry adapter
+PostHogAdapter           SentryAdapter
+  (posthog-js)           (@sentry/react)
         |                      |
-   PostHog Cloud          Sentry project
+  PostHog Cloud          Sentry Project
+(Awaiting values)      (Awaiting values)
 ```
 
-## Explicit non-goals
+## Documentation Sitemap
 
-- No backend integration, database access, IAM enforcement, or audit-log
-  replacement.
-- No real credentials, DSNs, API keys, PHI, customer data, or production logs.
-- No broad component refactor to add telemetry.
-- No automatic capture of every click, keystroke, input, URL query, or request
-  body.
-- No claim of provider delivery until a safe test environment produces evidence.
+1. [Provider Activation Guide](./provider-activation-guide.md) — Exact values the senior engineer must supply and step-by-step activation checklist.
+2. [PostHog Integration Contract](./posthog.md) — Detailed PostHog rules, privacy requirements, and configuration shape.
+3. [Sentry Integration Contract](./sentry.md) — Detailed Sentry rules, domain error classification, and scrubbing rules.
+4. [Telemetry Event Contract](./telemetry-event-contract.md) — The 9 approved low-volume canonical events.
+5. [Readiness Checklist](./readiness-checklist.md) — Implementation, verification, and release gates.
+6. [Reference Analysis](./company-reference-analysis.md) — Architecture decisions and company reference comparison.
