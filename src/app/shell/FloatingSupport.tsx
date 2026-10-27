@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Tooltip from '@mui/material/Tooltip';
 import {
   LifeBuoy,
   X,
@@ -43,24 +44,25 @@ export function FloatingSupport({ navPosition = 'top' }: FloatingSupportProps) {
           navPosition === 'bottom' ? 'bottom-[116px]' : 'bottom-4 sm:bottom-5'
         }`}
       >
-        <motion.button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-expanded={isOpen}
-          aria-haspopup="dialog"
-          aria-label="Support"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg border border-sky-400/40 backdrop-blur-md transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
-          title="Need Assistance? Contact 3DDX Technical Support"
-        >
+        <Tooltip title="Need Assistance? Contact 3DDX Technical Support" placement="left" arrow>
+          <motion.button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-haspopup="dialog"
+            aria-label="Support"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg border border-sky-400/40 backdrop-blur-md transition-all cursor-pointer group focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
+          >
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
           </span>
           <LifeBuoy className="w-3.5 h-3.5 group-hover:rotate-45 transition-transform duration-300 shrink-0" />
           <span className="text-[11px] font-semibold tracking-tight">Support</span>
-        </motion.button>
+          </motion.button>
+        </Tooltip>
       </div>
 
       {/* Floating Support Modal Window */}

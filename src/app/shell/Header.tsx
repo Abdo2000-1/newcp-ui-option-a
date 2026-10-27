@@ -119,23 +119,25 @@ export function Header({ onMenuClick }: HeaderProps) {
     >
       {/* Left: Mobile Hamburger & Page Title */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <IconButton
-          onClick={onMenuClick}
-          aria-label="Open navigation menu"
-          size="small"
-          sx={{
-            display: { lg: 'none' },
-            p: 1,
-            borderRadius: 2,
-            color: 'text.secondary',
-            '&:hover': {
-              bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
-              color: 'text.primary',
-            },
-          }}
-        >
-          <Menu size={20} />
-        </IconButton>
+        <Tooltip title="Open navigation menu" arrow>
+          <IconButton
+            onClick={onMenuClick}
+            aria-label="Open navigation menu"
+            size="small"
+            sx={{
+              display: { lg: 'none' },
+              p: 1,
+              borderRadius: 2,
+              color: 'text.secondary',
+              '&:hover': {
+                bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+                color: 'text.primary',
+              },
+            }}
+          >
+            <Menu size={20} />
+          </IconButton>
+        </Tooltip>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography sx={{ fontSize: { xs: '1rem', sm: '1.125rem' }, fontWeight: 800, color: 'text.primary' }}>
@@ -402,18 +404,19 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* User Profile Dropdown */}
         <Box sx={{ position: 'relative' }} ref={profileRef}>
-          <IconButton
-            onClick={() => setProfileOpen(!profileOpen)}
-            aria-label="User Profile Menu"
-            size="small"
-            sx={{
-              p: 0.5,
-              borderRadius: 2,
-              '&:hover': {
-                bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
-              },
-            }}
-          >
+          <Tooltip title="User profile & settings" arrow>
+            <IconButton
+              onClick={() => setProfileOpen(!profileOpen)}
+              aria-label="User Profile Menu"
+              size="small"
+              sx={{
+                p: 0.5,
+                borderRadius: 2,
+                '&:hover': {
+                  bgcolor: isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.04),
+                },
+              }}
+            >
             <Box
               sx={{
                 width: 32,
@@ -432,6 +435,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Box>
             <ChevronDown size={14} style={{ marginLeft: 4, opacity: 0.6 }} />
           </IconButton>
+          </Tooltip>
 
           {profileOpen && (
             <Paper
