@@ -163,7 +163,7 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, Omit<UserSession, 'issuedA
   },
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_SESSION_KEY = 'newcp_iam_session_v097';
 
