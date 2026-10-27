@@ -170,4 +170,45 @@ describe('Tier 2 Navbar Dropdown Visibility & Overflow Fix (UIUX-REQ-012)', () =
       expect(container).toHaveClass('overflow-x-auto', 'no-scrollbar');
     });
   });
+  describe('Scalable More Dropdown Navigation (NAV-002)', () => {
+    it('opens and visibly renders More menu with extended directories and administrative destinations', () => {
+      renderNavWithPosition('top');
+
+      const moreBtn = screen.getByRole('button', { name: /^more$/i });
+      expect(moreBtn).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByTestId('more-dropdown-menu')).not.toBeInTheDocument();
+
+      fireEvent.click(moreBtn);
+
+      expect(moreBtn).toHaveAttribute('aria-expanded', 'true');
+      const menu = screen.getByTestId('more-dropdown-menu');
+      expect(menu).toBeInTheDocument();
+      expect(screen.getByText(/clinics directory/i)).toBeInTheDocument();
+      expect(screen.getByText(/doctors directory/i)).toBeInTheDocument();
+      expect(screen.getByText(/billing & finance/i)).toBeInTheDocument();
+      expect(screen.getByText(/system settings/i)).toBeInTheDocument();
+    });
+
+    it('positions More dropdown upward in bottom navigation mode to prevent clipping', () => {
+      renderNavWithPosition('bottom');
+
+      const moreBtn = screen.getByRole('button', { name: /^more$/i });
+      fireEvent.click(moreBtn);
+
+      const menu = screen.getByTestId('more-dropdown-menu');
+      expect(menu).toHaveClass('bottom-full', 'mb-2');
+      expect(menu).not.toHaveClass('top-full');
+    });
+
+    it('closes More dropdown on outside click', () => {
+      renderNavWithPosition('top');
+
+      const moreBtn = screen.getByRole('button', { name: /^more$/i });
+      fireEvent.click(moreBtn);
+      expect(screen.getByTestId('more-dropdown-menu')).toBeInTheDocument();
+
+      fireEvent.mouseDown(document.body);
+      expect(screen.queryByTestId('more-dropdown-menu')).not.toBeInTheDocument();
+    });
+  });
 });
