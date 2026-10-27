@@ -897,7 +897,7 @@ Generated on: ${new Date().toLocaleString()}
         by: 'You (Current CS Agent)',
         to: ihTaskSelected,
         timeSent: formattedDate,
-        history: `${isRushTask ? '[⚡ RUSH] ' : ''}${newInternalNote.trim()}`,
+        history: `${isRushTask ? '[ RUSH] ' : ''}${newInternalNote.trim()}`,
         attach: attachedNoteFileName ? 'View' : '-',
         attachContent: attachedNoteFileName
           ? `Attached Document: ${attachedNoteFileName}\nDispatched with Task to ${ihTaskSelected}.\nNotes: ${newInternalNote.trim()}`
@@ -1102,7 +1102,7 @@ Generated on: ${new Date().toLocaleString()}
                 title="Click to toggle urgent rush status"
               >
                 <Zap size={11} className={isRushTask ? 'text-rose-600 dark:text-rose-400 fill-current' : ''} />
-                <span>{isRushTask ? ('⚡ ' + t('order.rush', 'RUSH ORDER')) : t('order.normal', 'Normal Priority')}</span>
+                <span>{isRushTask ? (' ' + t('order.rush', 'RUSH ORDER')) : t('order.normal', 'Normal Priority')}</span>
               </button>
             </div>
 
@@ -1153,16 +1153,51 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Primary Action Toolbar (Task 9.2 & 9.3) */}
+            <div data-testid="primary-action-toolbar" className="flex items-center gap-2 flex-wrap">
+              {/* Primary Lifecycle Actions */}
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-sky-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title={t('order.printPrescription', 'Print Clinical Prescription')}
+                data-testid="action-approve-case"
+                onClick={() => triggerToast(`[MOCK] Approved case #${flowOrder.orderNum} for lab production`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold transition-all cursor-pointer shadow-xs"
+                title="Approve case prescription for production"
               >
-                <Printer size={13} />
-                <span className="hidden sm:inline">{t('action.print', 'Print')}</span>
+                <CheckCircle2 size={14} />
+                <span>Approve</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="action-hold-case"
+                onClick={() => triggerToast(`[MOCK] Placed case #${flowOrder.orderNum} on clinical hold`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-extrabold transition-all cursor-pointer shadow-xs"
+                title="Place case on clinical review hold"
+              >
+                <Clock size={14} />
+                <span>Hold</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="action-edit-case"
+                onClick={() => navigate(`/edit-case?id=${flowOrder.orderNum}`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-500/60 hover:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-extrabold transition-all cursor-pointer bg-white dark:bg-slate-900 shadow-xs"
+                title="Edit case clinical details"
+              >
+                <Edit size={14} />
+                <span>Edit Case</span>
+              </button>
+
+              {/* Utility Actions */}
+              <button
+                type="button"
+                onClick={exportCaseSummary}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                title={t('action.download', 'Download Summary File')}
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">{t('action.export', 'Export')}</span>
               </button>
 
               <button
@@ -1177,12 +1212,12 @@ Generated on: ${new Date().toLocaleString()}
 
               <button
                 type="button"
-                onClick={exportCaseSummary}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title={t('action.download', 'Download Summary File')}
+                onClick={() => window.print()}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-sky-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                title={t('order.printPrescription', 'Print Clinical Prescription')}
               >
-                <Download size={13} />
-                <span className="hidden sm:inline">{t('action.export', 'Export')}</span>
+                <Printer size={13} />
+                <span className="hidden sm:inline">{t('action.print', 'Print')}</span>
               </button>
 
               <button
