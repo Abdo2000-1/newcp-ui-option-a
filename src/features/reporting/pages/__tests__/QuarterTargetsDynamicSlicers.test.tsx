@@ -19,9 +19,9 @@ describe('UIUX-REQ-019: Quarter Targets Dynamic Slicers & Mock Power BI Canvas',
     );
 
     expect(screen.getByText(/3DDX Quarter Targets/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /power bi live dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /production targets dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /doctor target matrix/i })).toBeInTheDocument();
-    expect(screen.getByText(/Power BI Canvas Emulation: Synthetic demonstration/i)).toBeInTheDocument();
+    expect(screen.getByText(/Production Targets & Telemetry: Synthetic demonstration/i)).toBeInTheDocument();
   });
 
   it('manages Reset Slicers button state and resets active slicers to defaults', () => {

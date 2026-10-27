@@ -131,7 +131,7 @@ export default function Dashboard() {
   const theme = useMuiTheme();
   const shouldReduceMotion = useReducedMotion();
 
-  const [activeTab, setActiveTab] = useState<'powerbi' | 'telemetry'>('powerbi');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'telemetry'>('analytics');
   const [selectedQuarter, setSelectedQuarter] = useState<'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL'>('Q4');
   const [chartView, setChartView] = useState<'area' | 'bar'>('area');
   const [refreshing, setRefreshing] = useState(false);
@@ -422,10 +422,10 @@ export default function Dashboard() {
               }}
             >
               <Button
-                variant={activeTab === 'powerbi' ? 'contained' : 'text'}
-                color={activeTab === 'powerbi' ? 'secondary' : 'inherit'}
+                variant={activeTab === 'analytics' ? 'contained' : 'text'}
+                color={activeTab === 'analytics' ? 'secondary' : 'inherit'}
                 size="small"
-                onClick={() => setActiveTab('powerbi')}
+                onClick={() => setActiveTab('analytics')}
                 startIcon={<BarChart3 size={15} />}
                 sx={{
                   textTransform: 'none',
@@ -434,15 +434,15 @@ export default function Dashboard() {
                   px: 1.75,
                   py: 0.75,
                   borderRadius: 1.5,
-                  boxShadow: activeTab === 'powerbi' ? 1 : 'none',
-                  bgcolor: activeTab === 'powerbi' ? BRAND_BLUE : 'transparent',
-                  color: activeTab === 'powerbi' ? '#ffffff' : 'text.secondary',
+                  boxShadow: activeTab === 'analytics' ? 1 : 'none',
+                  bgcolor: activeTab === 'analytics' ? BRAND_BLUE : 'transparent',
+                  color: activeTab === 'analytics' ? '#ffffff' : 'text.secondary',
                   '&:hover': {
-                    bgcolor: activeTab === 'powerbi' ? BRAND_BLUE : 'rgba(0, 0, 0, 0.04)',
+                    bgcolor: activeTab === 'analytics' ? BRAND_BLUE : 'rgba(0, 0, 0, 0.04)',
                   },
                 }}
               >
-                {t('powerbi.hub', 'Power BI Analytics')}
+                {t('powerbi.hub', 'Production Analytics')}
               </Button>
               <Button
                 variant={activeTab === 'telemetry' ? 'contained' : 'text'}
@@ -469,7 +469,7 @@ export default function Dashboard() {
               </Button>
             </Box>
 
-            <Tooltip title={t('powerbi.refresh', 'Refresh Power BI Metrics')}>
+            <Tooltip title={t('powerbi.refresh', 'Refresh Production Analytics')}>
               <IconButton
                 size="small"
                 onClick={handleRefresh}
@@ -603,7 +603,7 @@ export default function Dashboard() {
       {/* ========================================================= */}
       {/* TAB 1: POWER BI ENTERPRISE ANALYTICS & QUARTER TARGETS    */}
       {/* ========================================================= */}
-      {activeTab === 'powerbi' && (
+      {activeTab === 'analytics' && (
         <Stack spacing={3}>
 
           {/* Power BI Sub-bar with Quarter Slicers */}
@@ -641,7 +641,7 @@ export default function Dashboard() {
                     boxShadow: 1,
                   }}
                 >
-                  PBI
+                  CPA
                 </Box>
                 <Box>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>

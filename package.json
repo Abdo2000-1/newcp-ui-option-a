@@ -43,8 +43,6 @@
     "framer-motion": "^13.4.4",
     "lucide-react": "^1.48.0",
     "posthog-js": "^1.439.0",
-    "powerbi-client": "^2.25.0",
-    "powerbi-client-react": "^2.0.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",

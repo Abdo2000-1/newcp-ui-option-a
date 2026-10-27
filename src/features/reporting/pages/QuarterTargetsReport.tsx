@@ -277,7 +277,7 @@ export default function QuarterTargetsReport() {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Executive KPI tracking • Production throughput, surgical guide volume & live Power BI Fabric integration
+            Executive KPI tracking • Production throughput, surgical guide volume & live production metrics telemetry
           </p>
         </div>
 
@@ -347,7 +347,7 @@ export default function QuarterTargetsReport() {
                 }`}
               >
                 <Sparkles size={14} className="text-[#ea580c]" />
-                <span>Power BI Live Dashboard</span>
+                <span>Production Targets Dashboard</span>
               </button>
 
               <button
@@ -519,7 +519,7 @@ export default function QuarterTargetsReport() {
                     <span className="font-mono font-bold text-[9.5px] px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-900 border border-sky-300 dark:border-sky-700">
                       [PROTOTYPE MOCK / NOT_INTEGRATED]
                     </span>
-                    <span className="text-[11px]">Power BI Canvas Emulation: Synthetic demonstration using local mock datasets only.</span>
+                    <span className="text-[11px]">Production Targets & Telemetry: Synthetic demonstration using local mock datasets only.</span>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Fabric Gateway: Simulated</span>
                 </div>
