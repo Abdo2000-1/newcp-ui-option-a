@@ -35,6 +35,7 @@ const Task31StaffTargets = lazy(() => import('@/features/reporting/pages/Task31S
 
 // Settings & Administration
 const ConfigManager = lazy(() => import('@/features/settings/pages/ConfigManager'));
+const CmsControls = lazy(() => import('@/features/settings/pages/CmsControls'));
 const Settings = lazy(() => import('@/features/settings/pages/Settings'));
 const Billing = lazy(() => import('@/features/settings/pages/Billing'));
 const Clinics = lazy(() => import('@/features/settings/pages/Clinics'));
@@ -170,7 +171,7 @@ export function AppRouter() {
           <Route path="dashboard" element={<SuspenseWrapper><Dashboard /></SuspenseWrapper>} />
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
-          <Route path="cms" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
+          <Route path="cms" element={<SuspenseWrapper><CmsControls /></SuspenseWrapper>} />
           <Route path="newcp/index.php" element={<Navigate to="/login" replace />} />
 
           {/* Auxiliary ERP & CRM Routes */}
