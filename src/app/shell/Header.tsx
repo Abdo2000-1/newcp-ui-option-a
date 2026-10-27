@@ -28,6 +28,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useStore } from '@/shared/hooks/useStore';
 import { store } from '@/shared/services/store';
 import { timeAgo } from '@/shared/utils/format';
+import { NotificationCenter } from './NotificationCenter';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -323,81 +324,11 @@ export function Header({ onMenuClick }: HeaderProps) {
             </IconButton>
           </Tooltip>
 
-          {notifsOpen && (
-            <Paper
-              elevation={12}
-              sx={{
-                position: 'absolute',
-                right: 0,
-                mt: 1,
-                width: { xs: 'calc(100vw - 2rem)', sm: 360 },
-                maxWidth: 380,
-                borderRadius: 3,
-                border: `1px solid ${headerBorder}`,
-                p: 2,
-                zIndex: 50,
-                bgcolor: isDark ? '#1e293b' : '#ffffff',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1, borderBottom: `1px solid ${headerBorder}` }}>
-                <Typography sx={{ fontWeight: 800, fontSize: '0.875rem' }}>Recent Alerts</Typography>
-                {unreadNotifs.length > 0 && (
-                  <Button
-                    onClick={() => store.markAllNotificationsAsRead()}
-                    size="small"
-                    sx={{ fontSize: '0.6875rem', p: 0, minWidth: 0, color: '#0284c7' }}
-                  >
-                    Mark all read
-                  </Button>
-                )}
-              </Box>
-
-              <Box sx={{ maxHeight: 280, overflowY: 'auto', my: 1 }}>
-                {notifications.slice(0, 5).map((n) => (
-                  <Box
-                    key={n.id}
-                    onClick={() => {
-                      store.markNotificationAsRead(n.id);
-                      if (n.relatedId) navigate(`/orders/${n.relatedId}`);
-                      setNotifsOpen(false);
-                    }}
-                    sx={{
-                      p: 1,
-                      borderRadius: 2,
-                      cursor: 'pointer',
-                      bgcolor: !n.read ? (isDark ? alpha('#0284c7', 0.1) : alpha('#0284c7', 0.06)) : 'transparent',
-                      '&:hover': {
-                        bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#000000', 0.04),
-                      },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography sx={{ fontSize: '0.75rem', fontWeight: !n.read ? 800 : 600 }}>
-                        {n.title}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>
-                        {timeAgo(n.createdAt)}
-                      </Typography>
-                    </Box>
-                    <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', mt: 0.25 }}>
-                      {n.message}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-
-              <Divider sx={{ my: 1 }} />
-              <Box sx={{ textAlign: 'center' }}>
-                <Button
-                  onClick={() => { navigate('/notifications'); setNotifsOpen(false); }}
-                  size="small"
-                  sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284c7' }}
-                >
-                  View All Notifications →
-                </Button>
-              </Box>
-            </Paper>
-          )}
+          <NotificationCenter
+            open={notifsOpen}
+            onClose={() => setNotifsOpen(false)}
+            onNavigateOrder={(orderId) => navigate(`/orders/${orderId}`)}
+          />
         </Box>
 
         {/* User Profile Dropdown */}

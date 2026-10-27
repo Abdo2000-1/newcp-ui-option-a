@@ -35,6 +35,7 @@ const Task31StaffTargets = lazy(() => import('@/features/reporting/pages/Task31S
 
 // Settings & Administration
 const ConfigManager = lazy(() => import('@/features/settings/pages/ConfigManager'));
+const CmsControls = lazy(() => import('@/features/settings/pages/CmsControls'));
 const Settings = lazy(() => import('@/features/settings/pages/Settings'));
 const Billing = lazy(() => import('@/features/settings/pages/Billing'));
 const Clinics = lazy(() => import('@/features/settings/pages/Clinics'));
@@ -50,6 +51,7 @@ const Forms = lazy(() => import('@/features/settings/pages/Forms'));
 const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
 // System & Error Views (UIUX-REQ-021)
+const HomePage = lazy(() => import('@/features/system/pages/HomePage'));
 const NotFoundPage = lazy(() => import('@/features/system/pages/NotFoundPage'));
 const Maintenance503Page = lazy(() => import('@/features/system/pages/Maintenance503Page'));
 
@@ -159,6 +161,7 @@ export function AppRouter() {
           <Route index element={<Navigate to="/login" replace />} />
           
           {/* 8 Target Modernized Pages */}
+          <Route path="home" element={<SuspenseWrapper><HomePage /></SuspenseWrapper>} />
           <Route path="flow" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="orders" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="add-case" element={<SuspenseWrapper><AddCase /></SuspenseWrapper>} />
@@ -170,7 +173,7 @@ export function AppRouter() {
           <Route path="dashboard" element={<SuspenseWrapper><Dashboard /></SuspenseWrapper>} />
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
-          <Route path="cms" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
+          <Route path="cms" element={<SuspenseWrapper><CmsControls /></SuspenseWrapper>} />
           <Route path="newcp/index.php" element={<Navigate to="/login" replace />} />
 
           {/* Auxiliary ERP & CRM Routes */}

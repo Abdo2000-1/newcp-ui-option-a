@@ -59,7 +59,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           className="relative w-full max-w-xl bg-white dark:bg-[#0c1222] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-10 select-none"
         >
           {/* Header Banner with Brand Gradient */}
-          <div className="h-28 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#ea580c] relative p-6 flex items-end justify-between">
+          <div className="h-28 bg-gradient-to-r from-sky-700 to-sky-900 relative p-6 flex items-end justify-between">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
@@ -68,7 +68,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </button>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
-                CP PRO MAX • Technician Credentials
+                New CP • Technician Credentials
               </span>
             </div>
           </div>
@@ -78,7 +78,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-12 mb-6 gap-4">
               <div className="flex items-end gap-4">
                 <div className="relative">
-                  <div className="w-22 h-22 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#ea580c] p-1 shadow-xl ring-4 ring-white dark:ring-[#0c1222]">
+                  <div className="w-22 h-22 rounded-2xl bg-sky-600 p-1 shadow-xl ring-4 ring-white dark:ring-[#0c1222]">
                     <div className="w-full h-full rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center font-black text-2xl text-[#0284c7] dark:text-sky-400">
                       {profile?.avatarInitials || '3D'}
                     </div>
@@ -95,7 +95,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                       <CheckCircle2 size={16} />
                     </span>
                   </div>
-                  <p className="text-xs font-bold text-[#ea580c] dark:text-orange-400">
+                  <p className="text-xs font-bold text-sky-600 dark:text-sky-400">
                     Lead CAD/CAM Engineer & Co-Diagnostix Director
                   </p>
                 </div>
@@ -198,7 +198,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   <Sparkles size={18} className="text-[#0284c7] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-extrabold text-[#0284c7] dark:text-sky-300 block">
-                      CP PRO MAX Verified Operator
+                      Verified Clinical Operator
                     </span>
                     <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                       You are authorized to review CT scans, validate coDiagnostiX surgical guide designs, approve QC checkpoints, and submit lab orders.
@@ -269,7 +269,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
+                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
               >
                 Close Profile
               </button>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ConvertibleNav, NavPosition } from './ConvertibleNav';
 import { Footer } from './Footer';
 import { FloatingSupport } from './FloatingSupport';
+import { GlobalBreadcrumbs } from './GlobalBreadcrumbs';
 import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
@@ -160,6 +161,7 @@ export function Layout() {
         {/* Content Outlet - Full wide width without horizontal scroll */}
         <main className="flex-1 w-full p-3 sm:p-5 lg:p-6">
           <div className="w-full max-w-[1920px] mx-auto min-w-0">
+            <GlobalBreadcrumbs />
             <Outlet />
           </div>
         </main>

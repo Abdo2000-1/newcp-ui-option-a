@@ -7,6 +7,7 @@ import type {
   TelemetryEnvironment,
 } from '../types';
 import { sanitizeProperties, stripQueryString } from './sanitizer';
+import { posthog as posthogJs } from 'posthog-js';
 
 export const ALLOWED_TELEMETRY_EVENTS: readonly AllowedEventName[] = [
   'page_view',
@@ -27,6 +28,7 @@ export interface IPostHogAdapter {
   reset(): void;
   isFeatureEnabled(key: string, fallback?: boolean): boolean;
   isEnabled(): boolean;
+  isInitialized(): boolean;
 }
 
 /**
@@ -43,6 +45,9 @@ export class NoopPostHogAdapter implements IPostHogAdapter {
   isEnabled(): boolean {
     return false;
   }
+  isInitialized(): boolean {
+    return false;
+  }
 }
 
 /**
@@ -54,6 +59,7 @@ export class PostHogAdapter implements IPostHogAdapter {
   private readonly environment: TelemetryEnvironment;
   private readonly client: IPostHogClient | null;
   private lastCapturedPath: string | null = null;
+  private initialized = false;
 
   constructor(
     config: TelemetryConfig['posthog'],
@@ -65,8 +71,8 @@ export class PostHogAdapter implements IPostHogAdapter {
 
     if (customClient) {
       this.client = customClient;
-    } else if (typeof window !== 'undefined' && (window as unknown as { posthog?: IPostHogClient }).posthog) {
-      this.client = (window as unknown as { posthog: IPostHogClient }).posthog;
+    } else if (typeof window !== 'undefined') {
+      this.client = posthogJs as unknown as IPostHogClient;
     } else {
       this.client = null;
     }
@@ -79,6 +85,7 @@ export class PostHogAdapter implements IPostHogAdapter {
           capture_pageview: false,
           disable_session_recording: true,
         });
+        this.initialized = true;
       } catch (err) {
         console.warn('[PostHog] Failed to initialize SDK client:', err);
       }
@@ -87,6 +94,10 @@ export class PostHogAdapter implements IPostHogAdapter {
 
   public isEnabled(): boolean {
     return Boolean(this.config.enabled);
+  }
+
+  public isInitialized(): boolean {
+    return this.initialized;
   }
 
   public capture<E extends AllowedEventName>(event: E, properties?: EventPropertiesMap[E]): void {

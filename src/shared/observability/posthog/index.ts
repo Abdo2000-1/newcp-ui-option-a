@@ -21,7 +21,12 @@ export function initPostHog(
     return activePostHogAdapter;
   }
 
-  activePostHogAdapter = new PostHogAdapter(config.posthog, config.environment, customClient);
+  try {
+    activePostHogAdapter = new PostHogAdapter(config.posthog, config.environment, customClient);
+  } catch (err) {
+    console.warn('[PostHog] Adapter creation error isolated:', err);
+    activePostHogAdapter = new NoopPostHogAdapter();
+  }
   return activePostHogAdapter;
 }
 
