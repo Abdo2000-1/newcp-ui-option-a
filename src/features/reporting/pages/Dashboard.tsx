@@ -130,6 +130,7 @@ export default function Dashboard() {
   const { t } = useLanguage();
   const theme = useMuiTheme();
   const shouldReduceMotion = useReducedMotion();
+  const isAnimationActive = !shouldReduceMotion;
 
   const [activeTab, setActiveTab] = useState<'powerbi' | 'telemetry'>('powerbi');
   const [selectedQuarter, setSelectedQuarter] = useState<'Q1' | 'Q2' | 'Q3' | 'Q4' | 'ALL'>('Q4');
@@ -160,6 +161,15 @@ export default function Dashboard() {
   };
 
   const urgentOrders = allOrders.filter((o) => o.priority === 'Urgent');
+  // Clean Operational Metrics (Task 7.2)
+  const operationalMetrics = useMemo(() => {
+    const active = allOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled').length;
+    const pendingReview = allOrders.filter(o => o.status === 'Review' || o.status === 'Quality Check').length;
+    const urgent = allOrders.filter(o => o.priority === 'Urgent').length;
+    const completed = allOrders.filter(o => o.status === 'Completed').length;
+    return { active, pendingReview, urgent, completed };
+  }, [allOrders]);
+
   const recentOrders = useMemo(() => {
     return [...allOrders]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -405,7 +415,7 @@ export default function Dashboard() {
               }}
             >
               <Calendar size={13} />
-              {formatDate(new Date().toISOString())} ÔÇó 3D Diagnostix Dental Intelligence
+              {formatDate(new Date().toISOString())} | 3D Diagnostix Dental Intelligence
             </Typography>
           </Box>
 
@@ -508,6 +518,65 @@ export default function Dashboard() {
         )}
       </Card>
 
+      {/* Operational KPI Strip (Task 7.2) */}
+      <Box
+        data-testid="operational-kpi-strip"
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 2,
+          my: 2.5,
+        }}
+      >
+        <Card elevation={0} sx={{ p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Active Cases / Orders
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: BRAND_BLUE, mt: 0.5 }}>
+            {operationalMetrics.active}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            In intake, design & production
+          </Typography>
+        </Card>
+
+        <Card elevation={0} sx={{ p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Pending Lab Reviews
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: BRAND_ORANGE, mt: 0.5 }}>
+            {operationalMetrics.pendingReview}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Awaiting clinician or lab sign-off
+          </Typography>
+        </Card>
+
+        <Card elevation={0} sx={{ p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Urgent SLA Alerts
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: '#e11d48', mt: 0.5 }}>
+            {operationalMetrics.urgent}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Priority fast-track turnaround
+          </Typography>
+        </Card>
+
+        <Card elevation={0} sx={{ p: 2, borderRadius: 2.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Completed This Week
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: '#059669', mt: 0.5 }}>
+            {operationalMetrics.completed}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Released to clinics
+          </Typography>
+        </Card>
+      </Box>
+
       {/* Urgent Rush Orders Ticker */}
       {urgentOrders.length > 0 && (
         <Card
@@ -577,7 +646,7 @@ export default function Dashboard() {
                   <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 800, color: BRAND_BLUE }}>
                     {order.orderNumber}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>ÔÇó</Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>|</Typography>
                   <Typography variant="caption" noWrap sx={{ fontWeight: 600, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {order.patientName}
                   </Typography>
@@ -646,7 +715,7 @@ export default function Dashboard() {
                 <Box>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
-                      {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} ÔÇó {currentQData.name}
+                      {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} | {currentQData.name}
                     </Typography>
                     <Chip
                       size="small"
@@ -661,7 +730,7 @@ export default function Dashboard() {
                     />
                   </Stack>
                   <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: 'monospace' }}>
-                    Dataset: [3DDX_DW].[TargetAttainment] ÔÇó Real-time Sync Active
+                    Dataset: [3DDX_DW].[TargetAttainment] | Real-time Sync Active
                   </Typography>
                 </Box>
               </Stack>
@@ -986,8 +1055,8 @@ export default function Dashboard() {
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
                       <RechartsTooltip content={<BrandChartTooltip />} />
-                      <Area type="monotone" dataKey="actualRevenue" name="Actual Revenue" stroke={BRAND_BLUE} strokeWidth={3} fill="url(#brandBlueGrad)" />
-                      <Area type="monotone" dataKey="targetRevenue" name="Target Quota" stroke={BRAND_ORANGE} strokeWidth={2} strokeDasharray="4 4" fill="url(#brandOrangeGrad)" />
+                      <Area isAnimationActive={isAnimationActive} animationDuration={isAnimationActive ? 500 : 0} type="monotone" dataKey="actualRevenue" name="Actual Revenue" stroke={BRAND_BLUE} strokeWidth={3} fill="url(#brandBlueGrad)" />
+                      <Area isAnimationActive={isAnimationActive} animationDuration={isAnimationActive ? 500 : 0} type="monotone" dataKey="targetRevenue" name="Target Quota" stroke={BRAND_ORANGE} strokeWidth={2} strokeDasharray="4 4" fill="url(#brandOrangeGrad)" />
                     </AreaChart>
                   ) : (
                     <BarChart data={currentQData.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -995,8 +1064,8 @@ export default function Dashboard() {
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
                       <RechartsTooltip content={<BrandChartTooltip />} />
-                      <Bar dataKey="actualRevenue" name="Actual Revenue" fill={BRAND_BLUE} radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="targetRevenue" name="Target Quota" fill={BRAND_ORANGE} radius={[6, 6, 0, 0]} />
+                      <Bar isAnimationActive={isAnimationActive} animationDuration={isAnimationActive ? 500 : 0} dataKey="actualRevenue" name="Actual Revenue" fill={BRAND_BLUE} radius={[6, 6, 0, 0]} />
+                      <Bar isAnimationActive={isAnimationActive} animationDuration={isAnimationActive ? 500 : 0} dataKey="targetRevenue" name="Target Quota" fill={BRAND_ORANGE} radius={[6, 6, 0, 0]} />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
