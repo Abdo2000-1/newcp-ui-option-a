@@ -129,7 +129,19 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           ) : null}
 
           {section.items.map((item) => {
-            const isActive = location.pathname.startsWith(item.path);
+            const isItemActive = (path: string, currentPath: string): boolean => {
+              if (path === '/flow') {
+                return currentPath === '/flow' || currentPath.startsWith('/flow/') || currentPath.startsWith('/orders') || currentPath.startsWith('/order-details');
+              }
+              if (path === '/reports') {
+                return currentPath.startsWith('/reports') || currentPath.startsWith('/quarter-targets') || currentPath.startsWith('/task-31');
+              }
+              if (path === '/scan-center') {
+                return currentPath.startsWith('/scan-center') || currentPath.startsWith('/task-47');
+              }
+              return currentPath.startsWith(path);
+            };
+            const isActive = isItemActive(item.path, location.pathname);
             const badgeCount = item.path === '/notifications' ? unreadNotifs : item.badge;
 
             return (
