@@ -187,8 +187,9 @@ export function AppRouter() {
           <Route path="clinics" element={<SuspenseWrapper><Clinics /></SuspenseWrapper>} />
           <Route path="clinics/:clinicId" element={<SuspenseWrapper><ClinicDetails /></SuspenseWrapper>} />
           <Route path="billing" element={<SuspenseWrapper><Billing /></SuspenseWrapper>} />
-          <Route path="grid" element={<SuspenseWrapper><Grid /></SuspenseWrapper>} />
-          <Route path="forms" element={<SuspenseWrapper><Forms /></SuspenseWrapper>} />
+          {/* Deprecated non-business showcase routes safely redirected */}
+          <Route path="grid" element={<Navigate to="/flow" replace />} />
+          <Route path="forms" element={<Navigate to="/settings" replace />} />
           <Route path="reports" element={<SuspenseWrapper><Reports /></SuspenseWrapper>} />
           <Route path="settings" element={<SuspenseWrapper><Settings /></SuspenseWrapper>} />
           <Route path="notifications" element={<SuspenseWrapper><Notifications /></SuspenseWrapper>} />
