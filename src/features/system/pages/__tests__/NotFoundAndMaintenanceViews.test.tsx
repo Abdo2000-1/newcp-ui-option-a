@@ -33,6 +33,22 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem('3ddx-auth', 'true');
+    localStorage.setItem('newcp_iam_session_v097', JSON.stringify({
+      userId: 'usr-cs-001',
+      email: 'cs.demo@3ddx.com',
+      fullName: 'CS Demo Operator',
+      activeTenant: { id: 1, label: '3ddx.com' },
+      tenantId: 1,
+      family: 'CS',
+      roles: ['cs_operator'],
+      capabilities: ['orders.view'],
+      status: 'authenticated',
+      accessStatus: 'AUTHORIZED',
+      tenantSwitchingEnabled: false,
+      issuedAt: Date.now(),
+      lastActivityAt: Date.now(),
+      expiresAt: Date.now() + 3600000,
+    }));
   });
 
   describe('404 Not Found Page', () => {
@@ -82,7 +98,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       expect(screen.getByText('503')).toBeInTheDocument();
       expect(screen.getByText(/Scheduled Service Maintenance/i)).toBeInTheDocument();
       expect(screen.getByText(/temporarily undergoing scheduled maintenance/i)).toBeInTheDocument();
-      expect(screen.getByText(/\[PROTOTYPE MOCK \/ NOT_INTEGRATED\] Dedicated maintenance view demonstration/i)).toBeInTheDocument();
+      expect(screen.getByText(/Scheduled maintenance in progress/i)).toBeInTheDocument();
     });
 
     it('renders the maintenance view at alias /maintenance', async () => {
