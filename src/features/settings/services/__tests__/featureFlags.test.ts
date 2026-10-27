@@ -11,6 +11,23 @@ import {
 } from '../featureFlags';
 import * as observability from '@/shared/observability';
 
+type PostHogMock = ReturnType<typeof observability.getPostHog> & {
+  isInitialized?: ReturnType<typeof vi.fn>;
+};
+
+function createPostHogMock(overrides: Partial<PostHogMock> = {}): ReturnType<typeof observability.getPostHog> {
+  return {
+    isFeatureEnabled: vi.fn((_key, fallback) => fallback ?? false),
+    capture: vi.fn(),
+    capturePageView: vi.fn(),
+    identify: vi.fn(),
+    reset: vi.fn(),
+    isEnabled: vi.fn().mockReturnValue(false),
+    isInitialized: vi.fn().mockReturnValue(false),
+    ...overrides,
+  } as unknown as ReturnType<typeof observability.getPostHog>;
+}
+
 describe('OBS-001: CMS Feature Flags & PostHog Boundary Integration', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -40,72 +57,49 @@ describe('OBS-001: CMS Feature Flags & PostHog Boundary Integration', () => {
 
   describe('PostHog Feature Flag Resolution & Fallback Matrix', () => {
     it('1. returns local fallback when PostHog is disabled or Noop adapter is active', () => {
-      vi.spyOn(observability, 'getPostHog').mockReturnValue({
-        isFeatureEnabled: vi.fn((_key, fallback) => fallback ?? false),
-        capture: vi.fn(),
-        capturePageView: vi.fn(),
-        identify: vi.fn(),
-        reset: vi.fn(),
-        isEnabled: vi.fn().mockReturnValue(false),
-      });
+      vi.spyOn(observability, 'getPostHog').mockReturnValue(createPostHogMock());
 
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.BATCH_QUEUE, true)).toBe(true);
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.MESH_INSPECTION, false)).toBe(false);
     });
 
     it('2. returns remote feature flag value when PostHog provider returns true', () => {
-      vi.spyOn(observability, 'getPostHog').mockReturnValue({
+      vi.spyOn(observability, 'getPostHog').mockReturnValue(createPostHogMock({
         isFeatureEnabled: vi.fn().mockReturnValue(true),
-        capture: vi.fn(),
-        capturePageView: vi.fn(),
-        identify: vi.fn(),
-        reset: vi.fn(),
         isEnabled: vi.fn().mockReturnValue(true),
-      });
+        isInitialized: vi.fn().mockReturnValue(true),
+      }));
 
       // Even if local fallback is false, remote true wins
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.MESH_INSPECTION, false)).toBe(true);
     });
 
     it('3. returns remote feature flag value when PostHog provider returns false', () => {
-      vi.spyOn(observability, 'getPostHog').mockReturnValue({
+      vi.spyOn(observability, 'getPostHog').mockReturnValue(createPostHogMock({
         isFeatureEnabled: vi.fn().mockReturnValue(false),
-        capture: vi.fn(),
-        capturePageView: vi.fn(),
-        identify: vi.fn(),
-        reset: vi.fn(),
         isEnabled: vi.fn().mockReturnValue(true),
-      });
+        isInitialized: vi.fn().mockReturnValue(true),
+      }));
 
       // Even if local fallback is true, remote false wins
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.BATCH_QUEUE, true)).toBe(false);
     });
 
     it('4. falls back to deterministic local value when PostHog client throws (provider down)', () => {
-      vi.spyOn(observability, 'getPostHog').mockReturnValue({
+      vi.spyOn(observability, 'getPostHog').mockReturnValue(createPostHogMock({
         isFeatureEnabled: vi.fn().mockImplementation(() => {
           throw new Error('PostHog 503 Provider Network Timeout');
         }),
-        capture: vi.fn(),
-        capturePageView: vi.fn(),
-        identify: vi.fn(),
-        reset: vi.fn(),
         isEnabled: vi.fn().mockReturnValue(true),
-      });
+        isInitialized: vi.fn().mockReturnValue(true),
+      }));
 
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.BATCH_QUEUE, true)).toBe(true);
       expect(resolveCmsFeatureFlag(CMS_FLAG_KEYS.MESH_INSPECTION, false)).toBe(false);
     });
 
     it('5. useCmsFeatureFlag hook reflects resolved flag value', () => {
-      vi.spyOn(observability, 'getPostHog').mockReturnValue({
-        isFeatureEnabled: vi.fn((_key, fallback) => fallback ?? false),
-        capture: vi.fn(),
-        capturePageView: vi.fn(),
-        identify: vi.fn(),
-        reset: vi.fn(),
-        isEnabled: vi.fn().mockReturnValue(false),
-      });
+      vi.spyOn(observability, 'getPostHog').mockReturnValue(createPostHogMock());
 
       const { result } = renderHook(() =>
         useCmsFeatureFlag(CMS_FLAG_KEYS.BATCH_QUEUE, true)
