@@ -37,23 +37,60 @@ interface SidebarProps {
   onMobileClose: () => void;
 }
 
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Package, label: 'Orders', path: '/orders' },
-  { icon: FolderOpen, label: 'Cases', path: '/cases' },
-  { icon: GitBranch, label: 'Workflow', path: '/workflow-board' },
-  { icon: ScanLine, label: 'Scan Center', path: '/scan-center' },
-  { icon: Users, label: 'Patients', path: '/patients' },
-  { icon: Stethoscope, label: 'Doctors', path: '/doctors' },
-  { icon: Building2, label: 'Clinics', path: '/clinics' },
-  { icon: FileText, label: 'Documents', path: '/documents' },
-  { icon: Receipt, label: 'Billing', path: '/billing' },
-  { icon: RefreshCcw, label: 'Change Requests', path: '/change-requests', badge: 4 },
-  { icon: TableProperties, label: 'Grid', path: '/grid' },
-  { icon: FormInput, label: 'Forms', path: '/forms' },
-  { icon: BarChart3, label: 'Reports', path: '/reports' },
-  { icon: Bell, label: 'Notifications', path: '/notifications' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+import Divider from '@mui/material/Divider';
+
+interface NavItem {
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  label: string;
+  path: string;
+  badge?: number;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: 'Workspaces',
+    items: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+      { icon: Package, label: 'Orders Flow', path: '/flow' },
+      { icon: GitBranch, label: 'Workflow Board', path: '/workflow-board' },
+    ],
+  },
+  {
+    title: 'Laboratory & Production',
+    items: [
+      { icon: ScanLine, label: 'Scan Center', path: '/scan-center' },
+      { icon: FileText, label: 'Documents', path: '/documents' },
+    ],
+  },
+  {
+    title: 'Operations & Reports',
+    items: [
+      { icon: BarChart3, label: 'Reports Hub', path: '/reports' },
+    ],
+  },
+  {
+    title: 'Directories & CRM',
+    items: [
+      { icon: FolderOpen, label: 'Cases', path: '/cases' },
+      { icon: Users, label: 'Patients', path: '/patients' },
+      { icon: Stethoscope, label: 'Doctors', path: '/doctors' },
+      { icon: Building2, label: 'Clinics', path: '/clinics' },
+      { icon: Receipt, label: 'Billing', path: '/billing' },
+      { icon: RefreshCcw, label: 'Change Requests', path: '/change-requests', badge: 4 },
+    ],
+  },
+  {
+    title: 'Preferences',
+    items: [
+      { icon: Bell, label: 'Notifications', path: '/notifications' },
+      { icon: Settings, label: 'Settings', path: '/settings' },
+    ],
+  },
 ];
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
@@ -67,85 +104,110 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const borderColor = isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08);
 
   const renderNavLinks = () => (
-    <Box component="nav" aria-label="Main Navigation" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, p: 1.5 }}>
-      {navItems.map((item) => {
-        const isActive = location.pathname.startsWith(item.path);
-        const badgeCount = item.path === '/notifications' ? unreadNotifs : item.badge;
-
-        return (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={() => onMobileClose()}
-            title={collapsed ? item.label : undefined}
-            style={{ textDecoration: 'none' }}
-          >
-            <ButtonBase
+    <Box component="nav" aria-label="Main Navigation" sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5 }}>
+      {navSections.map((section, sIdx) => (
+        <Box key={section.title} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {!collapsed ? (
+            <Typography
+              variant="caption"
               sx={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                gap: 1.5,
-                px: collapsed ? 1 : 1.75,
-                py: 1,
-                borderRadius: 2,
-                fontSize: '0.8125rem',
-                fontWeight: isActive ? 800 : 600,
-                cursor: 'pointer',
-                textAlign: 'left',
-                position: 'relative',
-                transition: 'all 0.15s ease',
-                bgcolor: isActive ? (isDark ? alpha('#0284c7', 0.18) : alpha('#0284c7', 0.1)) : 'transparent',
-                color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
-                borderLeft: isActive ? '3px solid #0284c7' : '3px solid transparent',
-                '&:hover': {
-                  bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#000000', 0.04),
-                  color: isDark ? '#f8fafc' : '#0f172a',
-                },
+                fontSize: '0.65rem',
+                fontWeight: 800,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'text.secondary',
+                px: 1.5,
+                pt: sIdx === 0 ? 0.5 : 1.5,
+                pb: 0.5,
+                userSelect: 'none',
               }}
             >
-              <item.icon size={18} color={isActive ? '#0284c7' : isDark ? '#94a3b8' : '#64748b'} />
+              {section.title}
+            </Typography>
+          ) : sIdx > 0 ? (
+            <Divider sx={{ my: 0.75, borderColor }} />
+          ) : null}
 
-              {!collapsed && (
-                <Typography sx={{ flex: 1, fontSize: '0.8125rem', fontWeight: 'inherit', color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.label}
-                </Typography>
-              )}
+          {section.items.map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+            const badgeCount = item.path === '/notifications' ? unreadNotifs : item.badge;
 
-              {!collapsed && Boolean(badgeCount) && (
-                <Chip
-                  label={badgeCount}
-                  size="small"
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => onMobileClose()}
+                title={collapsed ? item.label : undefined}
+                style={{ textDecoration: 'none' }}
+              >
+                <ButtonBase
                   sx={{
-                    height: 18,
-                    fontSize: '0.625rem',
-                    fontWeight: 900,
-                    bgcolor: isActive ? '#0284c7' : '#e11d48',
-                    color: '#ffffff',
-                    '& .MuiChip-label': { px: 0.75 },
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    gap: 1.5,
+                    px: collapsed ? 1 : 1.75,
+                    py: 1,
+                    borderRadius: 2,
+                    fontSize: '0.8125rem',
+                    fontWeight: isActive ? 800 : 600,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    position: 'relative',
+                    transition: 'all 0.15s ease',
+                    bgcolor: isActive ? (isDark ? alpha('#0284c7', 0.18) : alpha('#0284c7', 0.1)) : 'transparent',
+                    color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
+                    borderLeft: isActive ? '3px solid #0284c7' : '3px solid transparent',
+                    '&:hover': {
+                      bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#000000', 0.04),
+                      color: isDark ? '#f8fafc' : '#0f172a',
+                    },
                   }}
-                />
-              )}
+                >
+                  <item.icon size={18} color={isActive ? '#0284c7' : isDark ? '#94a3b8' : '#64748b'} />
 
-              {collapsed && Boolean(badgeCount) && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 6,
-                    right: 6,
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: '#0284c7',
-                    boxShadow: '0 0 6px #0284c7',
-                  }}
-                />
-              )}
-            </ButtonBase>
-          </NavLink>
-        );
-      })}
+                  {!collapsed && (
+                    <Typography sx={{ flex: 1, fontSize: '0.8125rem', fontWeight: 'inherit', color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.label}
+                    </Typography>
+                  )}
+
+                  {!collapsed && Boolean(badgeCount) && (
+                    <Chip
+                      label={badgeCount}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.625rem',
+                        fontWeight: 900,
+                        bgcolor: isActive ? '#0284c7' : '#e11d48',
+                        color: '#ffffff',
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
+                  )}
+
+                  {collapsed && Boolean(badgeCount) && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: '#0284c7',
+                        boxShadow: '0 0 6px #0284c7',
+                      }}
+                    />
+                  )}
+                </ButtonBase>
+              </NavLink>
+            );
+          })}
+        </Box>
+      ))}
     </Box>
   );
 
