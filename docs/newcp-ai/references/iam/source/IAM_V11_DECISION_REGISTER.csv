@@ -7,3 +7,4 @@ IAM-026,Hierarchy persistence,V006 no native parent-role relation; flat capabili
 IAM-020,Live identities,"Only CS, OPS, ADMIN 3 Google demo accounts",APPROVED,QA prepare with authorized internal V3 IAM assignments
 IAM-018,Multi-role,Support permissions union; test after demo,APPROVED_WITH_TEST_DEFERRED,Do not enforce single-role in schema
 IAM-HIER-001,,Senior/Manager inherits all confirmed subordinate same-family role permissions transitively,Approved 2026-10-26,Actual parent/child role edges and direct grants require discovery; no cross-family inheritance
+IAM-TENANT-002,Tenant authorization source,Use existing tenant-scoped iam.user_roles assignments for October; retain separate tenant-authorization abstraction for future,APPROVED 2026-10-27,Encapsulate in isTenantAuthorized abstraction; verify seed assignments

@@ -13,7 +13,8 @@ This document captures the approved v0.9.7 tenant-handling clarification establi
 
 ### Precedence Hierarchy:
 1. **v0.9.7 supersedes v0.9.6 only for tenant handling.** The v0.9.6 tenant implementation specification v1.0 has been archived under `docs/newcp-ai/archive/superseded_v0.9.6_tenant_refs/` for audit and traceability.
-2. **v0.9.5 IAM baseline remains fully binding:**
+2. **IAM-TENANT-002 Clarification (2026-10-27):** iam.user_roles serves as the October demo explicit user-to-tenant authorization source, encapsulated behind a dedicated abstraction (isTenantAuthorized, getAuthorizedTenants) for future extensibility.
+3. **v0.9.5 IAM baseline remains fully binding:**
    - 5 approved business access families: CS, OPS, FINANCE, QC, ADMIN. No CP role.
    - Senior/Manager same-family transitive inheritance (IAM-HIER-001).
    - Google Sign-In authenticates identity only (no Google Groups for authorization).
