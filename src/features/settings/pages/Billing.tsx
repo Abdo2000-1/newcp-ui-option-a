@@ -222,7 +222,7 @@ export default function Billing() {
         data-testid="billing-domain-alert"
       >
         <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, color: 'text.primary' }}>
-          [MOCK / NOT_INTEGRATED] Billing Account &amp; Patient Domain Alignment
+          Billing Account &amp; Patient Domain Alignment
         </Typography>
         <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', lineHeight: 1.5 }}>
           In accordance with 3DDX Business Domain Guidelines (Sections 8 &amp; 13.9), the billing debtor is strictly the ordering <strong>Client Account (Clinic / Doctor / Scan Center)</strong>, distinct from the case <strong>Patient</strong> (clinical subject). Service-level Bill To (F07 V204) and real ERP accounting synchronization remain unintegrated mock boundaries in this prototype. The billable flag (<code>isBillable</code>) is evaluated independently from payer assignment.

@@ -72,11 +72,11 @@ export default function Task47ModelWorkReport() {
   const applyPreset = (preset: 'dual_arch' | 'high_value' | 'vouchers_only') => {
     setActivePreset(preset);
     if (preset === 'dual_arch') {
-      triggerToast('[MOCK / AUTOMATION] Applied preset: Dual Arch Work (Maxilla & Mandible).');
+      triggerToast('Applied preset: Dual Arch Work (Maxilla & Mandible).');
     } else if (preset === 'high_value') {
-      triggerToast('[MOCK / AUTOMATION] Applied preset: High Value Appliances (≥$100).');
+      triggerToast('Applied preset: High Value Appliances (≥$100).');
     } else if (preset === 'vouchers_only') {
-      triggerToast('[MOCK / AUTOMATION] Applied preset: Vouchers Linked Only.');
+      triggerToast('Applied preset: Vouchers Linked Only.');
     }
   };
 
@@ -143,7 +143,7 @@ export default function Task47ModelWorkReport() {
     setFromDate('2026-09-01');
     setToDate('2026-10-03');
     setSearch('');
-    triggerToast('[MOCK] Filters reset to default values.');
+    triggerToast('Filters reset to default values.');
   };
 
   const handleExportCsv = () => {
@@ -172,7 +172,7 @@ export default function Task47ModelWorkReport() {
     link.download = `Task47_Model_Work_Report_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    triggerToast(`[MOCK / NOT_INTEGRATED] Exported ${filteredRows.length} model work records to CSV.`);
+    triggerToast(`Exported ${filteredRows.length} model work records to CSV.`);
   };
 
   return (
@@ -296,7 +296,7 @@ export default function Task47ModelWorkReport() {
               type="button"
               onClick={() => {
                 setActivePreset('none');
-                triggerToast('[MOCK] Preset cleared.');
+                triggerToast('Preset cleared.');
               }}
               className="text-pink-600 dark:text-pink-400 font-bold hover:underline text-[11px] ml-1 cursor-pointer"
             >

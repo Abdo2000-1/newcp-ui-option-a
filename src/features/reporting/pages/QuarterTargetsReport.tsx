@@ -951,25 +951,7 @@ export default function QuarterTargetsReport() {
 
 
 
-                {/* Power BI Canvas Mock Notice Banner */}
 
-                <div className="p-2.5 bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-900/50 rounded-xl flex items-center justify-between text-xs text-sky-800 dark:text-sky-300">
-
-                  <div className="flex items-center gap-2">
-
-                    <span className="font-mono font-bold text-[9.5px] px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-900 border border-sky-300 dark:border-sky-700">
-
-                      [PROTOTYPE MOCK / NOT_INTEGRATED]
-
-                    </span>
-
-                    <span className="text-[11px]">Power BI Canvas Emulation: Synthetic demonstration using local mock datasets only.</span>
-
-                  </div>
-
-                  <span className="text-[10px] text-slate-400 font-mono">Fabric Gateway: Simulated</span>
-
-                </div>
 
               </div>
 

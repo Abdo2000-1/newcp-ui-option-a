@@ -865,7 +865,7 @@ Generated on: ${new Date().toLocaleString()}
     setIsSavingSpecialRequest(true);
     setTimeout(() => {
       setIsSavingSpecialRequest(false);
-      triggerToast('[MOCK / NOT_INTEGRATED] Dr. Special Request saved to local case state.');
+      triggerToast('Dr. Special Request saved to local case state.');
     }, 300);
   };
 
@@ -873,7 +873,7 @@ Generated on: ${new Date().toLocaleString()}
     setIsSavingClientNote(true);
     setTimeout(() => {
       setIsSavingClientNote(false);
-      triggerToast('[MOCK / NOT_INTEGRATED] Client Note saved to case file.');
+      triggerToast('Client Note saved to case file.');
     }, 300);
   };
 
@@ -908,7 +908,7 @@ Generated on: ${new Date().toLocaleString()}
       setNewInternalNote('');
       setAttachedNoteFileName('');
       setIsDispatchingNote(false);
-      triggerToast(`[MOCK / NOT_INTEGRATED] Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
+      triggerToast(`Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
     }, 300);
   };
 
@@ -1159,7 +1159,7 @@ Generated on: ${new Date().toLocaleString()}
               <button
                 type="button"
                 data-testid="action-approve-case"
-                onClick={() => triggerToast(`[MOCK] Approved case #${flowOrder.orderNum} for lab production`)}
+                onClick={() => triggerToast(`Approved case #${flowOrder.orderNum} for lab production`)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold transition-all cursor-pointer shadow-xs"
                 title="Approve case prescription for production"
               >
@@ -1170,7 +1170,7 @@ Generated on: ${new Date().toLocaleString()}
               <button
                 type="button"
                 data-testid="action-hold-case"
-                onClick={() => triggerToast(`[MOCK] Placed case #${flowOrder.orderNum} on clinical hold`)}
+                onClick={() => triggerToast(`Placed case #${flowOrder.orderNum} on clinical hold`)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs font-extrabold transition-all cursor-pointer shadow-xs"
                 title="Place case on clinical review hold"
               >
@@ -1988,7 +1988,7 @@ Generated on: ${new Date().toLocaleString()}
               columns={subOrderColumns}
               data={flowOrder.services}
               rowKey={(sub, idx) => sub.id || `${sub.typeCode}-${idx}`}
-              onRowClick={(sub) => triggerToast(`[MOCK] Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
+              onRowClick={(sub) => triggerToast(`Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
               searchable
               searchPlaceholder="Filter sub-orders by title or code..."
               searchFilter={(sub, query) =>

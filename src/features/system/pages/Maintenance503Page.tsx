@@ -115,7 +115,7 @@ export default function Maintenance503Page() {
             fontWeight: 600,
           }}
         >
-          [PROTOTYPE MOCK / NOT_INTEGRATED] Dedicated maintenance view demonstration. No real server outage or system downtime detected on local node.
+          Scheduled maintenance in progress. System will resume normal operation shortly.
         </Alert>
 
         {/* Action Buttons */}

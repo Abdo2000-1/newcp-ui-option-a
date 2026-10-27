@@ -143,7 +143,7 @@ export default function AddCase() {
     setLowerStl('Lower_Arch_Intraoral.stl');
     setShowErrors(false);
     setCurrentStep(1);
-    triggerToast('[MOCK] Prescription draft reset to initial values.');
+    triggerToast('Prescription draft reset to initial values.');
   };
 
   const toggleService = (key: keyof typeof services) => {
@@ -315,7 +315,7 @@ export default function AddCase() {
                 Case <strong className="text-cyan-600 font-mono">{successCaseNumber}</strong> has been routed to the <strong>{taskToGroup}</strong> queue for Co-Diagnostix planning.
               </p>
               <div className="text-[11px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-600/40 rounded-xl p-2.5 max-w-md mx-auto">
-                [MOCK / NOT_INTEGRATED] Prototype demonstration: order record stored in local browser state only. No remote PACS transmission or billing integration was performed.
+                Prototype demonstration: order record stored in local browser state only. No remote PACS transmission or billing integration was performed.
               </div>
               <div className="flex justify-center gap-3 pt-2">
                 <button
@@ -811,7 +811,7 @@ export default function AddCase() {
                             const file = e.target.files?.[0];
                             if (file) {
                               setDicomFile(file.name);
-                              triggerToast(`[MOCK / NOT_INTEGRATED] Replaced DICOM volume with: ${file.name}`);
+                              triggerToast(`Replaced DICOM volume with: ${file.name}`);
                             }
                           }}
                         />
@@ -836,7 +836,7 @@ export default function AddCase() {
                             const file = e.target.files?.[0];
                             if (file) {
                               setUpperStl(file.name);
-                              triggerToast(`[MOCK / NOT_INTEGRATED] Replaced Upper Optical Scan with: ${file.name}`);
+                              triggerToast(`Replaced Upper Optical Scan with: ${file.name}`);
                             }
                           }}
                         />
@@ -861,7 +861,7 @@ export default function AddCase() {
                             const file = e.target.files?.[0];
                             if (file) {
                               setLowerStl(file.name);
-                              triggerToast(`[MOCK / NOT_INTEGRATED] Replaced Lower Optical Scan with: ${file.name}`);
+                              triggerToast(`Replaced Lower Optical Scan with: ${file.name}`);
                             }
                           }}
                         />

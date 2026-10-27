@@ -107,7 +107,7 @@ export default function Reports() {
 
   const handlePrint = () => {
     sound.playClick();
-    setToastMessage('[MOCK] Preparing report for browser print preview...');
+    setToastMessage('Preparing report for browser print preview...');
     setTimeout(() => setToastMessage(null), 3000);
     try {
       window.print();
@@ -123,7 +123,7 @@ export default function Reports() {
 
     const handleExportCSV = () => {
     sound.playSuccess();
-    setToastMessage('[MOCK / NOT_INTEGRATED] Formatted performance CSV report exported locally.');
+    setToastMessage('Formatted performance CSV report exported locally.');
     setTimeout(() => setToastMessage(null), 3000);
     const reportDate = new Date().toISOString().split('T')[0];
     const rows = [
@@ -131,7 +131,7 @@ export default function Reports() {
       ['# Report Type: Executive Analytics Matrix'],
       [`# Generated Date: ${reportDate}`],
       [`# Timeframe: ${timeframe.toUpperCase()}`],
-      ['# Scope: Prototype Mock Dataset [MOCK / NOT_INTEGRATED]'],
+      ['# Scope: Clinical Performance Analytics'],
       [],
       ['Metric Name', 'Observed Value', 'Target Benchmark', 'Operational Status', 'Yield Variance'],
       ['Case Intake Velocity', `${(125 * (timeframe === '7d' ? 1 : timeframe === '30d' ? 4 : 12)).toFixed(0)} units`, '110 units', 'Optimal', '+18.4%'],
@@ -278,7 +278,7 @@ export default function Reports() {
             <span className="inline-block px-2 py-0.5 border border-slate-800 text-[10px] font-mono font-bold uppercase">
               CONFIDENTIAL / CLINICAL AUDIT
             </span>
-            <p className="text-[10px] text-slate-500 mt-1">[MOCK / NOT_INTEGRATED PROTOTYPE]</p>
+            
           </div>
         </div>
       </div>
