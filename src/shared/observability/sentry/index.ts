@@ -21,7 +21,12 @@ export function initSentry(
     return activeSentryAdapter;
   }
 
-  activeSentryAdapter = new SentryAdapter(config.sentry, config.environment, customClient);
+  try {
+    activeSentryAdapter = new SentryAdapter(config.sentry, config.environment, customClient);
+  } catch (err) {
+    console.warn('[Sentry] Adapter creation error isolated:', err);
+    activeSentryAdapter = new NoopSentryAdapter();
+  }
   return activeSentryAdapter;
 }
 

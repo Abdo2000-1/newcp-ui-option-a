@@ -1,6 +1,9 @@
 import { afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+
+// Increase asyncUtilTimeout for heavy concurrent test worker runs
+configure({ asyncUtilTimeout: 5000 });
 
 // Automatically unmount and clean up DOM after each test
 afterEach(() => {

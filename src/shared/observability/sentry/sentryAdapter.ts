@@ -1,5 +1,6 @@
 import type { TelemetryConfig, TelemetryEnvironment } from '../types';
 import { scrubSentryData, scrubBreadcrumb, type SentryBreadcrumb } from './sentryScrubber';
+import * as SentrySDK from '@sentry/react';
 
 export type SentryLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug';
 
@@ -78,6 +79,7 @@ export interface ISentryAdapter {
   setUser(user: SentryUser | null): void;
   isExpectedDomainError(error: unknown): boolean;
   isEnabled(): boolean;
+  isInitialized(): boolean;
 }
 
 /**
@@ -98,6 +100,9 @@ export class NoopSentryAdapter implements ISentryAdapter {
   isEnabled(): boolean {
     return false;
   }
+  isInitialized(): boolean {
+    return false;
+  }
 }
 
 /**
@@ -108,6 +113,7 @@ export class SentryAdapter implements ISentryAdapter {
   private readonly config: TelemetryConfig['sentry'];
   private readonly environment: TelemetryEnvironment;
   private readonly client: ISentryClient | null;
+  private initialized = false;
 
   constructor(
     config: TelemetryConfig['sentry'],
@@ -119,8 +125,8 @@ export class SentryAdapter implements ISentryAdapter {
 
     if (customClient) {
       this.client = customClient;
-    } else if (typeof window !== 'undefined' && (window as unknown as { Sentry?: ISentryClient }).Sentry) {
-      this.client = (window as unknown as { Sentry: ISentryClient }).Sentry;
+    } else if (typeof window !== 'undefined') {
+      this.client = SentrySDK as unknown as ISentryClient;
     } else {
       this.client = null;
     }
@@ -134,6 +140,7 @@ export class SentryAdapter implements ISentryAdapter {
           tracesSampleRate: 0, // No distributed tracing or sampling without explicit approval
           sendDefaultPii: false, // Mandatory privacy requirement
         });
+        this.initialized = true;
       } catch (err) {
         console.warn('[Sentry] Failed to initialize client:', err);
       }
@@ -142,6 +149,10 @@ export class SentryAdapter implements ISentryAdapter {
 
   public isEnabled(): boolean {
     return Boolean(this.config.enabled);
+  }
+
+  public isInitialized(): boolean {
+    return this.initialized;
   }
 
   public isExpectedDomainError(error: unknown): boolean {
