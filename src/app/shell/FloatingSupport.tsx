@@ -190,7 +190,7 @@ export function FloatingSupport({ navPosition = 'top' }: FloatingSupportProps) {
 
                       <button
                         type="submit"
-                        className="flex items-center gap-1 px-3 py-1 rounded-lg bg-gradient-to-r from-sky-600 to-orange-500 hover:from-sky-700 hover:to-orange-600 text-white text-[11px] font-bold hover:shadow-sm transition-all cursor-pointer"
+                        className="flex items-center gap-1 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold hover:shadow-sm transition-all cursor-pointer"
                       >
                         <Send className="w-3 h-3" />
                         <span>Send Ticket</span>
