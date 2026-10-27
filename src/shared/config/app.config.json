@@ -1,10 +1,10 @@
 {
   "branding": {
-    "appName": "3D Diagnostix CP PRO MAX",
-    "shortName": "3DDX CP",
-    "tagline": "Enterprise Cloud Dental ERP & Clinical Dispatch Platform",
-    "version": "v4.5.2-prod",
-    "buildNumber": "20261006.PROD",
+    "appName": "New CP",
+    "shortName": "New CP",
+    "tagline": "Clinical Control Panel & Dental CAD/CAM Dispatch Platform",
+    "version": "v4.2.2",
+    "buildNumber": "20261027.PROD",
     "releaseDate": "October 2026",
     "copyrightHolder": "3D Diagnostix Inc. All rights reserved.",
     "logoLight": "/logo-3ddx-full.png",
@@ -32,17 +32,17 @@
     "borderRadius": "1rem"
   },
   "features": {
-    "enablePowerBIRealEmbed": true,
+    "enablePowerBIRealEmbed": false,
     "enableSoundEffects": true,
-    "enableLiveTelemetry": true,
+    "enableLiveTelemetry": false,
     "enableMultiLanguage": true,
     "enableTableExcelResize": true,
     "defaultPageSize": 10
   },
   "powerBi": {
-    "defaultEmbedUrl": "https://app.powerbi.com/view?r=eyJrIjoiNTRjMzI0MmQtNTA3YS00N2MwLWI0ZTctMGEyOGUwOGI0OTRhIiwidCI6IjI1ZDIwZjU1LWIxMGMtNDk5MS1hMTJlLWRlOWZkZDA2YTY0MCIsImMiOjZ9",
-    "workspaceId": "3ddx-powerbi-workspace-live",
-    "datasetName": "3DDX_FY2026_Executive_Targets.pbix",
+    "defaultEmbedUrl": "",
+    "workspaceId": "",
+    "datasetName": "",
     "refreshIntervalSec": 300
   },
   "serviceProcedures": {

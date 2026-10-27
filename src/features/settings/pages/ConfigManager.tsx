@@ -25,7 +25,7 @@ import {
 import { useAppConfig } from '@/app/providers/contexts/ConfigContext';
 import { sound } from '@/shared/utils/sound';
 import { RESTORATION_TYPES, SERVICE_METADATA, RestorationType } from '@/shared/components/TeethChart';
-import { configToYaml, downloadConfigFile } from '@/shared/config/appConfig';
+import { configToYaml, downloadConfigFile, validateAppConfig } from '@/shared/config/appConfig';
 
 export default function ConfigManager() {
   const { config, saveConfig, resetConfig } = useAppConfig();
@@ -794,6 +794,12 @@ export default function ConfigManager() {
                     onClick={() => {
                       try {
                         const parsed = JSON.parse(importJsonText);
+                        const validation = validateAppConfig(parsed);
+                        if (!validation.valid) {
+                          setImportError('Validation error(s): ' + validation.errors.join('; '));
+                          sound.playError();
+                          return;
+                        }
                         setFormState(prev => ({
                           ...prev,
                           ...parsed,

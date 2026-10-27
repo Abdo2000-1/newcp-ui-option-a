@@ -1,6 +1,9 @@
 // 3DDX Dynamic Global Application Configuration
 // Every aspect of the application (branding, colors, theme, versioning, links, features, API) is defined here
 
+import defaultAppConfigJson from './app.config.json';
+import { getPostHog } from '@/shared/observability/posthog';
+
 export interface AppBrandingConfig {
   appName: string;
   shortName: string;
@@ -59,18 +62,77 @@ export interface AppConfiguration {
   serviceProcedures: Record<string, string[]>;
 }
 
-import defaultAppConfigJson from './app.config.json';
+export interface ConfigValidationResult {
+  valid: boolean;
+  errors: string[];
+}
 
 export const DEFAULT_APP_CONFIG: AppConfiguration = defaultAppConfigJson as AppConfiguration;
 export const DEFAULT_SERVICE_PROCEDURES: Record<string, string[]> = defaultAppConfigJson.serviceProcedures;
 
-const STORAGE_KEY = '3ddx_cp_runtime_config_v1';
+export const STORAGE_KEY = '3ddx_cp_runtime_config_v1';
+
+export function validateAppConfig(input: unknown): ConfigValidationResult {
+  const errors: string[] = [];
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return { valid: false, errors: ['Configuration payload must be a non-null JSON object'] };
+  }
+
+  const obj = input as Partial<AppConfiguration>;
+
+  if (!obj.branding || typeof obj.branding !== 'object') {
+    errors.push('Missing or invalid "branding" section');
+  } else {
+    if (!obj.branding.appName || typeof obj.branding.appName !== 'string') {
+      errors.push('Branding "appName" must be a non-empty string');
+    }
+    if (!obj.branding.version || typeof obj.branding.version !== 'string') {
+      errors.push('Branding "version" must be a non-empty string');
+    }
+  }
+
+  if (!obj.links || typeof obj.links !== 'object') {
+    errors.push('Missing or invalid "links" section');
+  }
+
+  if (!obj.theme || typeof obj.theme !== 'object') {
+    errors.push('Missing or invalid "theme" section');
+  } else {
+    if (!obj.theme.primaryColor || typeof obj.theme.primaryColor !== 'string') {
+      errors.push('Theme "primaryColor" must be a valid color string');
+    }
+  }
+
+  if (obj.features && typeof obj.features === 'object') {
+    if (obj.features.defaultPageSize !== undefined && (typeof obj.features.defaultPageSize !== 'number' || obj.features.defaultPageSize <= 0)) {
+      errors.push('Features "defaultPageSize" must be a positive integer');
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+export function getFeatureFlag(flagKey: string, defaultValue = false): boolean {
+  try {
+    return getPostHog().isFeatureEnabled(flagKey, defaultValue);
+  } catch {
+    return defaultValue;
+  }
+}
 
 export function loadAppConfig(): AppConfiguration {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_APP_CONFIG;
     const parsed = JSON.parse(raw);
+    const validation = validateAppConfig(parsed);
+    if (!validation.valid) {
+      console.warn('[CMS Config] Invalid configuration stored in localStorage, resetting to defaults:', validation.errors);
+      return DEFAULT_APP_CONFIG;
+    }
     return {
       branding: { ...DEFAULT_APP_CONFIG.branding, ...parsed.branding },
       links: { ...DEFAULT_APP_CONFIG.links, ...parsed.links },
@@ -181,4 +243,3 @@ export function configToYaml(config: AppConfiguration): string {
 
   return lines.join('\n') + '\n';
 }
-

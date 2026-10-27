@@ -4,7 +4,8 @@ import {
   DEFAULT_APP_CONFIG,
   loadAppConfig,
   saveAppConfig,
-  resetAppConfig
+  resetAppConfig,
+  getFeatureFlag,
 } from '@/shared/config/appConfig';
 
 interface ConfigContextType {
@@ -12,6 +13,7 @@ interface ConfigContextType {
   updateConfig: (updater: (prev: AppConfiguration) => AppConfiguration) => void;
   saveConfig: (newConfig: AppConfiguration) => void;
   resetConfig: () => void;
+  isFeatureActive: (featureKey: string, defaultValue?: boolean) => boolean;
 }
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
@@ -47,13 +49,22 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
     setConfig(fresh);
   };
 
+  const isFeatureActive = (featureKey: string, defaultValue = false): boolean => {
+    if (featureKey in config.features) {
+      const val = (config.features as Record<string, unknown>)[featureKey];
+      if (typeof val === 'boolean') return val;
+    }
+    return getFeatureFlag(featureKey, defaultValue);
+  };
+
   return (
     <ConfigContext.Provider
       value={{
         config,
         updateConfig,
         saveConfig: handleSaveConfig,
-        resetConfig: handleResetConfig
+        resetConfig: handleResetConfig,
+        isFeatureActive,
       }}
     >
       {children}
@@ -69,6 +80,7 @@ export function useAppConfig() {
       updateConfig: () => {},
       saveConfig: () => {},
       resetConfig: () => {},
+      isFeatureActive: (_key: string, def = false) => def,
     };
   }
   return ctx;

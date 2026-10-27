@@ -1,0 +1,106 @@
+{
+  "branding": {
+    "appName": "New CP",
+    "shortName": "New CP",
+    "tagline": "Clinical Control Panel & Dental CAD/CAM Dispatch Platform",
+    "version": "v4.2.2",
+    "buildNumber": "20261027.PROD",
+    "releaseDate": "October 2026",
+    "copyrightHolder": "3D Diagnostix Inc. All rights reserved.",
+    "logoLight": "/logo-3ddx-full.png",
+    "logoDark": "/logo-3ddx-full.png",
+    "logoIcon": "/logo-3ddx.png"
+  },
+  "links": {
+    "companyWebsite": "https://3ddx.com",
+    "supportEmail": "support@3ddx.com",
+    "supportPortal": "https://support.3ddx.com",
+    "documentationUrl": "https://docs.3ddx.com",
+    "privacyPolicyUrl": "https://3ddx.com/privacy",
+    "termsOfServiceUrl": "https://3ddx.com/terms",
+    "statusPageUrl": "https://status.3ddx.com",
+    "systemDiagnosticsUrl": "https://diagnostics.3ddx.com"
+  },
+  "theme": {
+    "defaultTheme": "light",
+    "primaryColor": "#0284c7",
+    "accentColor": "#ea580c",
+    "successColor": "#10b981",
+    "warningColor": "#f59e0b",
+    "dangerColor": "#ef4444",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "borderRadius": "1rem"
+  },
+  "features": {
+    "enablePowerBIRealEmbed": false,
+    "enableSoundEffects": true,
+    "enableLiveTelemetry": false,
+    "enableMultiLanguage": true,
+    "enableTableExcelResize": true,
+    "defaultPageSize": 10
+  },
+  "powerBi": {
+    "defaultEmbedUrl": "",
+    "workspaceId": "",
+    "datasetName": "",
+    "refreshIntervalSec": 300
+  },
+  "serviceProcedures": {
+    "sg": [
+      "implant",
+      "sleeve",
+      "anchor",
+      "bone_reduction",
+      "extraction"
+    ],
+    "tp": [
+      "implant",
+      "crown",
+      "bridge",
+      "veneer",
+      "sinus_lift",
+      "nerve_trace",
+      "extraction"
+    ],
+    "conv": [
+      "segmentation",
+      "implant",
+      "nerve_trace",
+      "extraction"
+    ],
+    "mod": [
+      "die_prep",
+      "analog",
+      "extraction"
+    ],
+    "rep": [
+      "impacted",
+      "pathology",
+      "sinus_lift",
+      "extraction"
+    ],
+    "restTemp": [
+      "temp_crown",
+      "temp_bridge",
+      "extraction"
+    ],
+    "restFinal": [
+      "crown",
+      "bridge",
+      "veneer",
+      "inlay",
+      "extraction"
+    ],
+    "vr": [
+      "smile_design",
+      "veneer",
+      "crown",
+      "extraction"
+    ],
+    "ortho": [
+      "attachment",
+      "ipr",
+      "extraction"
+    ]
+  }
+}
