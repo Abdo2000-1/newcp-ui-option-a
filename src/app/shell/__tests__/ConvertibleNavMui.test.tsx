@@ -135,12 +135,12 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
   });
 
   describe('Vertical Sidebar Modes (Left and Right)', () => {
-    it('renders 8 navigation links in left sidebar mode', () => {
+    it('renders navigation links in left sidebar mode without redundant Add New Case', () => {
       renderConvertibleNav({ position: 'left', collapsed: false });
 
       expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
       expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
-      expect(screen.getByText(/add new case/i)).toBeInTheDocument();
+      expect(screen.queryByText(/add new case/i)).not.toBeInTheDocument();
       expect(screen.getByText(/order details/i)).toBeInTheDocument();
       expect(screen.getByText(/quarter targets/i)).toBeInTheDocument();
       expect(screen.getByText(/task 47: models/i)).toBeInTheDocument();
