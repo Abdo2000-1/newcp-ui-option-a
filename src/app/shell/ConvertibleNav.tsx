@@ -35,7 +35,12 @@ import {
   User,
   LogOut,
   Search,
-  Move
+  Move,
+  MoreHorizontal,
+  Building2,
+  UserCheck,
+  Receipt,
+  Settings
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
@@ -77,12 +82,14 @@ export function ConvertibleNav({
   const [opsDropdownOpen, setOpsDropdownOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [posDropdownOpen, setPosDropdownOpen] = useState(false);
-  const isTier2DropdownOpen = ordersDropdownOpen || opsDropdownOpen;
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const isTier2DropdownOpen = ordersDropdownOpen || opsDropdownOpen || moreDropdownOpen;
 
   const langRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const ordersDropdownRef = useRef<HTMLDivElement>(null);
   const opsDropdownRef = useRef<HTMLDivElement>(null);
+  const moreDropdownRef = useRef<HTMLDivElement>(null);
   const posRef = useRef<HTMLDivElement>(null);
 
   // Global Ctrl+K / Cmd+K listener
@@ -125,6 +132,9 @@ export function ConvertibleNav({
       }
       if (opsDropdownRef.current && !opsDropdownRef.current.contains(e.target as Node)) {
         setOpsDropdownOpen(false);
+      }
+      if (moreDropdownRef.current && !moreDropdownRef.current.contains(e.target as Node)) {
+        setMoreDropdownOpen(false);
       }
       if (posRef.current && !posRef.current.contains(e.target as Node)) {
         setPosDropdownOpen(false);
@@ -801,6 +811,7 @@ export function ConvertibleNav({
                       e.stopPropagation();
                       setOrdersDropdownOpen(!ordersDropdownOpen);
                       setOpsDropdownOpen(false);
+                      setMoreDropdownOpen(false);
                     }}
                     sx={{
                       display: 'flex',
@@ -933,6 +944,7 @@ export function ConvertibleNav({
                       e.stopPropagation();
                       setOpsDropdownOpen(!opsDropdownOpen);
                       setOrdersDropdownOpen(false);
+                      setMoreDropdownOpen(false);
                     }}
                     sx={{
                       display: 'flex',
@@ -1048,6 +1060,168 @@ export function ConvertibleNav({
                           <Box>
                             <div>Task 31: Staff Targets</div>
                             <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Technician volume tiers</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+                    </div>
+                  )}
+                </Box>
+
+                {/* 4. More Spread Dropdown (Directories, Billing & Administration) */}
+                <Box sx={{ position: 'relative' }} ref={moreDropdownRef}>
+                  <ButtonBase
+                    type="button"
+                    aria-expanded={moreDropdownOpen}
+                    aria-haspopup="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMoreDropdownOpen(!moreDropdownOpen);
+                      setOrdersDropdownOpen(false);
+                      setOpsDropdownOpen(false);
+                    }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.75,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      transition: 'all 0.15s ease',
+                      bgcolor: moreDropdownOpen ? (isDark ? '#0c1222' : '#ffffff') : 'transparent',
+                      color: moreDropdownOpen ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${moreDropdownOpen ? (isDark ? alpha('#38bdf8', 0.3) : alpha('#0284c7', 0.2)) : 'transparent'}`,
+                      '&:hover': {
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                      },
+                    }}
+                  >
+                    <MoreHorizontal size={14} />
+                    <span>More</span>
+                    <ChevronDown
+                      size={12}
+                      style={{
+                        transform: moreDropdownOpen ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    />
+                  </ButtonBase>
+
+                  {moreDropdownOpen && (
+                    <div
+                      data-testid="more-dropdown-menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-60 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                    >
+                      <NavLink
+                        to="/clinics"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Building2 size={15} color="#0284c7" />
+                          <Box>
+                            <div>Clinics Directory</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Partner clinic records</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/doctors"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <UserCheck size={15} color="#10b981" />
+                          <Box>
+                            <div>Doctors Directory</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Clinician profiles</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/billing"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Receipt size={15} color="#8b5cf6" />
+                          <Box>
+                            <div>Billing & Finance</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Invoices & payment status</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/settings"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Settings size={15} color="#64748b" />
+                          <Box>
+                            <div>System Settings</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Preferences & configuration</Typography>
                           </Box>
                         </Box>
                       </NavLink>
