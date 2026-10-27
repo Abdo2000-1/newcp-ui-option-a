@@ -136,7 +136,7 @@ export default function Task31StaffTargets() {
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-xs hover:bg-cyan-400 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 text-white font-bold text-xs shadow-xs hover:bg-sky-700 cursor-pointer"
           >
             <Printer size={13} />
             <span>Export Matrix</span>
