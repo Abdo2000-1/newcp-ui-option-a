@@ -23,8 +23,6 @@ import {
   BarChart3, 
   Bell, 
   Settings,
-  TableProperties,
-  FormInput,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -49,8 +47,6 @@ const navItems = [
   { icon: FileText, label: 'Documents', path: '/documents' },
   { icon: Receipt, label: 'Billing', path: '/billing' },
   { icon: RefreshCcw, label: 'Change Requests', path: '/change-requests', badge: 4 },
-  { icon: TableProperties, label: 'Grid', path: '/grid' },
-  { icon: FormInput, label: 'Forms', path: '/forms' },
   { icon: BarChart3, label: 'Reports', path: '/reports' },
   { icon: Bell, label: 'Notifications', path: '/notifications' },
     { icon: Settings, label: 'Settings', path: '/settings' },
