@@ -26,6 +26,7 @@ import {
   TenantNotAssignedError,
   InsufficientPermissionsError,
 } from './errors';
+import type { SessionAccessStatus } from './sessionClient';
 
 export interface ApplicationSessionToken {
   sessionToken: string;
@@ -45,13 +46,7 @@ export interface SessionContextTenant {
   label: string;
 }
 
-export type SessionAccessStatus =
-  | 'AUTHORIZED'
-  | 'PENDING'
-  | 'TENANT_NOT_ASSIGNED'
-  | 'TENANT_ACCESS_DENIED'
-  | 'PERMISSION_DENIED'
-  | 'SESSION_EXPIRED';
+export type { SessionAccessStatus };
 
 export interface VerifiedSessionContext {
   token: ApplicationSessionToken | null;
