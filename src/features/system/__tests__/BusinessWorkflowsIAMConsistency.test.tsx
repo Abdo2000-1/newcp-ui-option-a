@@ -24,8 +24,8 @@ describe('Task 14: Comprehensive Business Workflows & IAM Consistency Verificati
         patientName: 'Test Patient Workflow',
         clinicName: 'Alpha Dental Studio',
         doctorName: 'Dr. John Doe',
-        status: 'Intake' as const,
-        priority: 'high' as const,
+        status: 'New' as const,
+        priority: 'High' as const,
         restoration: 'Surgical Guide',
         stage: 'INTAKE',
         deliveryDate: '2026-11-15',
@@ -38,7 +38,7 @@ describe('Task 14: Comprehensive Business Workflows & IAM Consistency Verificati
 
       expect(added).toBeDefined();
       expect(added?.patientName).toBe('Test Patient Workflow');
-      expect(added?.status).toBe('Intake');
+      expect(added?.status).toBe('New');
     });
   });
 
@@ -102,11 +102,11 @@ describe('Task 14: Comprehensive Business Workflows & IAM Consistency Verificati
       const testOrder = store.getOrders()[0];
       const orderId = testOrder.id;
 
-      store.updateOrder(orderId, { status: 'On Hold' });
-      expect(store.getOrderById(orderId)?.status).toBe('On Hold');
+      store.updateOrder(orderId, { status: 'Review' });
+      expect(store.getOrderById(orderId)?.status).toBe('Review');
 
-      store.updateOrder(orderId, { status: 'In Progress' });
-      expect(store.getOrderById(orderId)?.status).toBe('In Progress');
+      store.updateOrder(orderId, { status: 'Production' });
+      expect(store.getOrderById(orderId)?.status).toBe('Production');
     });
   });
 

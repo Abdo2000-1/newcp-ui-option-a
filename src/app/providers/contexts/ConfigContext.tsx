@@ -51,7 +51,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
 
   const isFeatureActive = (featureKey: string, defaultValue = false): boolean => {
     if (featureKey in config.features) {
-      const val = (config.features as Record<string, unknown>)[featureKey];
+      const val = (config.features as unknown as Record<string, unknown>)[featureKey];
       if (typeof val === 'boolean') return val;
     }
     return getFeatureFlag(featureKey, defaultValue);

@@ -118,7 +118,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
     Boolean(authContext?.session?.capabilities?.includes('system.configure')) ||
     (!authContext?.session && authContext?.isAuthenticated);
 
-  const visibleNavSections = React.useMemo(() => {
+  const visibleNavSections: NavSection[] = React.useMemo(() => {
     if (!isAdmin) return navSections;
     return [
       ...navSections,
@@ -174,7 +174,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               return currentPath.startsWith(path);
             };
             const isActive = isItemActive(item.path, location.pathname);
-            const badgeCount = item.path === '/notifications' ? unreadNotifs : item.badge;
+            const badgeCount = item.path === '/notifications' ? unreadNotifs : ('badge' in item ? (item as any).badge : undefined);
 
             return (
               <Tooltip

@@ -26,6 +26,8 @@ export default function PostHogSettings() {
     const timestamp = new Date().toLocaleTimeString();
     try {
       postHog.capture('workflow_action_completed', {
+        action_key: 'admin_test_event',
+        module: 'TelemetrySettings',
         action: 'admin_test_event',
         status: 'success',
       });
