@@ -50,6 +50,7 @@ const Forms = lazy(() => import('@/features/settings/pages/Forms'));
 const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
 // System & Error Views (UIUX-REQ-021)
+const HomePage = lazy(() => import('@/features/system/pages/HomePage'));
 const NotFoundPage = lazy(() => import('@/features/system/pages/NotFoundPage'));
 const Maintenance503Page = lazy(() => import('@/features/system/pages/Maintenance503Page'));
 
@@ -159,6 +160,7 @@ export function AppRouter() {
           <Route index element={<Navigate to="/login" replace />} />
           
           {/* 8 Target Modernized Pages */}
+          <Route path="home" element={<SuspenseWrapper><HomePage /></SuspenseWrapper>} />
           <Route path="flow" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="orders" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="add-case" element={<SuspenseWrapper><AddCase /></SuspenseWrapper>} />
