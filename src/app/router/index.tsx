@@ -47,8 +47,6 @@ const PatientDetails = lazy(() => import('@/features/settings/pages/PatientDetai
 const ScanCenter = lazy(() => import('@/features/settings/pages/ScanCenter'));
 const Documents = lazy(() => import('@/features/settings/pages/Documents'));
 const Notifications = lazy(() => import('@/features/settings/pages/Notifications'));
-const Forms = lazy(() => import('@/features/settings/pages/Forms'));
-const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
 // System & Error Views (UIUX-REQ-021)
 const HomePage = lazy(() => import('@/features/system/pages/HomePage'));
@@ -82,8 +80,6 @@ export const ROUTES = {
   WORKFLOW_BOARD: '/workflow-board',
   REPORTS: '/reports',
   SETTINGS: '/settings',
-  GRID: '/grid',
-  FORMS: '/forms',
   NOT_FOUND: '/404',
   MAINTENANCE: '/503',
 } as const;
@@ -174,7 +170,6 @@ export function AppRouter() {
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
           <Route path="cms" element={<SuspenseWrapper><CmsControls /></SuspenseWrapper>} />
-          <Route path="newcp/index.php" element={<Navigate to="/login" replace />} />
 
           {/* Auxiliary ERP & CRM Routes */}
           <Route path="orders/:orderId" element={<SuspenseWrapper><ViewOrder /></SuspenseWrapper>} />
@@ -190,8 +185,6 @@ export function AppRouter() {
           <Route path="clinics" element={<SuspenseWrapper><Clinics /></SuspenseWrapper>} />
           <Route path="clinics/:clinicId" element={<SuspenseWrapper><ClinicDetails /></SuspenseWrapper>} />
           <Route path="billing" element={<SuspenseWrapper><Billing /></SuspenseWrapper>} />
-          <Route path="grid" element={<SuspenseWrapper><Grid /></SuspenseWrapper>} />
-          <Route path="forms" element={<SuspenseWrapper><Forms /></SuspenseWrapper>} />
           <Route path="reports" element={<SuspenseWrapper><Reports /></SuspenseWrapper>} />
           <Route path="settings" element={<SuspenseWrapper><Settings /></SuspenseWrapper>} />
           <Route path="notifications" element={<SuspenseWrapper><Notifications /></SuspenseWrapper>} />
