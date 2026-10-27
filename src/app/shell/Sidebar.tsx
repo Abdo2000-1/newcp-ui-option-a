@@ -27,7 +27,10 @@ import {
   FormInput,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  Sliders,
+  Activity,
+  ShieldAlert
 } from 'lucide-react';
 import { useStore } from '@/shared/hooks/useStore';
 import { AuthContext } from '@/features/auth/AuthContext';
@@ -109,11 +112,32 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
     }
   };
 
+  const isAdmin = authContext?.session?.family === 'ADMIN' ||
+    Boolean(authContext?.session?.roles?.some(r => ['admin', 'system_admin', 'lab_director'].includes(r.toLowerCase()))) ||
+    Boolean(authContext?.session?.capabilities?.includes('admin.access')) ||
+    Boolean(authContext?.session?.capabilities?.includes('system.configure')) ||
+    (!authContext?.session && authContext?.isAuthenticated);
+
+  const visibleNavSections = React.useMemo(() => {
+    if (!isAdmin) return navSections;
+    return [
+      ...navSections,
+      {
+        title: 'Administration',
+        items: [
+          { icon: Sliders, label: 'CMS Controls', path: '/admin/cms' },
+          { icon: Activity, label: 'PostHog Settings', path: '/admin/posthog' },
+          { icon: ShieldAlert, label: 'Sentry Settings', path: '/admin/sentry' },
+        ],
+      },
+    ];
+  }, [isAdmin]);
+
   const borderColor = isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.08);
 
   const renderNavLinks = () => (
     <Box component="nav" aria-label="Main Navigation" sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5 }}>
-      {navSections.map((section, sIdx) => (
+      {visibleNavSections.map((section, sIdx) => (
         <Box key={section.title} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {!collapsed ? (
             <Typography
