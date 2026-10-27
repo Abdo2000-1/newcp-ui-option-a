@@ -324,7 +324,7 @@ export default function CmsControls() {
                   SESSION OPERATOR
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                  {auth.user?.name || 'Authorized Clinical Specialist'}
+                  {auth.session?.fullName || 'Authorized Clinical Specialist'}
                 </Typography>
               </Box>
               <Box>
