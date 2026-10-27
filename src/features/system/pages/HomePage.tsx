@@ -121,6 +121,34 @@ export default function HomePage() {
         <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 640 }}>
           Access clinical workflows, track CAD/CAM production queues, and inspect diagnostic reporting from a unified, calm workspace.
         </Typography>
+        {session && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5, flexWrap: 'wrap' }} data-testid="home-session-context">
+            {((session as any).role || (session as any).roles?.[0]) && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`Role: ${((session as any).role || (session as any).roles[0]).toUpperCase()}`}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+                }}
+              />
+            )}
+            {session.tenantId && (
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`Tenant #${session.tenantId} (3DDX)`}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+                }}
+              />
+            )}
+          </Box>
+        )}
       </Box>
 
       {/* Main Entry Points Grid */}
