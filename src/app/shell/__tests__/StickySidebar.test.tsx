@@ -195,7 +195,7 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
 
       expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
       expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
-      expect(screen.getByText(/add new case/i)).toBeInTheDocument();
+      expect(screen.queryByText(/add new case/i)).not.toBeInTheDocument();
       expect(screen.getByText(/order details/i)).toBeInTheDocument();
       expect(screen.getByText(/quarter targets/i)).toBeInTheDocument();
       expect(screen.getByText(/task 47: models/i)).toBeInTheDocument();
