@@ -89,7 +89,7 @@ graph TD
 
     subgraph Infrastructure_Layer ["Infrastructure & Adapters Layer"]
         HttpAdapter["OpenAPI 3.0.3 HTTP Client Adapter"]
-        AuthAdapter["OAuth 2.0 PKCE & Session Adapter"]
+        AuthAdapter["Google Identity Services & Session Adapter (v0.9.8)"]
         MswAdapter["Mock Service Worker (Simulated Mode)"]
         StorageAdapter["Direct Cloud Upload Adapter (S3/GCS)"]
     end
@@ -560,40 +560,39 @@ sequenceDiagram
     end
 ```
 
-### 6.4 Authentication, PKCE, Token Refresh & Tenant Isolation Sequence
+### 6.4 Authentication, Session Context, Pending Access & Tenant Isolation Sequence (v0.9.8)
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Authenticated Clinician
+    actor User as Internal Employee
     participant App as React Frontend SPA
-    participant Interceptor as Axios/Fetch Interceptor
-    participant AuthServ as Identity Backend (OAuth 2.0 PKCE)
-    participant Api as Protected API Gateway
+    participant GIS as Google Identity Services
+    participant AuthApi as Backend Auth Gateway (v0.9.8)
+    participant ProtectedApi as Protected API Gateway (Casbin + RLS)
 
     User->>App: Clicks "Sign in with Google"
-    App->>AuthServ: Initiates OAuth 2.0 PKCE Authorization
-    AuthServ-->>App: Redirect with Authorization Code
-    App->>AuthServ: POST /auth/token (Code + Code Verifier)
-    AuthServ-->>App: HTTP 200 OK (AccessToken in Body, RefreshToken in HttpOnly Cookie)
-    App->>App: Store AccessToken in Memory (Never in LocalStorage)
+    App->>GIS: Prompts Google Sign-In
+    GIS-->>App: Returns Google ID Token (idToken)
+    App->>AuthApi: POST /api/v1/auth/login { idToken }
 
-    User->>App: Navigates to Cases List
-    App->>Interceptor: GET /api/v1/cases
-    Interceptor->>Interceptor: Inject "Authorization: Bearer <token>" & "X-Tenant-ID: clinic_42"
-    Interceptor->>Api: Forward HTTP Request
-    Api-->>Interceptor: HTTP 200 OK (Tenant-Scoped Cases Data)
-    Interceptor-->>App: Render Data
-
-    opt Silent Token Refresh on 401 Expiration
-        App->>Interceptor: GET /api/v1/orders
-        Interceptor->>Api: Forward HTTP Request with Expired Token
-        Api-->>Interceptor: HTTP 401 Unauthorized
-        Interceptor->>AuthServ: POST /auth/refresh (Sends HttpOnly Cookie)
-        AuthServ-->>Interceptor: New AccessToken
-        Interceptor->>Interceptor: Update In-Memory Token
-        Interceptor->>Api: Re-execute Original Request with New Token
-        Api-->>Interceptor: HTTP 200 OK
-        Interceptor-->>App: Transparently Render Orders
+    alt Authorized Internal User
+        AuthApi-->>App: HTTP 200 { accessStatus: "AUTHORIZED", token, expiresAt }
+        App->>App: Store session token securely
+        App->>AuthApi: GET /api/v1/auth/me (Authorization: Bearer <token>)
+        AuthApi-->>App: HTTP 200 { email, userUuid, tenantSlug, roleCodes, capabilities, isPendingAccess: false }
+        App->>ProtectedApi: GET /api/v1/catalog/services (Authorization: Bearer <token>)
+        Note over ProtectedApi: Backend enforces user grant, active tenant,<br/>and transaction-local RLS. No X-Tenant-Id header!
+        ProtectedApi-->>App: HTTP 200 OK (Tenant-Scoped Data)
+    else Pending Access (Authenticated but no grant)
+        AuthApi-->>App: HTTP 200 { accessStatus: "PENDING_ACCESS" }
+        Note over App: No session token issued. Frontend does NOT fake access.
+        App->>App: Render PendingAccessView: "Your account is authenticated, but access has not been assigned yet."
+        App--xProtectedApi: Blocked (HTTP 403 ACCESS_NOT_ASSIGNED)
+    else Session Revocation (Logout)
+        User->>App: Clicks Logout
+        App->>AuthApi: POST /api/v1/auth/logout (Authorization: Bearer <token>)
+        AuthApi-->>App: HTTP 200 / 204 Revoked
+        App->>App: Clear session token & user context
     end
 ```
 

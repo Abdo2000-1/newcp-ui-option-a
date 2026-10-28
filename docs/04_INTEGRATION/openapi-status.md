@@ -4,14 +4,14 @@
 
 ## 1. Authority and Standards
 
-The approved New CP package requires an OpenAPI 3.0.3 contract derived from business domain specifications. Legacy Swagger files and mock fixtures serve as historical and transitional reference only. The canonical contract location proposed by standards is `newcp-api/openapi/newcp.openapi.yaml`.
+The approved New CP package requires an OpenAPI 3.0.3 contract derived from business domain specifications. Legacy Swagger files and mock fixtures serve as historical and transitional reference only. The canonical contract is located at `docs/newcp-ai/references/api/newcp.openapi.yaml` (v1.0.0). The proposed Orders Dashboard extension (`02_ORDERS_DASHBOARD_PROPOSED_EXTENSION.yaml`) is a proposed API draft only; dashboard API integration is NOT assigned to frontend.
 
 ---
 
 ## 2. Current Implementation Status
 
 - `[CONFIRMED FACT]` **Status:** **Pending / Simulated**.
-- `[CONFIRMED FACT]` No live backend service, database connection, or canonical OpenAPI file exists in this repository.
+- `[CONFIRMED FACT]` Canonical OpenAPI contract is present in repository at `docs/newcp-ai/references/api/newcp.openapi.yaml`. Live backend service, database connection, and production infrastructure remain external.
 - `[EXISTING IMPLEMENTATION]` **Mock Data Layer:**
   - `public/data/*.json`: 12 static fixtures supplying simulated records.
   - `src/shared/data/flowMockData.ts`: Static workflow arrays for complex workflow board views.
@@ -26,7 +26,7 @@ The approved New CP package requires an OpenAPI 3.0.3 contract derived from busi
 
 Before frontend integration begins, the canonical OpenAPI contract must supply:
 1. Complete path, HTTP method, and operation IDs for Models, Conversion, Orders, and Reporting.
-2. Tenant derivation headers (`X-Tenant-ID`) and instance identification (`X-Instance-ID`).
+2. Tenant isolation via backend session context (`Authorization: Bearer <token>`); client-controlled `X-Tenant-ID` is prohibited.
 3. Required Casbin / RBAC permissions per endpoint.
 4. Request bodies, query parameters, and response schemas conforming to PostgreSQL V3 models.
 5. Standard RFC 7807 problem details or typed error envelope conventions.
