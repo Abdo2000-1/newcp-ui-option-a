@@ -9,7 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import { useTheme as useMuiTheme, alpha } from '@mui/material/styles';
 import { 
   Code2,
-  LayoutDashboard, 
+  Home,
   Package, 
   FolderOpen, 
   GitBranch, 
@@ -38,7 +38,7 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: Home, label: 'Home', path: '/home' },
   { icon: Package, label: 'Orders', path: '/orders' },
   { icon: FolderOpen, label: 'Cases', path: '/cases' },
   { icon: GitBranch, label: 'Workflow', path: '/workflow-board' },
@@ -182,8 +182,8 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           <>
             <Box
               component={NavLink}
-              to="/dashboard"
-              title="3DDX Dashboard"
+              to="/home"
+              title="3DDX Home"
               sx={{ display: 'flex', alignItems: 'center', gap: 1.25, overflow: 'hidden', textDecoration: 'none', cursor: 'pointer' }}
             >
               <img

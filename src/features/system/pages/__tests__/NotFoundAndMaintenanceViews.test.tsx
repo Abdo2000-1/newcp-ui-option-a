@@ -45,12 +45,12 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       expect(screen.getByText(/The requested clinical module, case view, or page path does not exist/i)).toBeInTheDocument();
     });
 
-    it('provides accessible Return to Dashboard and Go Back navigation actions', async () => {
+    it('provides accessible Return to Home and Go Back navigation actions', async () => {
       renderWithRoute('/missing-page-xyz');
 
       await screen.findByTestId('not-found-page');
 
-      const dashboardBtn = screen.getByRole('button', { name: /return to dashboard/i });
+      const dashboardBtn = screen.getByRole('button', { name: /Return to Home/i });
       expect(dashboardBtn).toBeInTheDocument();
 
       const backBtn = screen.getByRole('button', { name: /go back/i });
@@ -62,8 +62,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
       }, { timeout: 5000 });
-      const matches = await screen.findAllByText(/Dashboard/i);
-      expect(matches.length).toBeGreaterThanOrEqual(1);
+      expect(await screen.findByTestId('home-page')).toBeInTheDocument();
     });
 
     it('preserves the application shell container during 404 view', async () => {
@@ -92,7 +91,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       expect(screen.getByText('503')).toBeInTheDocument();
     });
 
-    it('provides functional Retry Connection and Go to Dashboard actions', async () => {
+    it('provides functional Retry Connection and Go to Home actions', async () => {
       renderWithRoute('/503');
 
       await screen.findByTestId('maintenance-503-page');
@@ -100,7 +99,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       const retryBtn = screen.getByRole('button', { name: /retry connection/i });
       expect(retryBtn).toBeInTheDocument();
 
-      const dashboardBtn = screen.getByRole('button', { name: /go to dashboard/i });
+      const dashboardBtn = screen.getByRole('button', { name: /Go to Home/i });
       expect(dashboardBtn).toBeInTheDocument();
 
       fireEvent.click(dashboardBtn);
@@ -108,8 +107,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('maintenance-503-page')).not.toBeInTheDocument();
       });
-      const matches = await screen.findAllByText(/Dashboard/i);
-      expect(matches.length).toBeGreaterThanOrEqual(1);
+      expect(await screen.findByTestId('home-page')).toBeInTheDocument();
     });
   });
 });

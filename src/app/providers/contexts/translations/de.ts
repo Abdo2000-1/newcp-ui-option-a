@@ -172,6 +172,7 @@ export const de: Record<string, string> = {
   'order.title': 'Auftragsdetails & Verwaltung',
   'order.notFoundTitle': 'Auftrag Nicht Gefunden',
   'order.notFoundMsg': 'Der angeforderte Auftrag existiert nicht im aktuellen Datenbestand.',
+  'order.returnHome': 'Zurück zur Startseite',
   'order.returnDashboard': 'Zurück zur Übersicht',
   'order.orderNumber': 'Auftrag #',
   'order.status': 'Auftragsstatus',

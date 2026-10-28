@@ -86,7 +86,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentTitle = pathSegments.length > 0 
     ? pathSegments[0].charAt(0).toUpperCase() + pathSegments[0].slice(1).replace(/-/g, ' ') 
-    : 'Dashboard';
+    : 'Home';
 
   const authContext = useAuth();
 

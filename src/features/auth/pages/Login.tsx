@@ -137,7 +137,7 @@ export default function Login() {
         // Authenticated but Pending Access: stays on page and renders Pending Access state
       } else {
         // Authenticated and authorized: navigate to main clinical flow
-        navigate('/flow');
+        navigate('/home');
       }
     } catch (err: any) {
       if (err instanceof GoogleAuthError) {

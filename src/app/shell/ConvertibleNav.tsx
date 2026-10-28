@@ -16,6 +16,7 @@ import {
   FileText,
   TrendingUp,
   Boxes,
+  Home,
   LayoutDashboard,
   Users2,
   FileEdit,
@@ -101,7 +102,7 @@ export function ConvertibleNav({
 
   // 8 Target Pages from 3DDX CP (For vertical sidebar)
   const targetNavItems = [
-    { id: 'dashboard', label: t('nav.dashboard', 'Dashboard'), path: '/dashboard', icon: LayoutDashboard },
+    { id: 'home', label: t('nav.home', 'Home'), path: '/home', icon: Home },
     { id: 'flow', label: t('nav.flow', 'Master Orders Flow'), path: '/flow', icon: Layers },
     { id: 'addCase', label: t('nav.addCase', 'Add New Case'), path: '/add-case', icon: FilePlus2 },
     { id: 'orderDetails', label: t('nav.orderDetails', 'Order Details'), path: '/order-details?id=504901', icon: FileText },
@@ -376,7 +377,7 @@ export function ConvertibleNav({
 
                 {/* Brand Logo (Links to Home) */}
                 <NavLink
-                  to="/dashboard"
+                  to="/home"
                   style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}
                   title="3D Diagnostix Cloud ERP - Home"
                 >
@@ -758,9 +759,9 @@ export function ConvertibleNav({
             >
               {/* Categorized Spread Menus */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 }, position: 'relative' }}>
-                {/* 1. Dashboard */}
+                {/* 1. Home */}
                 <NavLink
-                  to="/dashboard"
+                  to="/home"
                   style={{ textDecoration: 'none' }}
                 >
                   {({ isActive }) => (
@@ -785,8 +786,8 @@ export function ConvertibleNav({
                         },
                       }}
                     >
-                      <LayoutDashboard size={13} />
-                      <span>Dashboard</span>
+                      <Home size={13} />
+                      <span>{t('nav.home', 'Home')}</span>
                     </Box>
                   )}
                 </NavLink>
@@ -1160,8 +1161,8 @@ export function ConvertibleNav({
         >
           <Box
             component={NavLink}
-            to="/dashboard"
-            title="3DDX Dashboard"
+            to="/home"
+            title="3DDX Home"
             sx={{
               display: 'flex',
               alignItems: 'center',

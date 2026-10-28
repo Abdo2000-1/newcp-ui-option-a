@@ -115,7 +115,7 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
     it('renders Tier 2 navigation items and Primary + Add Case CTA', () => {
       renderConvertibleNav({ position: 'top' });
 
-      expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^home$/i)).toBeInTheDocument();
       expect(screen.getByText(/orders & cases/i)).toBeInTheDocument();
       expect(screen.getByText(/operations & reports/i)).toBeInTheDocument();
       expect(screen.getByText(/\+ add case/i)).toBeInTheDocument();
@@ -138,7 +138,7 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
     it('renders 8 navigation links in left sidebar mode', () => {
       renderConvertibleNav({ position: 'left', collapsed: false });
 
-      expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^home$/i)).toBeInTheDocument();
       expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
       expect(screen.getByText(/add new case/i)).toBeInTheDocument();
       expect(screen.getByText(/order details/i)).toBeInTheDocument();

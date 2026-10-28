@@ -247,7 +247,7 @@ describe('UIUX-REQ-015: Order Details Automation & Unified Table System', () => 
       );
 
       expect(screen.getByText('Order Not Found')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Return to Dashboard' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Return to Home' })).toBeInTheDocument();
     });
   });
 });

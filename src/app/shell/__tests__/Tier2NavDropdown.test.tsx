@@ -23,11 +23,11 @@ function renderNavWithPosition(initialPosition: 'top' | 'bottom' | 'left' | 'rig
   localStorage.setItem('3ddx-cp-nav-position', initialPosition);
 
   return render(
-    <MemoryRouter initialEntries={['/dashboard']}>
+    <MemoryRouter initialEntries={['/home']}>
       <AppProviders>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="dashboard" element={<div data-testid="test-content">Dashboard Content</div>} />
+            <Route path="home" element={<div data-testid="test-content">Home Content</div>} />
             <Route path="flow" element={<div data-testid="flow-content">Workflow Queue Content</div>} />
             <Route path="task-47" element={<div data-testid="task47-content">Task 47 Content</div>} />
             <Route path="quarter-targets" element={<div data-testid="qt-content">Quarter Targets Content</div>} />

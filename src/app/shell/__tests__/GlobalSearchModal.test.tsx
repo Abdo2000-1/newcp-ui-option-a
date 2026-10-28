@@ -142,7 +142,7 @@ describe('Global Search Improvement (UIUX-REQ-009)', () => {
 
       expect(screen.getByText(/Create New Case/i)).toBeInTheDocument();
       expect(screen.getByText(/Master Orders Flow/i)).toBeInTheDocument();
-      expect(screen.getByText(/Analytics Dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
     });
 
     it('filters results by category when category buttons are clicked', () => {

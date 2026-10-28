@@ -45,7 +45,7 @@ export function Footer({ navPosition = 'top' }: FooterProps) {
         {/* Brand / Logo Section */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <NavLink
-            to="/dashboard"
+            to="/home"
             style={{ textDecoration: 'none', color: 'inherit' }}
             title="3D Diagnostix Cloud ERP"
           >
