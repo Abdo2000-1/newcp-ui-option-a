@@ -237,7 +237,7 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
 
       // Must display neutral registration type and Sc. Special Request defaults
       expect(screen.getByText('(Not available / Unselected)')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('Not available')).toBeInTheDocument();
+      expect(screen.getByTestId('readonly-sc-special-request')).toHaveTextContent('Not available');
 
       // In Sub Orders tab, CS task reflects unassigned status
       const subOrdersTab = screen.getByRole('button', { name: /sub-orders/i });
