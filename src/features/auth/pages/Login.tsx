@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Collapse from '@mui/material/Collapse';
 import Button from '@mui/material/Button';
 import {
   ShieldCheck,
@@ -18,44 +17,39 @@ import {
   Clock,
   ShieldAlert,
   Info,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { useTheme } from '@/shared/hooks/useTheme';
-import { useAuth, APPROVED_DEMO_IDENTITIES } from '@/features/auth/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import {
   getAuthAdapter,
   GoogleAuthError,
   BackendAuthError,
-  ContractGapError,
 } from '@/features/auth/authAdapter';
 
 /**
  * ============================================================================
- * NEW CP LOGIN PAGE — GOOGLE-ONLY AUTHENTICATION (IAM-TENANT-002)
+ * NEW CP LOGIN PAGE — GOOGLE-ONLY AUTHENTICATION (v0.9.8 CANONICAL CONTRACT)
  * ============================================================================
  *
  * SPECIFICATION & ARCHITECTURAL INVARIANTS:
  * 1. Single primary login action: "Sign in with Google".
- * 2. Removed controls: email/workstation identity input, password input,
- *    "Forgot password", "Remember workstation token", and Lab Director / Treating
- *    Clinician role selectors.
+ * 2. Removed controls: email/workstation input, password, forgot-password,
+ *    remember token, role picker, demo buttons, fake success paths.
  * 3. Frontend does not determine or infer tenant, role, or capabilities.
  * 4. Google Groups are strictly excluded and not used.
  * 5. Handles all mandatory states:
  *    - idle
  *    - Google sign-in loading
  *    - Google authentication failure
- *    - backend authentication failure
- *    - authenticated and authorized
- *    - authenticated but Pending Access ("Your account is authenticated, but access has not been assigned yet.")
+ *    - backend authentication failure / network error
+ *    - authenticated and authorized (redirects to /home)
+ *    - authenticated but Pending Access:
+ *      "Your account is authenticated, but access has not been assigned yet."
  *    - session expired / 401
  *    - access denied / 403
- *
- * CLASSIFICATION: MOCK / NOT_INTEGRATED (Frontend Offline Boundary)
- * Live POST /api/v1/auth/login and GET /api/v1/session/context are marked as
- * CONTRACT GAP pending backend OpenAPI delivery.
+ *    - unavailable Google client configuration
+ *    - unavailable backend
  */
 
 const GoogleIcon = () => (
@@ -91,8 +85,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [backendAuthError, setBackendAuthError] = useState<string | null>(null);
-  const [showDemoSelector, setShowDemoSelector] = useState(false);
-  const [selectedDemoEmail, setSelectedDemoEmail] = useState<string>('cs.demo@3ddx.com');
 
   // Surface Session Expiry (401) or Access Denied (403) from URL or route state
   const isExpired =
@@ -109,15 +101,14 @@ export default function Login() {
     setBackendAuthError(null);
   };
 
-  const handleGoogleSignIn = async (overrideEmail?: string) => {
-    const targetEmail = overrideEmail || selectedDemoEmail;
+  const handleGoogleSignIn = async (overrideIdToken?: string) => {
     setIsLoading(true);
     clearErrors();
 
     try {
       const adapter = getAuthAdapter();
 
-      // Check for live configuration vs offline boundary
+      // Check for live configuration
       if (import.meta.env.VITE_API_MODE === 'LIVE_HTTP') {
         if (!adapter.isGoogleConfigured()) {
           throw new GoogleAuthError(
@@ -125,50 +116,33 @@ export default function Login() {
             'CONFIG_MISSING'
           );
         }
-        if (!adapter.isContractAvailable()) {
-          throw new ContractGapError('POST /api/v1/auth/login');
-        }
       }
 
       // Execute login via AuthContext boundary
-      await loginWithGoogle(targetEmail);
+      await loginWithGoogle(overrideIdToken);
 
-      if (targetEmail === 'unassigned@3ddx.com') {
-        // Authenticated but Pending Access: stays on page and renders Pending Access state
-      } else {
-        // Authenticated and authorized: navigate to main clinical flow
-        navigate('/home');
-      }
+      // Check current session state after login
+      // If authorized, route to /home
+      // If pending access, stays on page and renders Pending Access alert
     } catch (err: any) {
       if (err instanceof GoogleAuthError) {
         setGoogleAuthError(err.message);
       } else if (err instanceof BackendAuthError) {
         setBackendAuthError(err.message);
       } else {
-        setBackendAuthError(err?.message || 'Authentication failed. Please try again.');
+        setBackendAuthError(err?.message || 'Authentication failed. Please check network connection and try again.');
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSimulateGoogleError = () => {
-    setIsLoading(true);
-    clearErrors();
-    setTimeout(() => {
-      setIsLoading(false);
-      setGoogleAuthError('Google Sign-In failed: The identity provider rejected or cancelled the authentication prompt.');
-    }, 400);
-  };
-
-  const handleSimulateBackendError = () => {
-    setIsLoading(true);
-    clearErrors();
-    setTimeout(() => {
-      setIsLoading(false);
-      setBackendAuthError('Backend authentication failed: POST /api/v1/auth/login rejected the credentials (401 Unauthorized).');
-    }, 400);
-  };
+  // If user becomes authenticated and authorized, redirect to /home
+  React.useEffect(() => {
+    if (authStatus === 'authenticated' && session?.accessStatus === 'AUTHORIZED') {
+      navigate('/home');
+    }
+  }, [authStatus, session, navigate]);
 
   const handleSignOutPending = async () => {
     await logout();
@@ -176,56 +150,47 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-100 p-4 relative overflow-hidden">
-      
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#0284c7]/20 to-cyan-500/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-[#ea580c]/15 to-orange-500/5 blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors duration-200">
+      {/* Background Subtle Gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0284c7]/10 via-transparent to-transparent pointer-events-none" />
 
       {/* Top Controls: Language & Theme */}
-      <div className="absolute top-5 right-5 flex items-center gap-2 z-20">
-        <div className="flex items-center gap-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold shadow-xs">
-          <Globe size={13} className="text-[#0284c7]" />
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as any)}
-            className="bg-transparent text-slate-700 dark:text-slate-200 font-semibold cursor-pointer outline-hidden"
-            aria-label="Select interface language"
-          >
-            <option value="en" className="dark:bg-slate-900">EN - English</option>
-            <option value="fr" className="dark:bg-slate-900">FR - Français</option>
-            <option value="de" className="dark:bg-slate-900">DE - Deutsch</option>
-            <option value="it" className="dark:bg-slate-900">IT - Italiano</option>
-            <option value="es" className="dark:bg-slate-900">ES - Español</option>
-          </select>
-        </div>
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+        <button
+          type="button"
+          onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-xs"
+          aria-label="Toggle Language"
+        >
+          <Globe size={14} className="text-[#0284c7] dark:text-sky-400" />
+          <span>{language === 'en' ? 'العربية' : 'English'}</span>
+        </button>
 
         <button
           type="button"
           onClick={toggleTheme}
-          className="p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-[#0284c7] transition-colors cursor-pointer shadow-xs"
-          title="Toggle Theme"
-          aria-label="Toggle visual theme"
+          className="p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-xs"
+          aria-label="Toggle Theme"
         >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === 'dark' ? (
+            <Sun size={15} className="text-amber-400" />
+          ) : (
+            <Moon size={15} className="text-slate-600" />
+          )}
         </button>
       </div>
 
       {/* Main Login Card */}
       <motion.div
-        initial={{ opacity: 0, y: 15, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-[460px] bg-white/95 dark:bg-[#0b101d]/95 backdrop-blur-xl rounded-3xl border border-slate-200/90 dark:border-slate-800/90 p-7 sm:p-9 shadow-2xl shadow-slate-900/10 z-10 space-y-6"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl dark:shadow-2xl dark:shadow-black/50 p-6 sm:p-8 space-y-6 relative z-10"
       >
-        {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-3">
-          <div className="relative">
-            <img
-              src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`}
-              alt="3DDX Logo"
-              className="h-12 w-auto object-contain drop-shadow-xs"
-            />
+        {/* Brand & Platform Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] text-white shadow-lg shadow-[#0284c7]/25 mb-1">
+            <span className="font-mono text-xl font-black tracking-tighter">3D</span>
           </div>
 
           <div>
@@ -238,9 +203,9 @@ export default function Login() {
           </div>
         </div>
 
-        {/* State Notification Banners */}
-        <div className="space-y-3" role="region" aria-live="polite">
-          {/* 401 Session Expired */}
+        {/* Status & Error Alerts */}
+        <div className="space-y-3">
+          {/* Session Expired (401) */}
           {isExpired && (
             <Alert
               severity="warning"
@@ -253,7 +218,7 @@ export default function Login() {
             </Alert>
           )}
 
-          {/* 403 Access Denied */}
+          {/* Access Denied (403) */}
           {isDenied && (
             <Alert
               severity="error"
@@ -289,12 +254,12 @@ export default function Login() {
               sx={{ borderRadius: 2.5, fontSize: '0.8rem' }}
               data-testid="backend-auth-error-alert"
             >
-              <AlertTitle sx={{ fontSize: '0.85rem', fontWeight: 700 }}>Backend Authentication Error</AlertTitle>
+              <AlertTitle sx={{ fontSize: '0.85rem', fontWeight: 700 }}>Authentication Error</AlertTitle>
               {backendAuthError}
             </Alert>
           )}
 
-          {/* Pending Access (Authenticated but not assigned to tenant 1) */}
+          {/* Pending Access: Exact approved message */}
           {isPendingAccess && (
             <Alert
               severity="info"
@@ -310,7 +275,7 @@ export default function Login() {
               <AlertTitle sx={{ fontSize: '0.85rem', fontWeight: 700 }}>Pending Access</AlertTitle>
               Your account is authenticated, but access has not been assigned yet.
               <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                Signed in as <strong>{session?.email}</strong>. Contact your Tenant Administrator to grant an approved role assignment for 3ddx.com.
+                Contact your Tenant Administrator to grant an approved role assignment.
               </Typography>
               <Box sx={{ mt: 1 }}>
                 <Button
@@ -356,75 +321,6 @@ export default function Login() {
               <span>HIPAA & GDPR Compliant Medical Diagnostic Gateway</span>
             </span>
           </div>
-        </div>
-
-        {/* Offline Demo Identity Panel (Controlled Verification Boundary) */}
-        <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 text-xs">
-          <button
-            type="button"
-            onClick={() => setShowDemoSelector(!showDemoSelector)}
-            className="w-full flex items-center justify-between text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 py-1 font-medium cursor-pointer"
-            aria-expanded={showDemoSelector}
-          >
-            <span>Demo Verification Options (Offline Boundary)</span>
-            {showDemoSelector ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-
-          <Collapse in={showDemoSelector}>
-            <div className="mt-3 p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
-              <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontWeight: 600 }}>
-                Select an approved demo identity to verify backend IAM & session behavior:
-              </Typography>
-
-              <div className="grid grid-cols-1 gap-1.5">
-                {Object.entries(APPROVED_DEMO_IDENTITIES).map(([email, info]) => (
-                  <button
-                    key={email}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDemoEmail(email);
-                      handleGoogleSignIn(email);
-                    }}
-                    className={`flex items-center justify-between p-2 rounded-xl text-left transition-colors cursor-pointer text-xs ${
-                      selectedDemoEmail === email
-                        ? 'bg-white dark:bg-slate-800 text-[#0284c7] dark:text-sky-400 font-bold shadow-xs'
-                        : 'hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-semibold">{info.fullName}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{email}</div>
-                    </div>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                      {info.family || 'UNASSIGNED'}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Error Simulation Triggers */}
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-1.5">
-                <Button
-                  size="small"
-                  variant="text"
-                  color="error"
-                  onClick={handleSimulateGoogleError}
-                  sx={{ textTransform: 'none', fontSize: '0.7rem', p: 0.5 }}
-                >
-                  Simulate Google Error
-                </Button>
-                <Button
-                  size="small"
-                  variant="text"
-                  color="warning"
-                  onClick={handleSimulateBackendError}
-                  sx={{ textTransform: 'none', fontSize: '0.7rem', p: 0.5 }}
-                >
-                  Simulate Backend Error
-                </Button>
-              </div>
-            </div>
-          </Collapse>
         </div>
 
         {/* Footer Info */}

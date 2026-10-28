@@ -43,9 +43,11 @@ import { store } from '@/shared/services/store';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { sound } from '@/shared/utils/sound';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { session, logout, isAuthenticated } = useAuth();
   const muiTheme = useMuiTheme();
   const isDark = muiTheme.palette.mode === 'dark';
   const { theme, toggleTheme } = useThemeContext();
@@ -770,17 +772,17 @@ export default function Profile() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.secondary' }}>
-                Authentication State: <span style={{ color: '#059669' }}>Active Mock Session</span>
+                Authentication State: <span style={{ color: '#059669' }}>Active Mock Session (v0.9.8 GIS)</span>
               </Typography>
               <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', fontFamily: 'monospace' }}>
-                Token: MOCK_3DDX_SESSION_2026 • Tenant: 3DDX-INTERNAL
+                Session: {session?.sessionToken ? `${session.sessionToken.slice(0, 16)}...` : "None"} • Tenant: {session?.tenantSlug || "3ddx"}
               </Typography>
             </Box>
 
             <Button
               variant="outlined"
               color="error"
-              onClick={() => navigate('/login')}
+              onClick={() => { void logout(); navigate('/login'); }}
               startIcon={<LogOut size={15} />}
               sx={{ fontWeight: 800, fontSize: '0.75rem', borderRadius: 2 }}
             >

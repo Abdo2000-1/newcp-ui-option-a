@@ -69,7 +69,14 @@ export class AuthClient implements IAuthClient {
       });
     }
 
-    if (token.includes('unassigned') || token.includes('pending')) {
+    // In mock mode, only explicitly approved grants (cs, ops, admin) are AUTHORIZED
+    // All other authenticated identities receive PENDING_ACCESS (no grant/role/tenant)
+    const isExplicitlyAuthorized =
+      token.includes('cs') ||
+      token.includes('ops') ||
+      token.includes('admin');
+
+    if (!isExplicitlyAuthorized || token.includes('unassigned') || token.includes('pending')) {
       const pendingResponse: PendingAccessLoginResponse = {
         accessStatus: 'PENDING_ACCESS',
       };
@@ -115,7 +122,7 @@ export class AuthClient implements IAuthClient {
       return {
         email: 'unassigned@3ddx.com',
         userUuid: 'usr-unassigned-001',
-        tenantSlug: '3ddx',
+        tenantSlug: '3ddx.com',
         roleCodes: [],
         capabilities: [],
         isPendingAccess: true,
@@ -126,7 +133,7 @@ export class AuthClient implements IAuthClient {
       return {
         email: 'ops.demo@3ddx.com',
         userUuid: 'usr-ops-001',
-        tenantSlug: '3ddx',
+        tenantSlug: '3ddx.com',
         roleCodes: ['ops_senior', 'ops_junior'],
         capabilities: [
           'orders.view',
@@ -144,7 +151,7 @@ export class AuthClient implements IAuthClient {
       return {
         email: 'admin.demo@3ddx.com',
         userUuid: 'usr-admin-001',
-        tenantSlug: '3ddx',
+        tenantSlug: '3ddx.com',
         roleCodes: ['admin'],
         capabilities: [
           'orders.view',
@@ -169,7 +176,7 @@ export class AuthClient implements IAuthClient {
     return {
       email: 'cs.demo@3ddx.com',
       userUuid: 'usr-cs-001',
-      tenantSlug: '3ddx',
+      tenantSlug: '3ddx.com',
       roleCodes: ['cs_operator'],
       capabilities: [
         'orders.view',

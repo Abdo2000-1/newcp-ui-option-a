@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * GOOGLE AUTHENTICATION & BACKEND LOGIN ADAPTER (IAM-TENANT-002)
+ * GOOGLE AUTHENTICATION & BACKEND LOGIN ADAPTER (v0.9.8 CANONICAL CONTRACT)
  * ============================================================================
  *
  * SPECIFICATION & CONTRACT SAFETY:
@@ -9,20 +9,27 @@
  *      POST /api/v1/auth/login
  *      Body: { "idToken": "<google-id-token>" }
  * 3. Backend verifies the token against PostgreSQL V3 IAM + Casbin.
- * 4. Backend returns application session token and expiry.
+ * 4. Backend returns:
+ *      AUTHORIZED: { accessStatus: "AUTHORIZED", token: "...", expiresAt: "..." }
+ *      PENDING_ACCESS: { accessStatus: "PENDING_ACCESS" } (NO session token issued)
  * 5. Subsequent API requests use:
- *      Authorization: Bearer <session-token>
+ *      Authorization: Bearer <token>
+ * 6. User identity and capabilities retrieved via:
+ *      GET /api/v1/auth/me
+ * 7. Session revocation:
+ *      POST /api/v1/auth/logout
  *
- * CONTRACT GAP AUDIT STATUS:
- * - POST /api/v1/auth/login is NOT defined in canonical newcp.openapi.yaml.
- * - This module provides the contract-ready adapter, detects unconfigured
- *   Google client IDs, safely catches backend/contract errors, and enables
- *   controlled offline verification for approved demo identities.
- *
- * CLASSIFICATION: MOCK / NOT_INTEGRATED (Frontend Boundary)
+ * CLASSIFICATION: Contract-ready adapter with offline test boundary.
  */
 
-import { ApiClientError } from '@/shared/api/errors';
+import { getAuthClient } from '@/shared/api/authClient';
+import type {
+  LoginRequest,
+  LoginResponse,
+  AuthorizedLoginResponse,
+  PendingAccessLoginResponse,
+  AuthMeResponse,
+} from '@/shared/api/contractTypes';
 
 export class GoogleAuthError extends Error {
   constructor(message: string, public readonly code: string = 'GOOGLE_AUTH_FAILED') {
@@ -32,7 +39,11 @@ export class GoogleAuthError extends Error {
 }
 
 export class BackendAuthError extends Error {
-  constructor(message: string, public readonly statusCode: number = 401, public readonly code: string = 'BACKEND_AUTH_FAILED') {
+  constructor(
+    message: string,
+    public readonly statusCode: number = 401,
+    public readonly code: string = 'BACKEND_AUTH_FAILED'
+  ) {
     super(message);
     this.name = 'BackendAuthError';
   }
@@ -49,34 +60,15 @@ export class ContractGapError extends BackendAuthError {
   }
 }
 
-export interface GoogleLoginRequest {
-  idToken: string;
-}
-
-export interface BackendLoginResponse {
-  sessionToken: string;
-  tokenType: 'Bearer';
-  expiresAt: number;
-  accessStatus: 'AUTHORIZED' | 'PENDING' | 'TENANT_NOT_ASSIGNED' | 'TENANT_ACCESS_DENIED';
-  user: {
-    id: string;
-    displayName: string;
-    email: string;
-  };
-  activeTenant: {
-    id: number;
-    label: string;
-  } | null;
-  roles: string[];
-  capabilities: string[];
-  tenantSwitchingEnabled: boolean;
-}
+export { LoginRequest, LoginResponse, AuthorizedLoginResponse, PendingAccessLoginResponse, AuthMeResponse };
 
 export interface IAuthAdapter {
   isGoogleConfigured(): boolean;
   isContractAvailable(): boolean;
   signInWithGoogle(): Promise<{ idToken: string }>;
-  exchangeTokenForSession(request: GoogleLoginRequest): Promise<BackendLoginResponse>;
+  exchangeTokenForSession(request: LoginRequest): Promise<LoginResponse>;
+  getMe(sessionToken: string): Promise<AuthMeResponse>;
+  logout(sessionToken: string): Promise<void>;
 }
 
 export class GoogleAuthAdapter implements IAuthAdapter {
@@ -100,11 +92,10 @@ export class GoogleAuthAdapter implements IAuthAdapter {
   }
 
   /**
-   * Returns true only if POST /api/v1/auth/login is verified in the backend contract.
-   * Currently false because endpoint is absent from newcp.openapi.yaml.
+   * Returns true because authentication endpoints are approved in the canonical v0.9.8 contract.
    */
   public isContractAvailable(): boolean {
-    return false;
+    return true;
   }
 
   /**
@@ -113,9 +104,7 @@ export class GoogleAuthAdapter implements IAuthAdapter {
    */
   public async signInWithGoogle(): Promise<{ idToken: string }> {
     if (!this.isGoogleConfigured()) {
-      // In offline / mock mode when GIS is unconfigured
       if (this.apiMode !== 'LIVE_HTTP') {
-        // Return synthetic demo token for default CS identity
         return { idToken: 'synthetic-google-id-token-cs-demo' };
       }
       throw new GoogleAuthError(
@@ -124,7 +113,6 @@ export class GoogleAuthAdapter implements IAuthAdapter {
       );
     }
 
-    // Interactive Google Identity Services SDK flow
     return new Promise((resolve, reject) => {
       const g = (window as any).google;
       if (!g?.accounts?.id) {
@@ -156,154 +144,40 @@ export class GoogleAuthAdapter implements IAuthAdapter {
   }
 
   /**
-   * Exchanges Google ID token for application session token via POST /api/v1/auth/login.
+   * Exchanges Google ID token for application session response via canonical POST /api/v1/auth/login.
    */
-  public async exchangeTokenForSession(request: GoogleLoginRequest): Promise<BackendLoginResponse> {
+  public async exchangeTokenForSession(request: LoginRequest): Promise<LoginResponse> {
     if (!request.idToken || !request.idToken.trim()) {
       throw new BackendAuthError('Invalid request: Google ID token is required.', 400, 'INVALID_TOKEN');
     }
 
-    // In LIVE_HTTP mode, attempt live network call
-    if (this.apiMode === 'LIVE_HTTP') {
-      try {
-        const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify(request),
-        });
-
-        if (response.status === 404) {
-          throw new ContractGapError();
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new BackendAuthError(
-            errorData.detail || errorData.message || `Backend authentication rejected request with status ${response.status}`,
-            response.status,
-            errorData.code || 'BACKEND_REJECTED'
-          );
-        }
-
-        const data: BackendLoginResponse = await response.json();
-        return data;
-      } catch (err: any) {
-        if (err instanceof BackendAuthError) throw err;
-        throw new BackendAuthError(
-          `Failed to connect to backend authentication service: ${err?.message || 'Network error'}`,
-          503,
-          'BACKEND_UNAVAILABLE'
-        );
-      }
+    try {
+      const authClient = getAuthClient();
+      return await authClient.login(request.idToken);
+    } catch (err: any) {
+      if (err instanceof BackendAuthError) throw err;
+      throw new BackendAuthError(
+        err?.message || 'Failed to exchange Google ID token with authentication service.',
+        err?.status || 500,
+        err?.code || 'AUTH_EXCHANGE_FAILED'
+      );
     }
+  }
 
-    // Offline / Mock Boundary simulation
-    // Simulates the backend PostgreSQL IAM + Casbin resolution for approved demo identities
-    const now = Date.now();
-    const token = request.idToken;
+  /**
+   * Retrieves authenticated user identity and capabilities via GET /api/v1/auth/me.
+   */
+  public async getMe(sessionToken: string): Promise<AuthMeResponse> {
+    const authClient = getAuthClient();
+    return await authClient.getMe(sessionToken);
+  }
 
-    if (token.includes('fail') || token === 'invalid') {
-      throw new BackendAuthError('Google ID token verification failed: Invalid signature or expired claim.', 401, 'INVALID_GOOGLE_TOKEN');
-    }
-
-    if (token.includes('unassigned')) {
-      return {
-        sessionToken: `sess-${Date.now()}-unassigned`,
-        tokenType: 'Bearer',
-        expiresAt: now + 8 * 60 * 60 * 1000,
-        accessStatus: 'PENDING',
-        user: {
-          id: 'usr-unassigned-001',
-          displayName: 'Unassigned Internal Employee',
-          email: 'unassigned@3ddx.com',
-        },
-        activeTenant: null, // Strictly null; no fallback to 1
-        roles: [],
-        capabilities: [],
-        tenantSwitchingEnabled: false,
-      };
-    }
-
-    if (token.includes('ops')) {
-      return {
-        sessionToken: `sess-${Date.now()}-ops`,
-        tokenType: 'Bearer',
-        expiresAt: now + 8 * 60 * 60 * 1000,
-        accessStatus: 'AUTHORIZED',
-        user: {
-          id: 'usr-ops-001',
-          displayName: 'Senior Ops Specialist',
-          email: 'ops.demo@3ddx.com',
-        },
-        activeTenant: { id: 1, label: '3ddx.com' },
-        roles: ['ops_senior', 'ops_junior'],
-        capabilities: [
-          'orders.view',
-          'services.models.edit',
-          'services.conversion.edit',
-          'pricing.override',
-          'workflow.transition',
-          'reports.view_all',
-        ],
-        tenantSwitchingEnabled: false,
-      };
-    }
-
-    if (token.includes('admin')) {
-      return {
-        sessionToken: `sess-${Date.now()}-admin`,
-        tokenType: 'Bearer',
-        expiresAt: now + 8 * 60 * 60 * 1000,
-        accessStatus: 'AUTHORIZED',
-        user: {
-          id: 'usr-admin-001',
-          displayName: 'Tenant Admin Operator',
-          email: 'admin.demo@3ddx.com',
-        },
-        activeTenant: { id: 1, label: '3ddx.com' },
-        roles: ['tenant_admin'],
-        capabilities: [
-          'orders.view',
-          'services.models.edit',
-          'services.conversion.edit',
-          'pricing.override',
-          'payer.assign',
-          'workflow.transition',
-          'reports.view_all',
-          'reports.export',
-          'iam.roles.assign',
-        ],
-        tenantSwitchingEnabled: false,
-      };
-    }
-
-    // Default CS Demo Operator
-    return {
-      sessionToken: `sess-${Date.now()}-cs`,
-      tokenType: 'Bearer',
-      expiresAt: now + 8 * 60 * 60 * 1000,
-      accessStatus: 'AUTHORIZED',
-      user: {
-        id: 'usr-cs-001',
-        displayName: 'CS Demo Operator',
-        email: 'cs.demo@3ddx.com',
-      },
-      activeTenant: { id: 1, label: '3ddx.com' },
-      roles: ['cs_operator'],
-      capabilities: [
-        'orders.view',
-        'services.models.edit',
-        'services.conversion.edit',
-        'pricing.override',
-        'payer.assign',
-        'workflow.transition',
-        'reports.view_all',
-      ],
-      tenantSwitchingEnabled: false,
-    };
+  /**
+   * Revokes the application session via POST /api/v1/auth/logout.
+   */
+  public async logout(sessionToken: string): Promise<void> {
+    const authClient = getAuthClient();
+    await authClient.logout(sessionToken);
   }
 }
 
