@@ -221,7 +221,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
 
     it('12. Handles and displays backend authentication error state', async () => {
       const adapter = getAuthAdapter();
-      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('valid-google-token');
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce({ idToken: 'valid-google-token' });
       vi.spyOn(adapter, 'exchangeTokenForSession').mockRejectedValueOnce(
         new BackendAuthError('Backend authentication service unavailable (503).', 503, 'SERVICE_UNAVAILABLE')
       );
@@ -244,7 +244,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
 
     it('13. Displays Pending Access message when authenticated user lacks tenant role assignment', async () => {
       const adapter = getAuthAdapter();
-      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce({ idToken: 'token-unassigned-employee' });
       vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
         accessStatus: 'PENDING_ACCESS',
       });
@@ -317,7 +317,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
 
     it('17. Does NOT hardcode tenant 1 for unassigned users', async () => {
       const adapter = getAuthAdapter();
-      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce({ idToken: 'token-unassigned-employee' });
       vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
         accessStatus: 'PENDING_ACCESS',
       });
@@ -349,7 +349,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
       // Confirms that signing in with an unassigned Google email leaves the account in Pending Access
       // regardless of any external Google Groups claims
       const adapter = getAuthAdapter();
-      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce({ idToken: 'token-unassigned-employee' });
       vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
         accessStatus: 'PENDING_ACCESS',
       });

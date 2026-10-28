@@ -158,12 +158,12 @@ export default function Login() {
       <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
         <button
           type="button"
-          onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+          onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-xs"
           aria-label="Toggle Language"
         >
           <Globe size={14} className="text-[#0284c7] dark:text-sky-400" />
-          <span>{language === 'en' ? 'العربية' : 'English'}</span>
+          <span>{language === 'en' ? 'Français' : 'English'}</span>
         </button>
 
         <button
