@@ -189,13 +189,13 @@ This document serves as the authoritative, machine-readable gap specification an
 ### Gap 7: Authentication, Session Management, & Operator Profile (`/login`, `/profile`)
 
 **Frontend Consumer:** `src/features/auth/pages/Login.tsx`, `Profile.tsx`  
-**Current State:** Client-side mock user session. Contract only defines `BearerAuth` HTTP header scheme.
+**Current State:** Contract-defined in v0.9.8; backend IAM reported complete by Hesham; live verification unverified in this environment.
 
-**Required Operations:**
-1. `POST /api/v1/auth/login` — OAuth 2.0 PKCE token exchange or credential verification.
-2. `POST /api/v1/auth/refresh` — Refresh access token with HTTP-only secure cookie.
-3. `GET /api/v1/auth/me` — Current authenticated user profile, tenant ID, clinic memberships, and capability permissions.
-4. `PUT /api/v1/auth/me` — Update operator profile, locale, and notification preferences.
+**Approved Operations (v0.9.8):**
+1. `POST /api/v1/auth/login` — Google Identity Services ID token exchange (`{ idToken }` -> `AUTHORIZED` with `token, expiresAt` or `PENDING_ACCESS`).
+2. `GET /api/v1/auth/me` — Current authenticated user identity (`email, userUuid, tenantSlug, roleCodes, capabilities, isPendingAccess`).
+3. `POST /api/v1/auth/logout` — Revoke application session token.
+4. `PUT /api/v1/auth/me` — Update operator profile, locale, and notification preferences (deferred).
 
 ---
 
@@ -203,7 +203,7 @@ This document serves as the authoritative, machine-readable gap specification an
 
 1. **RFC 7807 Problem Details:** All error responses (`4xx` and `5xx`) must use `application/json` with the canonical `Problem` schema (`code`, `message`, `requestId`, `details`).
 2. **Concurrency & ETag (`If-Match`):** All resource mutation endpoints (`PATCH`, `PUT`, `DELETE`, and workflow `POST`) must mandate `If-Match` headers containing the resource ETag. Missing header must yield HTTP `428 Precondition Required`; stale ETag must yield HTTP `412 Precondition Failed`.
-3. **Multi-Tenant Isolation:** All endpoints must enforce tenant scoping via authenticated session context or `X-Tenant-ID` header. Unmatched tenant entities must return `404 Not Found` (masked) to prevent cross-tenant enumeration.
+3. **Multi-Tenant Isolation:** All endpoints must enforce tenant scoping via server-validated session context (`Authorization: Bearer <token>`). The frontend does NOT send client-controlled `X-Tenant-ID` or `tenantId` headers. Unmatched tenant entities must return `404 Not Found` (masked) to prevent cross-tenant enumeration.
 4. **Idempotency:** Non-safe actions must accept `Idempotency-Key` headers to ensure network resilience during automated retries.
 
 ---

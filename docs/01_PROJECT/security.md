@@ -13,13 +13,24 @@ This document applies to the New CP engineering workflow and future implementati
 
 ## Authentication and authorization
 
-Google Login is a package-level acceptance item, but provider configuration, callback URLs, scopes, session/token handling, and backend validation were not available. Do not treat a client button as completed authentication. Before implementation, document the approved flow, failure/cancellation behavior, session persistence/expiry, logout, protected routes, 401/403 handling, and test-environment strategy.
-
-Casbin or another approved policy layer must be deny-by-default and server-enforced. The client may improve UX but cannot be the authority for tenant selection or permission.
+Under approved New CP v0.9.8 requirements:
+- Google Identity Services (GIS) is used for authentication only; Google Groups are strictly excluded from authorization.
+- Interactive login transmits the Google ID token via `POST /api/v1/auth/login` (`{ "idToken": "<google-id-token>" }`).
+- The backend verifies identity against PostgreSQL V3 IAM + Casbin and returns `AUTHORIZED` with application session token (`{ "accessStatus": "AUTHORIZED", "token": "...", "expiresAt": "..." }`) or `PENDING_ACCESS` with no session token (`{ "accessStatus": "PENDING_ACCESS" }`).
+- Authenticated users without assigned access receive the exact approved Pending Access message: "Your account is authenticated, but access has not been assigned yet." Protected APIs return HTTP `403 ACCESS_NOT_ASSIGNED`.
+- For authorized users, the frontend transmits `Authorization: Bearer <session-token>` on subsequent requests and resolves user identity and capabilities via `GET /api/v1/auth/me`.
+- Session revocation is performed via `POST /api/v1/auth/logout`.
+- PostgreSQL V3 IAM is authoritative for users, roles, tenant assignments, and capabilities. Casbin enforces authorization server-side.
+- The frontend must never determine or infer tenant, role, or permissions locally, and must never hardcode tenant IDs, role names, or capability decisions.
 
 ## Tenant isolation and database access
 
-Derive tenant context from server-validated identity/membership. Use a scoped transaction and appropriate application role for tenant-scoped queries. Do not use a superuser or `BYPASSRLS` to claim isolation proof. Test pooled-connection reuse, missing tenant context, cross-tenant reads/updates, and cache invalidation with tenant-safe keys.
+Per v0.9.7 and v0.9.8 non-negotiable architectural constraints:
+- Keep three concepts strictly separate: (1) User authorization via PostgreSQL V3 IAM user-to-tenant grants; (2) Active session context holding one validated active tenant; (3) Request/transaction enforcement with revalidation on every request and transaction-local `set_config('app.tenant_id', ..., true)` under PostgreSQL RLS.
+- `DEMO_SEED_TENANT_ID=1` is fixture/seed setup only; NEVER a login, session, middleware, or API authorization fallback.
+- Never hardcode `tenantId: 1` as a default grant. Never introduce `DEFAULT_TENANT_ID=1` or `ACTIVE_TENANT_ID=1`.
+- Do not add a tenant selector or switcher in the UI. Do not accept client-controlled `tenantId` or `X-Tenant-Id` headers as authorization.
+- The frontend consumes backend-validated session context only; the backend remains the sole authority for tenant scoping.
 
 ## Input and integration safety
 

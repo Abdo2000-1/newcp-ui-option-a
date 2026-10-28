@@ -174,7 +174,8 @@ The frontend SHALL decode status codes strictly within the context of the active
 ### 5.2 Security, Privacy & Compliance
 - **NFR-04 (Zero Secrets in Frontend):** No API keys, client secrets, database credentials, or private certificates SHALL exist in the repository source code, environment templates, or client bundles.
 - **NFR-05 (PHI / HIPAA Safeguards):** Protected Health Information (PHI) SHALL never be logged to browser consoles, crash telemetry (Sentry), web analytics (PostHog), or unencrypted storage.
-- **NFR-06 (Tenant Isolation):** Every API request SHALL carry a validated tenant context header derived from server-authenticated user claims. Cross-tenant data rendering is strictly prohibited.
+- **NFR-06 (Tenant Isolation):** All API operations SHALL be scoped to the authenticated user's active tenant resolved server-side. The frontend SHALL NOT determine, select, or transmit client-controlled tenant headers (`X-Tenant-Id` is rejected/ignored). Cross-tenant data rendering is strictly prohibited.
+- **NFR-07 (Orders Dashboard Scope):** Orders Dashboard work SHALL remain UI/UX and labeled synthetic/mock data based for current scope. The proposed Orders Dashboard API extension (`02_ORDERS_DASHBOARD_PROPOSED_EXTENSION.yaml`) is proposed only and SHALL NOT be integrated until formally assigned.
 
 ### 5.3 Accessibility (a11y) & Usability
 - **NFR-07 (Accessibility Standards):** All interactive data tables, modal dialogs, and form elements SHALL conform to WCAG 2.1 Level AA requirements:
@@ -187,7 +188,7 @@ The frontend SHALL decode status codes strictly within the context of the active
 
 ## 6. Interface & Integration Requirements
 
-- **INT-01 (OpenAPI 3.0.3 Contract):** All API communication SHALL strictly conform to the approved canonical specification (`openapi/newcp.openapi.yaml`). Frontend code SHALL NOT invent undocumented endpoints or payload attributes.
+- **INT-01 (OpenAPI 3.0.3 Contract):** All API communication SHALL strictly conform to the approved canonical specification (`docs/newcp-ai/references/api/newcp.openapi.yaml`). Frontend code SHALL NOT invent undocumented endpoints or payload attributes.
 - **INT-02 (Authentication):** User authentication SHALL utilize Google OAuth 2.0 / OpenID Connect with PKCE, exchanging authorization codes for short-lived JWT access tokens and secure HTTP-only refresh cookies.
 - **INT-03 (Authorization):** Route and action authorization SHALL be enforced using Casbin RBAC/ABAC role claims issued by the backend server.
 - **INT-04 (File Storage Transport):** Large binary uploads (DICOM ZIPs up to 2 GB, STL meshes up to 250 MB) SHALL execute via pre-signed direct-to-cloud upload URLs (S3/GCS) with client-side SHA-256 chunked calculation.
