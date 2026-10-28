@@ -66,30 +66,117 @@ export const DEFAULT_SERVICE_PROCEDURES: Record<string, string[]> = defaultAppCo
 
 const STORAGE_KEY = '3ddx_cp_runtime_config_v1';
 
+
+export interface ConfigValidationResult {
+  isValid: boolean;
+  errors: string[];
+  validatedConfig: AppConfiguration;
+}
+
+export const CMS_SECURITY_DISCLOSURE = {
+  storageNotice:
+    'Browser-local changes are saved in local browser storage only and are not globally shared across tenants or backend services without a dedicated backend API.',
+  iamNotice:
+    'CMS presentation settings do NOT bypass backend IAM, Casbin policies, tenant isolation, or business permissions. Authoritative session and capability data remains enforced by the backend.',
+};
+
+export function validateAppConfig(input: unknown): ConfigValidationResult {
+  const errors: string[] = [];
+  if (!input || typeof input !== 'object') {
+    return {
+      isValid: false,
+      errors: ['Invalid configuration format: configuration root must be an object'],
+      validatedConfig: DEFAULT_APP_CONFIG,
+    };
+  }
+
+  const raw = input as Partial<AppConfiguration>;
+  const validated: AppConfiguration = {
+    branding: { ...DEFAULT_APP_CONFIG.branding, ...(raw.branding || {}) },
+    links: { ...DEFAULT_APP_CONFIG.links, ...(raw.links || {}) },
+    theme: { ...DEFAULT_APP_CONFIG.theme, ...(raw.theme || {}) },
+    features: { ...DEFAULT_APP_CONFIG.features, ...(raw.features || {}) },
+    powerBi: { ...DEFAULT_APP_CONFIG.powerBi, ...(raw.powerBi || {}) },
+    serviceProcedures: raw.serviceProcedures || DEFAULT_SERVICE_PROCEDURES,
+  };
+
+  // Color validation (hex format)
+  const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+  type ThemeColorKey = 'primaryColor' | 'accentColor' | 'successColor' | 'warningColor' | 'dangerColor';
+  const themeColors: ThemeColorKey[] = [
+    'primaryColor',
+    'accentColor',
+    'successColor',
+    'warningColor',
+    'dangerColor',
+  ];
+
+  for (const colorKey of themeColors) {
+    const val = validated.theme[colorKey];
+    if (typeof val !== 'string' || !hexColorRegex.test(val.trim())) {
+      errors.push(`Invalid theme color '${colorKey}': '${val}'. Must be a valid hex color code.`);
+      validated.theme[colorKey] = DEFAULT_APP_CONFIG.theme[colorKey] as string;
+    }
+  }
+
+  // Page size validation
+  const pageSize = validated.features.defaultPageSize;
+  if (typeof pageSize !== 'number' || pageSize <= 0 || isNaN(pageSize)) {
+    errors.push(`Invalid defaultPageSize: '${pageSize}'. Must be a positive integer.`);
+    validated.features.defaultPageSize = DEFAULT_APP_CONFIG.features.defaultPageSize;
+  }
+
+  // URL validations (safe HTTP/HTTPS format)
+  const urlKeys: (keyof AppLinksConfig)[] = [
+    'companyWebsite',
+    'supportPortal',
+    'documentationUrl',
+    'privacyPolicyUrl',
+    'termsOfServiceUrl',
+    'statusPageUrl',
+    'systemDiagnosticsUrl',
+  ];
+
+  for (const linkKey of urlKeys) {
+    const val = validated.links[linkKey];
+    if (val && typeof val === 'string') {
+      try {
+        new URL(val);
+      } catch {
+        errors.push(`Invalid link URL '${linkKey}': '${val}'. Must be a valid absolute URL.`);
+        validated.links[linkKey] = DEFAULT_APP_CONFIG.links[linkKey];
+      }
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    validatedConfig: validated,
+  };
+}
+
 export function loadAppConfig(): AppConfiguration {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_APP_CONFIG;
     const parsed = JSON.parse(raw);
-    return {
-      branding: { ...DEFAULT_APP_CONFIG.branding, ...parsed.branding },
-      links: { ...DEFAULT_APP_CONFIG.links, ...parsed.links },
-      theme: { ...DEFAULT_APP_CONFIG.theme, ...parsed.theme },
-      features: { ...DEFAULT_APP_CONFIG.features, ...parsed.features },
-      powerBi: { ...DEFAULT_APP_CONFIG.powerBi, ...parsed.powerBi },
-      serviceProcedures: parsed.serviceProcedures || DEFAULT_SERVICE_PROCEDURES,
-    };
-  } catch (e) {
+    const { validatedConfig } = validateAppConfig(parsed);
+    return validatedConfig;
+  } catch {
     return DEFAULT_APP_CONFIG;
   }
 }
 
-export function saveAppConfig(newConfig: AppConfiguration): void {
+export function saveAppConfig(newConfig: AppConfiguration): { success: boolean; errors: string[] } {
+  const { isValid, errors, validatedConfig } = validateAppConfig(newConfig);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig, null, 2));
-    window.dispatchEvent(new CustomEvent('app-config-updated', { detail: newConfig }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedConfig, null, 2));
+    window.dispatchEvent(new CustomEvent('app-config-updated', { detail: validatedConfig }));
+    return { success: isValid, errors };
   } catch (e) {
     console.error('Failed to save config to localStorage', e);
+    return { success: false, errors: ['Failed to persist configuration to local storage'] };
   }
 }
 
@@ -97,7 +184,7 @@ export function resetAppConfig(): AppConfiguration {
   try {
     localStorage.removeItem(STORAGE_KEY);
     window.dispatchEvent(new CustomEvent('app-config-updated', { detail: DEFAULT_APP_CONFIG }));
-  } catch (e) {
+  } catch {
     // ignore
   }
   return DEFAULT_APP_CONFIG;
@@ -181,4 +268,3 @@ export function configToYaml(config: AppConfiguration): string {
 
   return lines.join('\n') + '\n';
 }
-
