@@ -105,7 +105,7 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
 
       // Nav link labels are visible in expanded state
       expect(screen.getAllByText(/^home$/i).length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
+      expect(screen.getByText(/^orders$/i)).toBeInTheDocument();
     });
   });
 

@@ -41,6 +41,13 @@ import {
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { useStore } from '@/shared/hooks/useStore';
+import { useAuth } from '@/features/auth';
+import {
+  APPROVED_NAV_SECTIONS,
+  canAccessAdministration,
+  isRouteActive,
+  type NavSection,
+} from './navConfig';
 import { ProfileModal } from './ProfileModal';
 import { GlobalSearchModal } from './GlobalSearchModal';
 
@@ -76,14 +83,20 @@ export function ConvertibleNav({
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [ordersDropdownOpen, setOrdersDropdownOpen] = useState(false);
   const [opsDropdownOpen, setOpsDropdownOpen] = useState(false);
+  const [directoryDropdownOpen, setDirectoryDropdownOpen] = useState(false);
+  const [prefsDropdownOpen, setPrefsDropdownOpen] = useState(false);
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [posDropdownOpen, setPosDropdownOpen] = useState(false);
-  const isTier2DropdownOpen = ordersDropdownOpen || opsDropdownOpen;
+  const isTier2DropdownOpen = ordersDropdownOpen || opsDropdownOpen || directoryDropdownOpen || prefsDropdownOpen || adminDropdownOpen;
 
   const langRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const ordersDropdownRef = useRef<HTMLDivElement>(null);
   const opsDropdownRef = useRef<HTMLDivElement>(null);
+  const directoryDropdownRef = useRef<HTMLDivElement>(null);
+  const prefsDropdownRef = useRef<HTMLDivElement>(null);
+  const adminDropdownRef = useRef<HTMLDivElement>(null);
   const posRef = useRef<HTMLDivElement>(null);
 
   // Global Ctrl+K / Cmd+K listener
@@ -98,6 +111,9 @@ export function ConvertibleNav({
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
+  const { session, logout } = useAuth();
+  const isAuthorizedForAdmin = canAccessAdministration(session);
+  const visibleSections = APPROVED_NAV_SECTIONS.filter((section) => !section.adminOnly || isAuthorizedForAdmin);
   const profile = useStore((s) => s.getProfile());
 
   // 8 Target Pages from 3DDX CP (For vertical sidebar)
@@ -126,6 +142,15 @@ export function ConvertibleNav({
       }
       if (opsDropdownRef.current && !opsDropdownRef.current.contains(e.target as Node)) {
         setOpsDropdownOpen(false);
+      }
+      if (directoryDropdownRef.current && !directoryDropdownRef.current.contains(e.target as Node)) {
+        setDirectoryDropdownOpen(false);
+      }
+      if (prefsDropdownRef.current && !prefsDropdownRef.current.contains(e.target as Node)) {
+        setPrefsDropdownOpen(false);
+      }
+      if (adminDropdownRef.current && !adminDropdownRef.current.contains(e.target as Node)) {
+        setAdminDropdownOpen(false);
       }
       if (posRef.current && !posRef.current.contains(e.target as Node)) {
         setPosDropdownOpen(false);
@@ -730,6 +755,27 @@ export function ConvertibleNav({
                     </Paper>
                   )}
                 </Box>
+
+                {/* Small Logout Icon Near Profile Area (UIUX-NAV-001 Requirement 14) */}
+                <Tooltip title="Log out" arrow>
+                  <IconButton
+                    onClick={() => logout()}
+                    size="small"
+                    aria-label="Log out"
+                    data-testid="navbar-logout-button"
+                    sx={{
+                      p: 0.75,
+                      borderRadius: 1.5,
+                      color: isDark ? '#94a3b8' : '#64748b',
+                      '&:hover': {
+                        color: '#ef4444',
+                        bgcolor: alpha('#ef4444', 0.1),
+                      },
+                    }}
+                  >
+                    <LogOut size={16} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
           </Box>
@@ -792,7 +838,7 @@ export function ConvertibleNav({
                   )}
                 </NavLink>
 
-                {/* 2. Orders & Cases Spread Dropdown */}
+                {/* 2. Orders & Cases (Workspaces) Spread Dropdown */}
                 <Box sx={{ position: 'relative' }} ref={ordersDropdownRef}>
                   <ButtonBase
                     type="button"
@@ -802,6 +848,9 @@ export function ConvertibleNav({
                       e.stopPropagation();
                       setOrdersDropdownOpen(!ordersDropdownOpen);
                       setOpsDropdownOpen(false);
+                      setDirectoryDropdownOpen(false);
+                      setPrefsDropdownOpen(false);
+                      setAdminDropdownOpen(false);
                     }}
                     sx={{
                       display: 'flex',
@@ -814,13 +863,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                      color: ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -838,7 +887,7 @@ export function ConvertibleNav({
                       className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
                     >
                       <NavLink
-                        to="/flow"
+                        to="/orders"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -866,7 +915,7 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
-                        to="/order-details?id=504901"
+                        to="/cases"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -885,16 +934,16 @@ export function ConvertibleNav({
                             },
                           }}
                         >
-                          <FileText size={15} color="#6366f1" />
+                          <Boxes size={15} color="#0284c7" />
                           <Box>
-                            <div>Order Details</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Deep telemetry & files</Typography>
+                            <div>Cases Archive</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Case histories & patient files</Typography>
                           </Box>
                         </Box>
                       </NavLink>
 
                       <NavLink
-                        to="/edit-case"
+                        to="/add-case"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -913,10 +962,66 @@ export function ConvertibleNav({
                             },
                           }}
                         >
-                          <FileEdit size={15} color="#a855f7" />
+                          <FilePlus2 size={15} color="#00706a" />
                           <Box>
-                            <div>Edit Case</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Revisions & remakes</Typography>
+                            <div>Add Case</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Create new clinical order</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/workflow-board"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Layers size={15} color="#8b5cf6" />
+                          <Box>
+                            <div>Workflow Board</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Kanban stage progression</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/change-requests"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Layers size={15} color="#ec4899" />
+                          <Box>
+                            <div>Change Requests</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Pending modifications (4)</Typography>
                           </Box>
                         </Box>
                       </NavLink>
@@ -924,7 +1029,7 @@ export function ConvertibleNav({
                   )}
                 </Box>
 
-                {/* 3. Operations & Analytics Spread Dropdown */}
+                {/* 3. Operations & Reports Spread Dropdown */}
                 <Box sx={{ position: 'relative' }} ref={opsDropdownRef}>
                   <ButtonBase
                     type="button"
@@ -934,6 +1039,9 @@ export function ConvertibleNav({
                       e.stopPropagation();
                       setOpsDropdownOpen(!opsDropdownOpen);
                       setOrdersDropdownOpen(false);
+                      setDirectoryDropdownOpen(false);
+                      setPrefsDropdownOpen(false);
+                      setAdminDropdownOpen(false);
                     }}
                     sx={{
                       display: 'flex',
@@ -946,13 +1054,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                      color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -1052,42 +1160,335 @@ export function ConvertibleNav({
                           </Box>
                         </Box>
                       </NavLink>
+
+                      <NavLink
+                        to="/reports"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Boxes size={15} color="#0284c7" />
+                          <Box>
+                            <div>Reports Hub</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Executive & operations summaries</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
                     </div>
                   )}
                 </Box>
-              </Box>
 
-              {/* Right: Primary Call to Action Button */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                <NavLink
-                  to="/add-case"
-                  style={{ textDecoration: 'none' }}
-                >
+                {/* 4. Directory & Practice Spread Dropdown */}
+                <Box sx={{ position: 'relative' }} ref={directoryDropdownRef}>
                   <ButtonBase
+                    type="button"
+                    aria-expanded={directoryDropdownOpen}
+                    aria-haspopup="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDirectoryDropdownOpen(!directoryDropdownOpen);
+                      setOrdersDropdownOpen(false);
+                      setOpsDropdownOpen(false);
+                      setPrefsDropdownOpen(false);
+                      setAdminDropdownOpen(false);
+                    }}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
-                      px: 2,
+                      px: 1.5,
                       py: 0.75,
                       borderRadius: 2,
-                      bgcolor: '#00706a',
-                      color: '#ffffff',
                       fontSize: '0.75rem',
-                      fontWeight: 800,
-                      boxShadow: '0 1px 3px rgba(0, 112, 106, 0.3)',
+                      fontWeight: 700,
+                      cursor: 'pointer',
                       transition: 'all 0.15s ease',
+                      bgcolor: directoryDropdownOpen || ['/patients', '/doctors', '/clinics', '/scan-center', '/documents', '/billing'].some(p => location.pathname.startsWith(p))
+                        ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
+                        : 'transparent',
+                      color: directoryDropdownOpen || ['/patients', '/doctors', '/clinics', '/scan-center', '/documents', '/billing'].some(p => location.pathname.startsWith(p))
+                        ? (isDark ? '#38bdf8' : '#0284c7')
+                        : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${directoryDropdownOpen || ['/patients', '/doctors', '/clinics', '/scan-center', '/documents', '/billing'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
-                        bgcolor: '#008b84',
-                        boxShadow: '0 2px 6px rgba(0, 112, 106, 0.4)',
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
                       },
                     }}
                   >
-                    <FilePlus2 size={14} />
-                    <span>+ Add Case</span>
+                    <Users2 size={13} />
+                    <span>Directory & Practice</span>
+                    <ChevronDown size={11} style={{ transform: directoryDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
                   </ButtonBase>
-                </NavLink>
+
+                  {directoryDropdownOpen && (
+                    <div
+                      data-testid="directory-dropdown-menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-60 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                    >
+                      {[
+                        { label: 'Patients', desc: 'Patient records & scans', path: '/patients' },
+                        { label: 'Doctors', desc: 'Clinician contact index', path: '/doctors' },
+                        { label: 'Clinics', desc: 'Clinic practices & partners', path: '/clinics' },
+                        { label: 'Scan Center', desc: 'CBCT/DICOM intake telemetry', path: '/scan-center' },
+                        { label: 'Documents', desc: 'Clinical guidelines & legal', path: '/documents' },
+                        { label: 'Billing', desc: 'Invoices & ledger balance', path: '/billing' },
+                      ].map((item) => (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setDirectoryDropdownOpen(false)}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Box
+                            sx={{
+                              p: 1.25,
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: isDark ? '#e2e8f0' : '#1e293b',
+                              '&:hover': {
+                                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              },
+                            }}
+                          >
+                            <div>{item.label}</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>{item.desc}</Typography>
+                          </Box>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </Box>
+
+                {/* 5. Preferences & System Spread Dropdown */}
+                <Box sx={{ position: 'relative' }} ref={prefsDropdownRef}>
+                  <ButtonBase
+                    type="button"
+                    aria-expanded={prefsDropdownOpen}
+                    aria-haspopup="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPrefsDropdownOpen(!prefsDropdownOpen);
+                      setOrdersDropdownOpen(false);
+                      setOpsDropdownOpen(false);
+                      setDirectoryDropdownOpen(false);
+                      setAdminDropdownOpen(false);
+                    }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      bgcolor: prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p)
+                        ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
+                        : 'transparent',
+                      color: prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p)
+                        ? (isDark ? '#38bdf8' : '#0284c7')
+                        : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      '&:hover': {
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                      },
+                    }}
+                  >
+                    <Shield size={13} />
+                    <span>Preferences</span>
+                    <ChevronDown size={11} style={{ transform: prefsDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
+                  </ButtonBase>
+
+                  {prefsDropdownOpen && (
+                    <div
+                      data-testid="prefs-dropdown-menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                    >
+                      <NavLink
+                        to="/notifications"
+                        onClick={() => setPrefsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <div>Notifications</div>
+                          <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>System alerts & updates</Typography>
+                        </Box>
+                      </NavLink>
+                      <NavLink
+                        to="/settings"
+                        onClick={() => setPrefsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <div>Settings</div>
+                          <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>App preferences & themes</Typography>
+                        </Box>
+                      </NavLink>
+                    </div>
+                  )}
+                </Box>
+
+                {/* 6. Administration Spread Dropdown (Visible only to authorized Admin/Senior users) */}
+                {isAuthorizedForAdmin && (
+                  <Box sx={{ position: 'relative' }} ref={adminDropdownRef}>
+                    <ButtonBase
+                      type="button"
+                      aria-expanded={adminDropdownOpen}
+                      aria-haspopup="true"
+                      data-testid="navbar-admin-dropdown-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAdminDropdownOpen(!adminDropdownOpen);
+                        setOrdersDropdownOpen(false);
+                        setOpsDropdownOpen(false);
+                        setDirectoryDropdownOpen(false);
+                        setPrefsDropdownOpen(false);
+                      }}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        bgcolor: adminDropdownOpen || ['/cms', '/api-docs', '/swagger'].some(p => location.pathname === p)
+                          ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
+                          : 'transparent',
+                        color: adminDropdownOpen || ['/cms', '/api-docs', '/swagger'].some(p => location.pathname === p)
+                          ? (isDark ? '#38bdf8' : '#0284c7')
+                          : (isDark ? '#94a3b8' : '#475569'),
+                        border: `1px solid ${adminDropdownOpen || ['/cms', '/api-docs', '/swagger'].some(p => location.pathname === p) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                        '&:hover': {
+                          color: isDark ? '#f8fafc' : '#0f172a',
+                          bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                        },
+                      }}
+                    >
+                      <Shield size={13} color="#0284c7" />
+                      <span>Administration</span>
+                      <ChevronDown size={11} style={{ transform: adminDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', opacity: 0.6 }} />
+                    </ButtonBase>
+
+                    {adminDropdownOpen && (
+                      <div
+                        data-testid="admin-dropdown-menu"
+                        className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-60 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                      >
+                        <NavLink
+                          to="/cms"
+                          onClick={() => setAdminDropdownOpen(false)}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Box
+                            sx={{
+                              p: 1.25,
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: isDark ? '#e2e8f0' : '#1e293b',
+                              '&:hover': {
+                                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              },
+                            }}
+                          >
+                            <div>CMS Controls</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Content & tenant overrides</Typography>
+                          </Box>
+                        </NavLink>
+                        <NavLink
+                          to="/settings"
+                          onClick={() => setAdminDropdownOpen(false)}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Box
+                            sx={{
+                              p: 1.25,
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: isDark ? '#e2e8f0' : '#1e293b',
+                              '&:hover': {
+                                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              },
+                            }}
+                          >
+                            <div>Settings</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>System-wide configurations</Typography>
+                          </Box>
+                        </NavLink>
+                        <NavLink
+                          to="/api-docs"
+                          onClick={() => setAdminDropdownOpen(false)}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <Box
+                            sx={{
+                              p: 1.25,
+                              borderRadius: 2,
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: isDark ? '#e2e8f0' : '#1e293b',
+                              '&:hover': {
+                                bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                              },
+                            }}
+                          >
+                            <div>API Documentation</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Swagger OpenAPI 3.0.3 gateway</Typography>
+                          </Box>
+                        </NavLink>
+                      </div>
+                    )}
+                  </Box>
+                )}
               </Box>
+
+              {/* Note: + Add Case CTA button removed per UIUX-NAV-001 Requirement 17 */}
             </div>
           </Box>
         </Box>
@@ -1335,52 +1736,91 @@ export function ConvertibleNav({
           </Tooltip>
         </Box>
 
-        {/* Target Nav Links */}
+        {/* Sectioned Navigation Links */}
         <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {targetNavItems.map((item) => {
-            const isActive = location.pathname === item.path ||
-              (item.path === '/flow' && (location.pathname === '/orders' || location.pathname === '/flow'));
-            return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                title={collapsed ? item.label : undefined}
-                style={{ textDecoration: 'none' }}
-              >
-                <ButtonBase
-                  sx={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    gap: 1.5,
-                    p: collapsed ? 1.25 : 1.25,
-                    px: collapsed ? 1.25 : 1.75,
-                    borderRadius: 2,
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    bgcolor: isActive ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1)) : 'transparent',
-                    color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#cbd5e1' : '#475569'),
-                    borderLeft: isActive ? `3px solid ${isDark ? '#38bdf8' : '#0284c7'}` : '3px solid transparent',
-                    '&:hover': {
-                      bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#0284c7', 0.05),
-                      color: isDark ? '#f8fafc' : '#0f172a',
-                    },
-                  }}
-                >
-                  <item.icon size={18} color={isActive ? (isDark ? '#38bdf8' : '#0284c7') : '#94a3b8'} />
-                  {!collapsed && (
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 'inherit', color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {item.label}
-                    </Typography>
-                  )}
-                </ButtonBase>
-              </NavLink>
-            );
-          })}
+          {visibleSections.map((section, sIdx) => (
+            <Box key={section.id} sx={{ mb: 1 }}>
+              {!collapsed ? (
+                <Box sx={{ px: 1.5, py: 0.5 }}>
+                  <Typography
+                    variant="caption"
+                    component="h4"
+                    sx={{
+                      fontSize: '0.6875rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      color: isDark ? '#64748b' : '#94a3b8',
+                      userSelect: 'none',
+                    }}
+                  >
+                    {section.title}
+                  </Typography>
+                </Box>
+              ) : (
+                sIdx > 0 && <Divider sx={{ my: 0.75, borderColor: tier1Border }} />
+              )}
+              {section.items.map((item) => {
+                const isActive = isRouteActive(location.pathname, item.path);
+                const ItemIcon = item.icon;
+                const linkContent = (
+                  <ButtonBase
+                    tabIndex={0}
+                    aria-label={item.label}
+                    aria-current={isActive ? 'page' : undefined}
+                    sx={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      gap: 1.5,
+                      p: 1,
+                      px: collapsed ? 1 : 1.5,
+                      borderRadius: 2,
+                      fontSize: '0.75rem',
+                      fontWeight: isActive ? 800 : 600,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      bgcolor: isActive ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1)) : 'transparent',
+                      color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#cbd5e1' : '#475569'),
+                      borderLeft: isActive ? `3px solid ${isDark ? '#38bdf8' : '#0284c7'}` : '3px solid transparent',
+                      '&:hover': {
+                        bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#0284c7', 0.05),
+                        color: isDark ? '#f8fafc' : '#0f172a',
+                      },
+                      '&:focus-visible': {
+                        outline: '2px solid #0284c7',
+                      },
+                    }}
+                  >
+                    <ItemIcon size={17} color={isActive ? (isDark ? '#38bdf8' : '#0284c7') : '#94a3b8'} />
+                    {!collapsed && (
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 'inherit', color: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.label}
+                      </Typography>
+                    )}
+                  </ButtonBase>
+                );
+
+                return (
+                  <NavLink
+                    key={item.id}
+                    to={item.path}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {collapsed ? (
+                      <Tooltip title={item.label} arrow placement="right">
+                        {linkContent}
+                      </Tooltip>
+                    ) : (
+                      linkContent
+                    )}
+                  </NavLink>
+                );
+              })}
+            </Box>
+          ))}
         </Box>
 
         {/* Footer: Profile, Language & Theme */}
@@ -1478,6 +1918,26 @@ export function ConvertibleNav({
               <LanguageFlag code={currentOption.code} />
               {!collapsed && <span>{currentOption.code.toUpperCase()}</span>}
             </ButtonBase>
+
+            <Tooltip title="Log out" arrow>
+              <IconButton
+                onClick={() => logout()}
+                size="small"
+                aria-label="Log out"
+                data-testid="sidebar-vnav-logout-button"
+                sx={{
+                  p: 0.75,
+                  borderRadius: 1.5,
+                  color: isDark ? '#94a3b8' : '#64748b',
+                  '&:hover': {
+                    color: '#ef4444',
+                    bgcolor: alpha('#ef4444', 0.1),
+                  },
+                }}
+              >
+                <LogOut size={16} />
+              </IconButton>
+            </Tooltip>
 
             <Tooltip title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} arrow>
               <IconButton

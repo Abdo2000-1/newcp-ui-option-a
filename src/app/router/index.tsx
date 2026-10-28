@@ -35,6 +35,7 @@ const Task31StaffTargets = lazy(() => import('@/features/reporting/pages/Task31S
 // Settings & Administration
 const ConfigManager = lazy(() => import('@/features/settings/pages/ConfigManager'));
 const Settings = lazy(() => import('@/features/settings/pages/Settings'));
+const ApiDocsPage = lazy(() => import('@/features/settings/pages/ApiDocsPage'));
 const Billing = lazy(() => import('@/features/settings/pages/Billing'));
 const Clinics = lazy(() => import('@/features/settings/pages/Clinics'));
 const ClinicDetails = lazy(() => import('@/features/settings/pages/ClinicDetails'));
@@ -79,6 +80,8 @@ export const ROUTES = {
   WORKFLOW_BOARD: '/workflow-board',
   REPORTS: '/reports',
   SETTINGS: '/settings',
+  SWAGGER: '/swagger',
+  API_DOCS: '/api-docs',
   GRID: '/grid',
   FORMS: '/forms',
   NOT_FOUND: '/404',
@@ -170,6 +173,8 @@ export function AppRouter() {
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
           <Route path="cms" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
+          <Route path="swagger" element={<SuspenseWrapper><ApiDocsPage /></SuspenseWrapper>} />
+          <Route path="api-docs" element={<SuspenseWrapper><ApiDocsPage /></SuspenseWrapper>} />
           <Route path="newcp/index.php" element={<Navigate to="/login" replace />} />
 
           {/* Auxiliary ERP & CRM Routes */}

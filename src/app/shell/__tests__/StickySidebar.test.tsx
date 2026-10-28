@@ -194,13 +194,14 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       );
 
       expect(screen.getByText(/^home$/i)).toBeInTheDocument();
-      expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
-      expect(screen.getByText(/add new case/i)).toBeInTheDocument();
-      expect(screen.getByText(/order details/i)).toBeInTheDocument();
+      expect(screen.getByText(/^orders$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^cases$/i)).toBeInTheDocument();
+      expect(screen.getByText(/add case/i)).toBeInTheDocument();
       expect(screen.getByText(/quarter targets/i)).toBeInTheDocument();
-      expect(screen.getByText(/task 47: models/i)).toBeInTheDocument();
-      expect(screen.getByText(/task 31: staff targets/i)).toBeInTheDocument();
-      expect(screen.getByText(/edit case/i)).toBeInTheDocument();
+      expect(screen.getByText(/3d models/i)).toBeInTheDocument();
+      expect(screen.getByText(/staff targets/i)).toBeInTheDocument();
+      expect(screen.queryByText(/order details/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/edit case/i)).not.toBeInTheDocument();
     });
 
     it('allows toggling between expanded and collapsed states', () => {

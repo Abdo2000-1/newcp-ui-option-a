@@ -62,8 +62,10 @@ describe('Tier 2 Navbar Dropdown Visibility & Overflow Fix (UIUX-REQ-012)', () =
       const menu = screen.getByTestId('orders-dropdown-menu');
       expect(menu).toBeInTheDocument();
       expect(screen.getByText(/workflow queue/i)).toBeInTheDocument();
-      expect(screen.getByText(/order details/i)).toBeInTheDocument();
-      expect(screen.getByText(/edit case/i)).toBeInTheDocument();
+      expect(screen.getByText(/cases archive/i)).toBeInTheDocument();
+      expect(screen.getByText(/add case/i)).toBeInTheDocument();
+      expect(screen.queryByText(/order details/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/edit case/i)).not.toBeInTheDocument();
 
       // Container switches to overflow-visible to prevent clipping
       expect(container).toHaveClass('overflow-visible');
