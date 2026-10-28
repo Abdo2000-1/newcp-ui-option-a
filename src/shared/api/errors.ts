@@ -63,7 +63,7 @@ export class ProblemError extends ApiClientError {
 }
 
 export class AccessNotAssignedError extends ProblemError {
-  constructor(problem: Problem | string = 'Account is authenticated with Google but lacks assigned V3 roles') {
+  constructor(problem: Problem | string = 'Your account is authenticated, but access has not been assigned yet.') {
     const p: Problem = typeof problem === 'string'
       ? { code: 'ACCESS_NOT_ASSIGNED', message: problem }
       : problem;
@@ -168,12 +168,24 @@ export class ValidationError extends ProblemError {
  * Normalizes an HTTP error response or Problem JSON payload into a typed error class.
  */
 export function normalizeProblemError(status: number, payload?: unknown): ApiClientError {
-  const isProblem = payload && typeof payload === 'object' && ('code' in payload || 'message' in payload);
+  // Support v0.9.8 auth error envelope: { error: Problem }
+  let extractedPayload = payload;
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'error' in payload &&
+    typeof (payload as Record<string, unknown>).error === 'object' &&
+    (payload as Record<string, unknown>).error !== null
+  ) {
+    extractedPayload = (payload as Record<string, unknown>).error;
+  }
+
+  const isProblem = extractedPayload && typeof extractedPayload === 'object' && ('code' in extractedPayload || 'message' in extractedPayload);
   const problem: Problem = isProblem
     ? {
-        code: (payload as Record<string, any>).code || `HTTP_${status}`,
-        message: (payload as Record<string, any>).message || `HTTP Error ${status}`,
-        ...(payload as Record<string, any>),
+        code: (extractedPayload as Record<string, any>).code || `HTTP_${status}`,
+        message: (extractedPayload as Record<string, any>).message || `HTTP Error ${status}`,
+        ...(extractedPayload as Record<string, any>),
       }
     : { code: `HTTP_${status}`, message: typeof payload === 'string' ? payload : `HTTP Error ${status}` };
 
@@ -198,4 +210,24 @@ export function normalizeProblemError(status: number, payload?: unknown): ApiCli
     default:
       return new ProblemError(status, problem);
   }
+}
+
+export function isProblemError(err: unknown): err is ProblemError {
+  return err instanceof ProblemError;
+}
+
+export function isAccessNotAssignedError(err: unknown): err is AccessNotAssignedError {
+  return err instanceof AccessNotAssignedError;
+}
+
+export function isSessionExpiredError(err: unknown): err is SessionExpiredError {
+  return err instanceof SessionExpiredError;
+}
+
+export function isPreconditionFailedError(err: unknown): err is PreconditionFailedError {
+  return err instanceof PreconditionFailedError;
+}
+
+export function isPreconditionRequiredError(err: unknown): err is PreconditionRequiredError {
+  return err instanceof PreconditionRequiredError;
 }

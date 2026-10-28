@@ -281,3 +281,37 @@ export interface ZeroChargeReason {
   active: boolean;
   description?: string | null;
 }
+
+
+// ============================================================================
+// 6. Authentication & Session (v0.9.8 Canonical Contract)
+// ============================================================================
+
+export interface LoginRequest {
+  idToken: string;
+}
+
+export interface AuthorizedLoginResponse {
+  accessStatus: 'AUTHORIZED';
+  token: string;
+  expiresAt: string | number;
+}
+
+export interface PendingAccessLoginResponse {
+  accessStatus: 'PENDING_ACCESS';
+}
+
+export type LoginResponse = AuthorizedLoginResponse | PendingAccessLoginResponse;
+
+export interface AuthMeResponse {
+  email: string;
+  userUuid: string;
+  tenantSlug: string;
+  roleCodes: string[];
+  capabilities: string[];
+  isPendingAccess: boolean;
+}
+
+export interface AuthErrorEnvelope {
+  error: Problem;
+}
