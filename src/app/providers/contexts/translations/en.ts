@@ -7,7 +7,8 @@ export const en: Record<string, string> = {
   // Navigation Target Pages
   'nav.home': 'Home',
   'nav.dashboard': 'Dashboard',
-  'nav.flow': 'Master Orders Flow',
+  'nav.flow': 'Order Flow',
+  'flow.title': 'Order Flow',
   'nav.addCase': 'Add New Case',
   'nav.orderDetails': 'Order Details',
   'nav.quarterTargets': 'Quarter Targets',

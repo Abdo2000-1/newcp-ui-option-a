@@ -116,17 +116,15 @@ export function ConvertibleNav({
   const visibleSections = APPROVED_NAV_SECTIONS.filter((section) => !section.adminOnly || isAuthorizedForAdmin);
   const profile = useStore((s) => s.getProfile());
 
-  // 8 Target Pages from 3DDX CP (For vertical sidebar)
+  // Approved Target Pages from 3DDX CP (For vertical sidebar)
   const targetNavItems = [
     { id: 'home', label: t('nav.home', 'Home'), path: '/home', icon: Home },
-    { id: 'flow', label: t('nav.flow', 'Master Orders Flow'), path: '/flow', icon: Layers },
+    { id: 'flow', label: t('nav.flow', 'Order Flow'), path: '/flow', icon: Layers },
     { id: 'addCase', label: t('nav.addCase', 'Add New Case'), path: '/add-case', icon: FilePlus2 },
-    { id: 'orderDetails', label: t('nav.orderDetails', 'Order Details'), path: '/order-details?id=504901', icon: FileText },
     { id: 'quarterTargets', label: t('nav.quarterTargets', 'Quarter Targets'), path: '/quarter-targets', icon: TrendingUp },
     { id: 'task47', label: t('nav.task47', 'Task 47: Models'), path: '/task-47', icon: Boxes },
     { id: 'task31', label: t('nav.task31', 'Task 31: Staff Targets'), path: '/task-31', icon: Users2 },
-    { id: 'editCase', label: t('nav.editCase', 'Edit Case'), path: '/edit-case', icon: FileEdit },
-      ];
+  ];
 
   // Close menus on outside click
   useEffect(() => {
