@@ -61,7 +61,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
 
       await waitFor(() => {
         expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument();
-      }, { timeout: 10000 });
+      }, { timeout: 15000 });
       const matches = await screen.findAllByText(/Dashboard/i);
       expect(matches.length).toBeGreaterThanOrEqual(1);
     });

@@ -255,6 +255,7 @@ export interface ColumnDefinition {
   key: ColumnKey;
   label: string;
   baseWidth: number;
+  minWidth: number;
   category: 'Core' | 'Clinician' | 'Service' | 'Financial' | 'Anatomy' | 'Technical' | 'Timeline' | 'Status';
   align?: 'left' | 'center' | 'right';
 }
@@ -284,28 +285,28 @@ export const COLUMN_I18N_MAP: Record<string, string> = {
 };
 
 export const ALL_COLUMNS: ColumnDefinition[] = [
-  { key: 'tl', label: '# tl', baseWidth: 7.5, category: 'Core', align: 'center' },
-  { key: 'scanCenter', label: 'Scan Center', baseWidth: 9.0, category: 'Clinician' },
-  { key: 'doctor', label: 'Doctor', baseWidth: 8.5, category: 'Clinician' },
-  { key: 'patient', label: 'Patient', baseWidth: 8.5, category: 'Clinician' },
-  { key: 'lock', label: 'Lock', baseWidth: 3.5, category: 'Core', align: 'center' },
-  { key: 'notes', label: 'Notes', baseWidth: 4.0, category: 'Core', align: 'center' },
-  { key: 'archive', label: 'Archive', baseWidth: 5.0, category: 'Core', align: 'center' },
-  { key: 'more', label: '...', baseWidth: 2.5, category: 'Core', align: 'center' },
-  { key: 'order', label: 'Order', baseWidth: 10.0, category: 'Service' },
-  { key: 'billTo', label: 'Bill To', baseWidth: 7.0, category: 'Financial' },
-  { key: 'max', label: 'Max.', baseWidth: 3.5, category: 'Anatomy', align: 'center' },
-  { key: 'mand', label: 'Mand.', baseWidth: 3.5, category: 'Anatomy', align: 'center' },
-  { key: 'format', label: 'Format', baseWidth: 4.5, category: 'Technical', align: 'center' },
-  { key: 'amount', label: 'Amount', baseWidth: 5.5, category: 'Financial', align: 'right' },
-  { key: 'vouch', label: 'Vouch.', baseWidth: 3.5, category: 'Financial', align: 'center' },
-  { key: 'received', label: 'Received', baseWidth: 7.0, category: 'Timeline' },
-  { key: 'sent', label: 'Sent', baseWidth: 5.0, category: 'Timeline', align: 'center' },
-  { key: 'update', label: 'Update', baseWidth: 5.0, category: 'Timeline', align: 'center' },
-  { key: 'charged', label: 'Charged', baseWidth: 5.0, category: 'Financial', align: 'center' },
-  { key: 'action', label: 'Action', baseWidth: 8.5, category: 'Status', align: 'center' },
-  { key: 'cr', label: 'CR', baseWidth: 3.5, category: 'Status', align: 'center' },
-  { key: 'csTask', label: 'CS-Task', baseWidth: 5.5, category: 'Status', align: 'center' },
+  { key: 'tl', label: '# tl', baseWidth: 7.5, minWidth: 120, category: 'Core', align: 'center' },
+  { key: 'scanCenter', label: 'Scan Center', baseWidth: 9.0, minWidth: 145, category: 'Clinician' },
+  { key: 'doctor', label: 'Doctor', baseWidth: 8.5, minWidth: 140, category: 'Clinician' },
+  { key: 'patient', label: 'Patient', baseWidth: 8.5, minWidth: 140, category: 'Clinician' },
+  { key: 'lock', label: 'Lock', baseWidth: 3.5, minWidth: 70, category: 'Core', align: 'center' },
+  { key: 'notes', label: 'Notes', baseWidth: 4.0, minWidth: 90, category: 'Core', align: 'center' },
+  { key: 'archive', label: 'Archive', baseWidth: 5.0, minWidth: 100, category: 'Core', align: 'center' },
+  { key: 'more', label: '...', baseWidth: 2.5, minWidth: 50, category: 'Core', align: 'center' },
+  { key: 'order', label: 'Order', baseWidth: 10.0, minWidth: 150, category: 'Service' },
+  { key: 'billTo', label: 'Bill To', baseWidth: 7.0, minWidth: 110, category: 'Financial' },
+  { key: 'max', label: 'Max.', baseWidth: 3.5, minWidth: 65, category: 'Anatomy', align: 'center' },
+  { key: 'mand', label: 'Mand.', baseWidth: 3.5, minWidth: 65, category: 'Anatomy', align: 'center' },
+  { key: 'format', label: 'Format', baseWidth: 4.5, minWidth: 80, category: 'Technical', align: 'center' },
+  { key: 'amount', label: 'Amount', baseWidth: 5.5, minWidth: 90, category: 'Financial', align: 'right' },
+  { key: 'vouch', label: 'Vouch.', baseWidth: 3.5, minWidth: 70, category: 'Financial', align: 'center' },
+  { key: 'received', label: 'Received', baseWidth: 7.0, minWidth: 110, category: 'Timeline' },
+  { key: 'sent', label: 'Sent', baseWidth: 5.0, minWidth: 85, category: 'Timeline', align: 'center' },
+  { key: 'update', label: 'Update', baseWidth: 5.0, minWidth: 85, category: 'Timeline', align: 'center' },
+  { key: 'charged', label: 'Charged', baseWidth: 5.0, minWidth: 85, category: 'Financial', align: 'center' },
+  { key: 'action', label: 'Action', baseWidth: 8.5, minWidth: 130, category: 'Status', align: 'center' },
+  { key: 'cr', label: 'CR', baseWidth: 3.5, minWidth: 65, category: 'Status', align: 'center' },
+  { key: 'csTask', label: 'CS-Task', baseWidth: 5.5, minWidth: 95, category: 'Status', align: 'center' },
 ];
 
 export interface ServiceFilterState {
@@ -394,7 +395,7 @@ export default function Flow() {
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
   const [selectedScanCenter, setSelectedScanCenter] = useState<string>('ALL');
 
-  // Closed / Collapsed by default as requested: "وعايز مقفول بالافتراضي"
+  // Closed / Collapsed by default as requested: "Closed by default"
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
 
   // Quick View Drawer Modal
@@ -511,19 +512,19 @@ export default function Flow() {
     document.addEventListener('mouseup', handleMouseUp, { once: true });
   };
 
-  // Calculate dynamic column width so visible columns strictly sum to 100% or use pixel override
-  const totalVisibleBaseWidth = useMemo(() => {
+  // Calculate dynamic minimum width from visible columns and user resize overrides
+  const totalVisibleMinWidth = useMemo(() => {
     return ALL_COLUMNS.filter((c) => visibleColumns.has(c.key)).reduce(
-      (sum, c) => sum + c.baseWidth,
+      (sum, c) => sum + (colWidthOverrides[c.key] || c.minWidth),
       0
     );
-  }, [visibleColumns]);
+  }, [visibleColumns, colWidthOverrides]);
 
   const getColWidth = (col: ColumnDefinition) => {
     if (colWidthOverrides[col.key]) {
       return `${colWidthOverrides[col.key]}px`;
     }
-    return `${((col.baseWidth / totalVisibleBaseWidth) * 100).toFixed(2)}%`;
+    return `${col.minWidth}px`;
   };
 
   // -------------------------------------------------------------
@@ -1122,6 +1123,17 @@ export default function Flow() {
                       Minimal (6)
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setColWidthOverrides({});
+                      setColumnPreset('all');
+                    }}
+                    className="w-full py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-sky-500 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 text-[10px] font-bold text-center cursor-pointer"
+                    title="Reset all column widths and visibility to factory defaults"
+                  >
+                    Reset Table Layout & Widths
+                  </button>
 
                   {/* Checkbox List */}
                   <div className="max-h-56 overflow-y-auto space-y-1 pr-1 text-xs divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -1188,12 +1200,15 @@ export default function Flow() {
           </div>
         </div>
 
-        {/* Table Container - Responsive horizontal scrolling on mobile/phone screens only */}
-        <div className="w-full overflow-x-auto sm:overflow-x-visible -webkit-overflow-scrolling-touch custom-scrollbar">
-          <table className="w-full min-w-[1050px] sm:min-w-full text-left text-xs border-collapse table-fixed select-none">
+        {/* Table Container - Smooth horizontal scrolling across viewports with guaranteed min-width to prevent text overlap */}
+        <div className="w-full overflow-x-auto -webkit-overflow-scrolling-touch custom-scrollbar">
+          <table
+            style={{ minWidth: `${Math.max(1050, totalVisibleMinWidth)}px` }}
+            className="w-full text-left text-xs border-collapse table-fixed select-none"
+          >
             <colgroup>
               {ALL_COLUMNS.filter((c) => visibleColumns.has(c.key)).map((col) => (
-                <col key={`col-${col.key}`} style={{ width: getColWidth(col) }} />
+                <col key={`col-${col.key}`} style={{ width: getColWidth(col), minWidth: `${col.minWidth}px` }} />
               ))}
             </colgroup>
             <thead>
@@ -1203,8 +1218,8 @@ export default function Flow() {
                   <th
                     key={col.key}
                     onClick={() => handleSort(col.key)}
-                    style={{ width: getColWidth(col) }}
-                    className={`py-2.5 px-1.5 truncate cursor-pointer select-none transition-colors hover:bg-slate-300 dark:hover:bg-slate-700 relative group/th max-w-0 overflow-hidden ${
+                    style={{ width: getColWidth(col), minWidth: `${col.minWidth}px` }}
+                    className={`py-3 px-2.5 truncate cursor-pointer select-none transition-colors hover:bg-slate-300 dark:hover:bg-slate-700 relative group/th overflow-hidden ${
                       col.align === 'center'
                         ? 'text-center'
                         : col.align === 'right'
@@ -1269,7 +1284,7 @@ export default function Flow() {
                       >
                         {/* 1. # tl */}
                         {visibleColumns.has('tl') && (
-                          <td className="py-2.5 px-2 text-left max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2.5 text-left align-middle overflow-hidden">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span
                                 onClick={(e) => toggleOrderExpand(order.id, e)}
@@ -1283,10 +1298,10 @@ export default function Flow() {
                                 <ChevronRight size={14} className="stroke-[3]" />
                               </span>
                               <div className="flex flex-col items-start leading-tight min-w-0 max-w-full overflow-hidden">
-                                <span className="font-mono font-black text-amber-600 dark:text-amber-500 text-[11px] truncate block max-w-full">
+                                <span className="font-mono font-black text-amber-600 dark:text-amber-500 text-xs truncate block max-w-full">
                                   {order.orderNum}
                                 </span>
-                                <span className={`inline-block px-1 py-0.2 rounded text-[7.5px] tracking-wider uppercase mt-0.5 truncate max-w-full ${getSourceBadgeStyle(order.source)}`}>
+                                <span className={`inline-block px-1 py-0.2 rounded text-[8.5px] font-bold tracking-wider uppercase mt-0.5 truncate max-w-full ${getSourceBadgeStyle(order.source)}`}>
                                   {order.source}
                                 </span>
                               </div>
@@ -1296,18 +1311,18 @@ export default function Flow() {
 
                         {/* 2. Scan Center tl */}
                         {visibleColumns.has('scanCenter') && (
-                          <td className="py-2.5 px-1.5 font-bold text-slate-800 dark:text-slate-200 text-[11px] max-w-0 overflow-hidden" title={order.scanCenter}>
+                          <td className="py-3.5 px-2.5 font-bold text-slate-800 dark:text-slate-200 text-xs align-middle overflow-hidden" title={order.scanCenter}>
                             <div className="truncate block w-full">{order.scanCenter}</div>
                           </td>
                         )}
 
                         {/* 3. Doctor tl */}
                         {visibleColumns.has('doctor') && (
-                          <td className="py-2.5 px-1.5 text-[11px] max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2.5 text-xs align-middle overflow-hidden">
                             <div className="font-bold text-slate-800 dark:text-slate-200 truncate block w-full" title={order.doctorName}>
                               {order.doctorName}
                             </div>
-                            <div className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold truncate block w-full">
+                            <div className="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold truncate block w-full">
                               {order.doctorSub}
                             </div>
                           </td>
@@ -1315,11 +1330,11 @@ export default function Flow() {
 
                         {/* 4. Patient Name tl */}
                         {visibleColumns.has('patient') && (
-                          <td className="py-2.5 px-1.5 text-[11px] max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2.5 text-xs align-middle overflow-hidden">
                             <div className="font-bold text-slate-900 dark:text-white truncate block w-full" title={order.patientName}>
                               {order.patientName}
                             </div>
-                            <div className="text-[9px] text-amber-600 dark:text-amber-500 font-bold truncate block w-full">
+                            <div className="text-[11px] text-amber-600 dark:text-amber-500 font-semibold truncate block w-full">
                               {order.patientSub}
                             </div>
                           </td>
@@ -1327,7 +1342,7 @@ export default function Flow() {
 
                         {/* 5. Is Locked (?) */}
                         {visibleColumns.has('lock') && (
-                          <td className="py-2.5 px-1 text-center max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2 text-center align-middle overflow-hidden">
                             <div className="flex flex-col items-center truncate">
                               {order.isLocked ? (
                                 <span className="px-1.5 py-0.5 rounded text-[8px] font-bold border border-emerald-500/50 text-emerald-600 dark:text-emerald-400 bg-transparent truncate">
@@ -1344,7 +1359,7 @@ export default function Flow() {
 
                         {/* 6. Notes */}
                         {visibleColumns.has('notes') && (
-                          <td className="py-2.5 px-1 text-center text-[10px] text-slate-700 dark:text-slate-300 font-medium max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2 text-center text-[11px] text-slate-700 dark:text-slate-300 font-medium align-middle overflow-hidden">
                             <span className="underline cursor-pointer truncate block w-full" title={order.notes}>
                               {order.notes}
                             </span>
@@ -1353,7 +1368,7 @@ export default function Flow() {
 
                         {/* 7. Archive Date */}
                         {visibleColumns.has('archive') && (
-                          <td className="py-2.5 px-1 text-center text-[10px] font-mono text-slate-600 dark:text-slate-400 max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2 text-center text-[11px] font-mono text-slate-600 dark:text-slate-400 align-middle overflow-hidden">
                             <div className="flex items-center justify-center gap-0.5 truncate w-full">
                               <span className="truncate">{order.archiveDate}</span>
                               <ShoppingCart size={10} className="text-emerald-500 inline shrink-0" />
@@ -1363,14 +1378,14 @@ export default function Flow() {
 
                         {/* 8. ... */}
                         {visibleColumns.has('more') && (
-                          <td className="py-2.5 px-0.5 text-center max-w-0 overflow-hidden" onClick={(e) => { e.stopPropagation(); navigate(`/order-details?ID=${order.orderNum}`); }}>
+                          <td className="py-3.5 px-1 text-center align-middle overflow-hidden" onClick={(e) => { e.stopPropagation(); navigate(`/order-details?ID=${order.orderNum}`); }}>
                             <MoreHorizontal size={13} className="text-slate-400 hover:text-sky-500 mx-auto cursor-pointer" />
                           </td>
                         )}
 
                         {/* 9. Order (SERVICE TAGS WITH LIVE HOVER TOOLTIP) */}
                         {visibleColumns.has('order') && (
-                          <td className="py-2.5 px-1.5 max-w-0 overflow-hidden">
+                          <td className="py-3.5 px-2.5 align-middle overflow-hidden">
                             <div className="flex items-center gap-1 flex-nowrap overflow-hidden">
                               {order.services.map((sub, sIdx) => (
                                 <div
@@ -1398,77 +1413,77 @@ export default function Flow() {
 
                         {/* 10. Bill To */}
                         {visibleColumns.has('billTo') && (
-                          <td className="py-2.5 px-1.5 text-[10.5px] text-slate-600 dark:text-slate-400 max-w-0 overflow-hidden" title={primaryService?.billTo}>
+                          <td className="py-3.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 align-middle overflow-hidden" title={primaryService?.billTo}>
                             <div className="truncate block w-full">{primaryService?.billTo}</div>
                           </td>
                         )}
 
                         {/* 11. Maxilla */}
                         {visibleColumns.has('max') && (
-                          <td className="py-2.5 px-1 text-center font-bold text-[10.5px] text-emerald-600 dark:text-emerald-400 max-w-0 overflow-hidden" title={primaryService?.maxilla}>
+                          <td className="py-3.5 px-2 text-center font-bold text-xs text-emerald-600 dark:text-emerald-400 align-middle overflow-hidden" title={primaryService?.maxilla}>
                             <div className="truncate block w-full">{primaryService?.maxilla}</div>
                           </td>
                         )}
 
                         {/* 12. Mandible */}
                         {visibleColumns.has('mand') && (
-                          <td className="py-2.5 px-1 text-center font-bold text-[10.5px] text-emerald-600 dark:text-emerald-400 max-w-0 overflow-hidden" title={primaryService?.mandible}>
+                          <td className="py-3.5 px-2 text-center font-bold text-xs text-emerald-600 dark:text-emerald-400 align-middle overflow-hidden" title={primaryService?.mandible}>
                             <div className="truncate block w-full">{primaryService?.mandible}</div>
                           </td>
                         )}
 
                         {/* 13. Format */}
                         {visibleColumns.has('format') && (
-                          <td className="py-2.5 px-1 text-center font-mono font-bold text-[10px] text-slate-700 dark:text-slate-300 max-w-0 overflow-hidden" title={primaryService?.format}>
+                          <td className="py-3.5 px-2 text-center font-mono font-bold text-[11px] text-slate-700 dark:text-slate-300 align-middle overflow-hidden" title={primaryService?.format}>
                             <div className="truncate block w-full">{primaryService?.format}</div>
                           </td>
                         )}
 
                         {/* 14. Amount */}
                         {visibleColumns.has('amount') && (
-                          <td className="py-2.5 px-1.5 text-right font-mono font-black text-[11px] text-slate-900 dark:text-white max-w-0 overflow-hidden" title={`$${totalCaseAmount}.00`}>
+                          <td className="py-3.5 px-2.5 text-right font-mono font-black text-xs text-slate-900 dark:text-white align-middle overflow-hidden" title={`$${totalCaseAmount}.00`}>
                             <div className="truncate block w-full">${totalCaseAmount}.00</div>
                           </td>
                         )}
 
                         {/* 15. Vouchers */}
                         {visibleColumns.has('vouch') && (
-                          <td className="py-2.5 px-1 text-center font-mono text-[10px] text-slate-500 max-w-0 overflow-hidden" title={primaryService?.vouchers}>
+                          <td className="py-3.5 px-2 text-center font-mono text-[11px] text-slate-500 align-middle overflow-hidden" title={primaryService?.vouchers}>
                             <div className="truncate block w-full">{primaryService?.vouchers}</div>
                           </td>
                         )}
 
                         {/* 16. Received Time */}
                         {visibleColumns.has('received') && (
-                          <td className="py-2.5 px-1.5 font-mono text-[9.5px] text-slate-600 dark:text-slate-400 max-w-0 overflow-hidden" title={primaryService?.receivedTime}>
+                          <td className="py-3.5 px-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400 align-middle overflow-hidden" title={primaryService?.receivedTime}>
                             <div className="truncate block w-full">{primaryService?.receivedTime}</div>
                           </td>
                         )}
 
                         {/* 17. Sent Time */}
                         {visibleColumns.has('sent') && (
-                          <td className="py-2.5 px-1 text-center font-mono text-[9.5px] text-slate-500 max-w-0 overflow-hidden" title={primaryService?.sentTime}>
+                          <td className="py-3.5 px-2 text-center font-mono text-[11px] text-slate-500 align-middle overflow-hidden" title={primaryService?.sentTime}>
                             <div className="truncate block w-full">{primaryService?.sentTime}</div>
                           </td>
                         )}
 
                         {/* 18. Update Time */}
                         {visibleColumns.has('update') && (
-                          <td className="py-2.5 px-1 text-center font-mono text-[9.5px] text-slate-500 max-w-0 overflow-hidden" title={primaryService?.updateTime}>
+                          <td className="py-3.5 px-2 text-center font-mono text-[11px] text-slate-500 align-middle overflow-hidden" title={primaryService?.updateTime}>
                             <div className="truncate block w-full">{primaryService?.updateTime}</div>
                           </td>
                         )}
 
                         {/* 19. Charged On */}
                         {visibleColumns.has('charged') && (
-                          <td className="py-2.5 px-1 text-center font-mono text-[9.5px] text-slate-500 max-w-0 overflow-hidden" title={primaryService?.chargedOn}>
+                          <td className="py-3.5 px-2 text-center font-mono text-[11px] text-slate-500 align-middle overflow-hidden" title={primaryService?.chargedOn}>
                             <div className="truncate block w-full">{primaryService?.chargedOn}</div>
                           </td>
                         )}
 
                         {/* 20. Action */}
                         {visibleColumns.has('action') && (
-                          <td className="py-2.5 px-1 text-center max-w-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                          <td className="py-3.5 px-2 text-center align-middle overflow-hidden" onClick={(e) => e.stopPropagation()}>
                             <div className="overflow-hidden flex items-center justify-center">
                               {renderActionStatusBadge(
                                 hasActionAlert ? (alertService?.actionLabel || 'No Scans') : (primaryService?.actionLabel || 'In Progress'),
@@ -1485,14 +1500,14 @@ export default function Flow() {
 
                         {/* 21. Change Request */}
                         {visibleColumns.has('cr') && (
-                          <td className="py-2.5 px-1 text-center font-mono text-[10px] text-rose-600 font-bold max-w-0 overflow-hidden" title={primaryService?.changeRequest}>
+                          <td className="py-3.5 px-2 text-center font-mono text-[11px] text-rose-600 font-bold align-middle overflow-hidden" title={primaryService?.changeRequest}>
                             <div className="truncate block w-full">{primaryService?.changeRequest || '-'}</div>
                           </td>
                         )}
 
                         {/* 22. CS-Task */}
                         {visibleColumns.has('csTask') && (
-                          <td className="py-2.5 px-1 text-center max-w-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                          <td className="py-3.5 px-2 text-center align-middle overflow-hidden" onClick={(e) => e.stopPropagation()}>
                             <div className="truncate block w-full">
                               <span className="text-slate-600 dark:text-slate-400 font-bold text-[10px] hover:text-sky-500 cursor-pointer">
                                 {primaryService?.csTask?.assignee ? primaryService.csTask.assignee : 'Assign'}
@@ -1539,11 +1554,14 @@ export default function Flow() {
 
                                   {/* Sub-Orders View Mode 1: Table Matrix */}
                                   {subOrderViewMode === 'matrix' ? (
-                                    <div className="overflow-x-auto sm:overflow-x-visible -webkit-overflow-scrolling-touch custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-[#0b101d]">
-                                      <table className="w-full min-w-[1050px] sm:min-w-full text-left text-xs border-collapse table-fixed select-none">
+                                    <div className="w-full overflow-x-auto -webkit-overflow-scrolling-touch custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-[#0b101d]">
+                                      <table
+                                        style={{ minWidth: `${Math.max(1050, totalVisibleMinWidth)}px` }}
+                                        className="w-full text-left text-xs border-collapse table-fixed select-none"
+                                      >
                                         <colgroup>
                                           {ALL_COLUMNS.filter((c) => visibleColumns.has(c.key)).map((col) => (
-                                            <col key={`sub-col-${col.key}`} style={{ width: getColWidth(col) }} />
+                                            <col key={`sub-col-${col.key}`} style={{ width: getColWidth(col), minWidth: `${col.minWidth}px` }} />
                                           ))}
                                         </colgroup>
                                         <thead>
@@ -1551,8 +1569,8 @@ export default function Flow() {
                                             {ALL_COLUMNS.filter((c) => visibleColumns.has(c.key)).map((col) => (
                                               <th
                                                 key={`sub-th-${col.key}`}
-                                                style={{ width: getColWidth(col) }}
-                                                className={`py-2 px-1.5 truncate max-w-0 overflow-hidden ${
+                                                style={{ width: getColWidth(col), minWidth: `${col.minWidth}px` }}
+                                                className={`py-2.5 px-2.5 truncate overflow-hidden ${
                                                   col.align === 'center'
                                                     ? 'text-center'
                                                     : col.align === 'right'
@@ -1572,45 +1590,45 @@ export default function Flow() {
                                               className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 text-xs font-medium transition-colors"
                                             >
                                               {visibleColumns.has('tl') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[10px] text-slate-400 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-400 align-middle overflow-hidden">
                                                   <div className="truncate block w-full">↳ #{srvIdx + 1}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('scanCenter') && (
-                                                <td className="py-2 px-1.5 text-[10px] text-slate-400 max-w-0 overflow-hidden" title={order.scanCenter}>
+                                                <td className="py-2.5 px-2.5 text-[11px] text-slate-400 align-middle overflow-hidden" title={order.scanCenter}>
                                                   <div className="truncate block w-full">{order.scanCenter}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('doctor') && (
-                                                <td className="py-2 px-1.5 text-[10px] text-slate-400 max-w-0 overflow-hidden" title={order.doctorName}>
+                                                <td className="py-2.5 px-2.5 text-[11px] text-slate-400 align-middle overflow-hidden" title={order.doctorName}>
                                                   <div className="truncate block w-full">{order.doctorName}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('patient') && (
-                                                <td className="py-2 px-1.5 text-[10px] text-slate-400 max-w-0 overflow-hidden" title={order.patientName}>
+                                                <td className="py-2.5 px-2.5 text-[11px] text-slate-400 align-middle overflow-hidden" title={order.patientName}>
                                                   <div className="truncate block w-full">{order.patientName}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('lock') && (
-                                                <td className="py-2 px-1 text-center text-[10px] text-slate-400 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center text-[11px] text-slate-400 align-middle overflow-hidden">
                                                   -
                                                 </td>
                                               )}
                                               {visibleColumns.has('notes') && (
-                                                <td className="py-2 px-1 text-center text-[10px] text-slate-400 max-w-0 overflow-hidden" title={order.notes}>
+                                                <td className="py-2.5 px-2 text-center text-[11px] text-slate-400 align-middle overflow-hidden" title={order.notes}>
                                                   <div className="truncate block w-full">{order.notes}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('archive') && (
-                                                <td className="py-2 px-1 text-center text-[10px] font-mono text-slate-400 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center text-[11px] font-mono text-slate-400 align-middle overflow-hidden">
                                                   <div className="truncate block w-full">{order.archiveDate}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('more') && (
-                                                <td className="py-2 px-0.5 text-center text-slate-400 max-w-0 overflow-hidden">•</td>
+                                                <td className="py-2.5 px-1 text-center text-slate-400 align-middle overflow-hidden">•</td>
                                               )}
                                               {visibleColumns.has('order') && (
-                                                <td className="py-2 px-1.5 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2.5 align-middle overflow-hidden">
                                                   <div className="flex items-center gap-1.5 overflow-hidden">
                                                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border bg-transparent shrink-0 ${getServiceTagStyle(sub.typeCode)}`}>
                                                       {sub.typeCode}
@@ -1622,57 +1640,57 @@ export default function Flow() {
                                                 </td>
                                               )}
                                               {visibleColumns.has('billTo') && (
-                                                <td className="py-2 px-1.5 text-[10px] text-slate-500 max-w-0 overflow-hidden" title={sub.billTo}>
+                                                <td className="py-2.5 px-2.5 text-[11px] text-slate-500 align-middle overflow-hidden" title={sub.billTo}>
                                                   <div className="truncate block w-full">{sub.billTo}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('max') && (
-                                                <td className="py-2 px-1 text-center font-bold text-emerald-600 dark:text-emerald-400 text-[10px] max-w-0 overflow-hidden" title={sub.maxilla}>
+                                                <td className="py-2.5 px-2 text-center font-bold text-emerald-600 dark:text-emerald-400 text-[11px] align-middle overflow-hidden" title={sub.maxilla}>
                                                   <div className="truncate block w-full">{sub.maxilla}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('mand') && (
-                                                <td className="py-2 px-1 text-center font-bold text-emerald-600 dark:text-emerald-400 text-[10px] max-w-0 overflow-hidden" title={sub.mandible}>
+                                                <td className="py-2.5 px-2 text-center font-bold text-emerald-600 dark:text-emerald-400 text-[11px] align-middle overflow-hidden" title={sub.mandible}>
                                                   <div className="truncate block w-full">{sub.mandible}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('format') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[10px] text-slate-600 dark:text-slate-400 max-w-0 overflow-hidden" title={sub.format}>
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-600 dark:text-slate-400 align-middle overflow-hidden" title={sub.format}>
                                                   <div className="truncate block w-full">{sub.format}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('amount') && (
-                                                <td className="py-2 px-1.5 text-right font-mono font-bold text-[10.5px] text-slate-900 dark:text-white max-w-0 overflow-hidden" title={`$${sub.amount}.00`}>
+                                                <td className="py-2.5 px-2.5 text-right font-mono font-bold text-xs text-slate-900 dark:text-white align-middle overflow-hidden" title={`$${sub.amount}.00`}>
                                                   <div className="truncate block w-full">${sub.amount}.00</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('vouch') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[10px] text-slate-400 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-400 align-middle overflow-hidden">
                                                   <div className="truncate block w-full">{sub.vouchers}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('received') && (
-                                                <td className="py-2 px-1.5 font-mono text-[9px] text-slate-500 max-w-0 overflow-hidden" title={sub.receivedTime}>
+                                                <td className="py-2.5 px-2.5 font-mono text-[11px] text-slate-500 align-middle overflow-hidden" title={sub.receivedTime}>
                                                   <div className="truncate block w-full">{sub.receivedTime}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('sent') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[9px] text-slate-400 max-w-0 overflow-hidden" title={sub.sentTime}>
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-400 align-middle overflow-hidden" title={sub.sentTime}>
                                                   <div className="truncate block w-full">{sub.sentTime}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('update') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[9px] text-slate-400 max-w-0 overflow-hidden" title={sub.updateTime}>
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-400 align-middle overflow-hidden" title={sub.updateTime}>
                                                   <div className="truncate block w-full">{sub.updateTime}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('charged') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[9px] text-slate-400 max-w-0 overflow-hidden" title={sub.chargedOn}>
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-400 align-middle overflow-hidden" title={sub.chargedOn}>
                                                   <div className="truncate block w-full">{sub.chargedOn}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('action') && (
-                                                <td className="py-2 px-1 text-center max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center align-middle overflow-hidden">
                                                   <div className="overflow-hidden flex items-center justify-center">
                                                     {renderActionStatusBadge(
                                                       sub.actionLabel,
@@ -1687,12 +1705,12 @@ export default function Flow() {
                                                 </td>
                                               )}
                                               {visibleColumns.has('cr') && (
-                                                <td className="py-2 px-1 text-center font-mono text-[10px] text-rose-600 max-w-0 overflow-hidden" title={sub.changeRequest}>
+                                                <td className="py-2.5 px-2 text-center font-mono text-[11px] text-rose-600 align-middle overflow-hidden" title={sub.changeRequest}>
                                                   <div className="truncate block w-full">{sub.changeRequest || '-'}</div>
                                                 </td>
                                               )}
                                               {visibleColumns.has('csTask') && (
-                                                <td className="py-2 px-1 text-center text-[10px] text-slate-500 max-w-0 overflow-hidden">
+                                                <td className="py-2.5 px-2 text-center text-[11px] text-slate-500 align-middle overflow-hidden">
                                                   <div className="truncate block w-full">
                                                     {sub.csTask.assignee ? `by ${sub.csTask.assignee}` : 'Assign'}
                                                   </div>
