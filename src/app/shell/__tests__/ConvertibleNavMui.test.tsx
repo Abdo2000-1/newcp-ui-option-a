@@ -118,7 +118,7 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
       expect(screen.getByText(/^home$/i)).toBeInTheDocument();
       expect(screen.getByText(/orders & cases/i)).toBeInTheDocument();
       expect(screen.getByText(/operations & reports/i)).toBeInTheDocument();
-      expect(screen.getByText(/\+ add case/i)).toBeInTheDocument();
+      expect(screen.queryByText(/\+ add case/i)).not.toBeInTheDocument();
     });
   });
 
@@ -139,13 +139,14 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
       renderConvertibleNav({ position: 'left', collapsed: false });
 
       expect(screen.getByText(/^home$/i)).toBeInTheDocument();
-      expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
-      expect(screen.getByText(/add new case/i)).toBeInTheDocument();
-      expect(screen.getByText(/order details/i)).toBeInTheDocument();
+      expect(screen.getByText(/^orders$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^cases$/i)).toBeInTheDocument();
+      expect(screen.getByText(/add case/i)).toBeInTheDocument();
       expect(screen.getByText(/quarter targets/i)).toBeInTheDocument();
-      expect(screen.getByText(/task 47: models/i)).toBeInTheDocument();
-      expect(screen.getByText(/task 31: staff targets/i)).toBeInTheDocument();
-      expect(screen.getByText(/edit case/i)).toBeInTheDocument();
+      expect(screen.getByText(/3d models/i)).toBeInTheDocument();
+      expect(screen.getByText(/staff targets/i)).toBeInTheDocument();
+      expect(screen.queryByText(/order details/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/edit case/i)).not.toBeInTheDocument();
     });
 
     it('toggles collapse in sidebar mode', () => {

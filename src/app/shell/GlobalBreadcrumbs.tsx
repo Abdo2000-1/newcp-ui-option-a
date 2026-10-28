@@ -26,6 +26,8 @@ const ROUTE_LABELS: Record<string, string> = {
   billing: 'Billing & Invoices',
   reports: 'Reports Hub',
   settings: 'System Settings',
+  'api-docs': 'API Documentation',
+  swagger: 'API Documentation',
   notifications: 'Notifications',
   'change-requests': 'Change Requests',
   'scan-center': 'Scan Center',
