@@ -140,7 +140,7 @@ newcp-ui-option-a/
 1. **Feature Encapsulation:** Each feature directory manages its own sub-routes, pages, specialized UI components, and domain-specific query hooks.
 2. **OpenAPI-First Integration:** API models and request methods will be code-generated from the canonical `newcp.openapi.yaml` contract.
 3. **Data Fetching & Cache:** TanStack Query (`@tanstack/react-query`) will replace the prototype `useFetch` and `store.ts` local storage hydration.
-4. **Tenant Isolation:** Every outgoing HTTP request will supply verified multi-tenant headers (`X-Tenant-ID`, `X-Instance-ID`, `Authorization: Bearer <token>`). Direct database queries from frontend remain strictly prohibited.
+4. **Tenant Isolation & Session Context:** Every outgoing HTTP request supplies `Authorization: Bearer <session-token>`. The backend validates the user's tenant grant, binds the active tenant context, and enforces transaction-local RLS. The frontend does NOT send client-controlled `X-Tenant-ID` or `tenantId` headers. Direct database queries from frontend remain strictly prohibited.
 
 ---
 
@@ -151,9 +151,9 @@ newcp-ui-option-a/
 ```mermaid
 flowchart TD
     P1["Phase 1: Architecture Alignment & Quality Gates<br/>(COMPLETED in T-001 & T-002)"] --> P2["Phase 2: Documentation & Boundary Alignment<br/>(COMPLETED in T-003)"]
-    P2 --> P3["Phase 3: OpenAPI Contract Ingestion & Client Generation<br/>(PENDING Canonical Contract)"]
+    P2 --> P3["Phase 3: OpenAPI Contract Ingestion & Client Generation<br/>(COMPLETED: newcp.openapi.yaml ingested)"]
     P3 --> P4["Phase 4: Feature-by-Feature Data Transport Migration<br/>(Replace mock fixtures with React Query)"]
-    P4 --> P5["Phase 5: Auth & Multi-Tenant Context Integration<br/>(Real OAuth, JWT, Tenant Switcher)"]
+    P4 --> P5["Phase 5: Auth & Multi-Tenant Context Integration<br/>(Google Identity Services, Session Token, auth/me)"]
     P5 --> P6["Phase 6: E2E Testing, Hardening & Production Release"]
 ```
 
@@ -164,16 +164,17 @@ flowchart TD
 2. **Phase 2: Documentation & Boundary Alignment (`[COMPLETED]`)**:
    - Reconciled engineering documentation with actual repository reality.
    - Formalized Abdo's boundary and open decisions.
-3. **Phase 3: OpenAPI Contract Ingestion (`[BLOCKED - Awaiting Canonical YAML]`)**:
+3. **Phase 3: OpenAPI Contract Ingestion (`[COMPLETED]`)**:
    - Ingest canonical `newcp.openapi.yaml` into repository.
    - Set up automated TypeScript client generation (e.g. `openapi-typescript` / `orval`).
 4. **Phase 4: Feature-by-Feature Data Transport Migration (`[PENDING Phase 3]`)**:
    - Migrate Orders and Cases modules from `/data/*.json` to typed API queries.
    - Migrate Models and Conversion modules.
    - Preserve existing UI visual design and state switcher capability.
-5. **Phase 5: Auth & Multi-Tenant Context Integration (`[PENDING Backend Auth]`)**:
-   - Connect login and profile views to real OAuth2/JWT session endpoints.
-   - Enforce tenant-scoped request interceptors.
+5. **Phase 5: Auth & Multi-Tenant Context Integration (`[IN PROGRESS - v0.9.8 Baseline]`)**:
+   - Connect login flow to Google Identity Services and canonical `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`.
+   - Implement Pending Access state without fake tokens or local authorization calculation.
+   - Enforce server-resolved tenant session context without client-supplied `X-Tenant-ID`.
 6. **Phase 6: End-to-End Testing & Hardening (`[PENDING Full Integration]`)**:
    - Introduce Playwright for CEO-demo journey tests (Login -> Case -> Model Work -> Report).
    - Container vulnerability scanning and production tagging.
@@ -276,7 +277,7 @@ flowchart TD
 ## 10. OpenAPI & Backend Integration Status
 
 - `[CONFIRMED FACT]` **Current Status:** **Pending / Simulated**.
-- `[CONFIRMED FACT]` No live backend connection exists. The canonical OpenAPI 3.0.3 specification (`newcp.openapi.yaml`) has not yet been delivered to this frontend repository.
+- `[CONFIRMED FACT]` Canonical OpenAPI 3.0.3 specification is present at `docs/newcp-ai/references/api/newcp.openapi.yaml`. Live backend connection remains external/unconnected in this frontend environment. Orders Dashboard API extension (`02_ORDERS_DASHBOARD_PROPOSED_EXTENSION.yaml`) is proposed only; frontend Orders Dashboard scope is UI/UX and labeled synthetic/mock data only.
 - `[EXISTING IMPLEMENTATION]` All API calls route through `src/shared/services/api.ts` reading JSON fixtures in `public/data/`.
 - `[PROPOSED PRACTICE]` Once the backend team provides `newcp.openapi.yaml`, code generation will populate `src/shared/api/generated/` and feature queries will transition systematically.
 

@@ -5,6 +5,8 @@ import type {
   IPostHogClient,
   TelemetryConfig,
   TelemetryEnvironment,
+  FeatureFlagDetail,
+  PostHogStatusSummary,
 } from '../types';
 import { sanitizeProperties, stripQueryString } from './sanitizer';
 
@@ -26,6 +28,8 @@ export interface IPostHogAdapter {
   identify(userId: string, traits?: UserTraits): void;
   reset(): void;
   isFeatureEnabled(key: string, fallback?: boolean): boolean;
+  evaluateFeatureFlag(key: string, fallback?: boolean): FeatureFlagDetail;
+  getStatusSummary(): PostHogStatusSummary;
   isEnabled(): boolean;
 }
 
@@ -39,6 +43,24 @@ export class NoopPostHogAdapter implements IPostHogAdapter {
   reset(): void {}
   isFeatureEnabled(_key: string, fallback = false): boolean {
     return fallback;
+  }
+  evaluateFeatureFlag(key: string, fallback = false): FeatureFlagDetail {
+    return {
+      key,
+      enabled: fallback,
+      state: 'disabled',
+      source: 'PostHog Telemetry Disabled (Using Local Safe Fallback)',
+    };
+  }
+  getStatusSummary(): PostHogStatusSummary {
+    return {
+      enabled: false,
+      configured: false,
+      host: 'https://us.i.posthog.com',
+      maskedKey: 'Not Configured',
+      environment: 'production',
+      phiSafe: true,
+    };
   }
   isEnabled(): boolean {
     return false;
@@ -179,15 +201,69 @@ export class PostHogAdapter implements IPostHogAdapter {
   }
 
   public isFeatureEnabled(key: string, fallback = false): boolean {
-    if (!this.isEnabled() || !this.client?.isFeatureEnabled) {
-      return fallback;
+    return this.evaluateFeatureFlag(key, fallback).enabled;
+  }
+
+  public getStatusSummary(): PostHogStatusSummary {
+    const isConfigured = Boolean(this.config.key && this.config.key.trim().length > 0);
+    let maskedKey = 'Not Configured';
+    if (isConfigured && this.config.key) {
+      const k = this.config.key.trim();
+      maskedKey = k.length > 8 ? `${k.slice(0, 4)}••••••••` : '[Configured / Hidden]';
+    }
+
+    return {
+      enabled: this.isEnabled(),
+      configured: isConfigured,
+      host: this.config.host || 'https://us.i.posthog.com',
+      maskedKey,
+      environment: this.environment,
+      phiSafe: true,
+    };
+  }
+
+  public evaluateFeatureFlag(key: string, fallback = false): FeatureFlagDetail {
+    if (!this.isEnabled()) {
+      return {
+        key,
+        enabled: fallback,
+        state: 'disabled',
+        source: 'PostHog Telemetry Disabled (Using Local Safe Fallback)',
+      };
+    }
+
+    if (!this.client || typeof this.client.isFeatureEnabled !== 'function') {
+      return {
+        key,
+        enabled: fallback,
+        state: 'unavailable',
+        source: 'PostHog SDK Client Unavailable / Offline (Using Local Safe Fallback)',
+      };
     }
 
     try {
       const result = this.client.isFeatureEnabled(key);
-      return typeof result === 'boolean' ? result : fallback;
+      if (typeof result === 'boolean') {
+        return {
+          key,
+          enabled: result,
+          state: 'remote',
+          source: 'PostHog Cloud Remote Flag Evaluation',
+        };
+      }
+      return {
+        key,
+        enabled: fallback,
+        state: 'local',
+        source: 'Remote Flag Undefined (Using Local Safe Fallback)',
+      };
     } catch {
-      return fallback;
+      return {
+        key,
+        enabled: fallback,
+        state: 'local',
+        source: 'Flag Evaluation Exception (Using Local Safe Fallback)',
+      };
     }
   }
 }
