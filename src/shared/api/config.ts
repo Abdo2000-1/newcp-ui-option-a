@@ -50,7 +50,9 @@ export function getApiConfig(): ApiConfig {
 
   // Base URL resolution
   let baseUrl = rawBaseUrl.replace(/\/+$/, '');
-  if (!baseUrl && mode !== 'LIVE_HTTP') {
+  if (!baseUrl && mode === 'LIVE_HTTP') {
+    baseUrl = 'http://10.20.25.147:3001';
+  } else if (!baseUrl && mode !== 'LIVE_HTTP') {
     baseUrl = '/api/v1';
   }
 

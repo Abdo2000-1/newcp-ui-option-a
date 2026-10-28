@@ -33,7 +33,10 @@ describe('GoogleAuthAdapter Boundary & Contract Safety (v0.9.8)', () => {
   });
 
   it('2. Detects unconfigured Google Identity Services when client ID is missing or placeholder', () => {
-    expect(adapter.isGoogleConfigured()).toBe(false);
+    const unconfigured = new GoogleAuthAdapter('your-google-client-id-here.apps.googleusercontent.com');
+    expect(unconfigured.isGoogleConfigured()).toBe(false);
+    const missing = new GoogleAuthAdapter('');
+    expect(missing.isGoogleConfigured()).toBe(false);
   });
 
   it('3. Rejects empty ID token in exchangeTokenForSession with 400 BackendAuthError', async () => {

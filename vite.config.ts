@@ -6,6 +6,7 @@ import { fileURLToPath, URL } from 'node:url'
 const isGithubPages = process.env.GITHUB_PAGES === 'true' || process.env.CI === 'true'
 
 export default defineConfig({
+  envPrefix: ['VITE_', 'GOOGLE_'],
   base: isGithubPages ? '/newcp-ui-option-a/' : '/',
   server: {
     port: 5173,

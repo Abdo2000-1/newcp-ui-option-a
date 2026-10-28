@@ -226,6 +226,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistSession(updated);
   }, [persistSession]);
 
+  // Validate and recover session with backend on startup
+  useEffect(() => {
+    const recoverAndValidateSession = async () => {
+      const cur = sessionRef.current;
+      if (cur?.sessionToken && cur.status === 'authenticated') {
+        try {
+          const adapter = getAuthAdapter();
+          const me = await adapter.getMe(cur.sessionToken);
+          if (me.isPendingAccess) {
+            persistSession({
+              ...cur,
+              roles: me.roleCodes,
+              capabilities: me.capabilities,
+              tenantSlug: null,
+              activeTenant: null,
+              tenantId: null,
+              status: 'pending_access',
+              accessStatus: 'PENDING',
+              isPendingAccess: true,
+            });
+          } else {
+            persistSession({
+              ...cur,
+              userId: me.userUuid,
+              email: me.email,
+              roles: me.roleCodes,
+              capabilities: me.capabilities,
+              tenantSlug: me.tenantSlug,
+              activeTenant: me.tenantSlug ? { id: 1, label: me.tenantSlug } : null,
+              tenantId: me.tenantSlug ? 1 : null,
+              isPendingAccess: false,
+              status: 'authenticated',
+              accessStatus: 'AUTHORIZED',
+              lastActivityAt: Date.now(),
+            });
+          }
+        } catch (err: any) {
+          if (err?.status === 401 || err?.status === 403 || err?.code === 'SESSION_EXPIRED' || err?.code === 'AUTHENTICATION_REQUIRED') {
+            persistSession(null);
+          }
+        }
+      }
+    };
+    recoverAndValidateSession();
+  }, [persistSession]);
+
   useEffect(() => {
     const handleUserAction = () => recordActivity();
     window.addEventListener('click', handleUserAction, { passive: true });

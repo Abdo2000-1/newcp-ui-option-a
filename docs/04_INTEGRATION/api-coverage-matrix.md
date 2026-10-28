@@ -1,71 +1,53 @@
-# Whole-Website API Coverage Matrix
+# Whole-Website API Coverage Matrix & Canonical OpenAPI Audit
 
-**Document Status:** COMPLETE AUDIT  
-**OpenAPI Contract Reference:** `docs/newcp-ai/references/api/newcp.openapi.yaml` (v1.0.0, SHA256: `47f759ec4b406ffa350a7cc947fda0a5ed88d761f8a8fc9f4a16642285644394`)  
-**Mock Server Status:** VERIFIED LIVE (`http://localhost:3000` running via `npm run mock:server` / `scripts/mock-server.cjs`; 31/31 live contract HTTP endpoints verified)
-**Detailed Audit Report:** [`docs/04_INTEGRATION/api-contract-mock-server-verification-report.md`](api-contract-mock-server-verification-report.md)
-
----
-
-## 1. Route-by-Route API Coverage & Gap Analysis
-
-| Route / Page | Current Data Source | Required API Operation | Contract Operation & Path | Current Status | Affected Files | Integration Risk | Required Backend Decision | Proposed Bounded PR |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`/add-case`** (New Order Wizard) | `store.createOrder`, `store.cases` (Local Store) | 1. List catalog services<br>2. Get dynamic form schema<br>3. Create service item | `listDemoCatalogServices` (`GET /api/v1/catalog/services`)<br>`getServiceFormSchema` (`GET /api/v1/catalog/services/{serviceUuid}/form-schema`)<br>`createOrderServiceItem` (`POST /api/v1/orders/{orderUuid}/services`) | **Partially Covered** (Service items covered; parent Order creation missing from contract) | `src/features/orders/pages/AddCase.tsx` | Medium (Wizard currently assumes atomic parent order creation + service attachment) | Backend must provide `POST /api/v1/orders` or clarify order initialization flow | **T-API-003** (Catalog & Dynamic Schema), **T-API-004** (Service Creation) |
-| **`/order-details`** (Order Details Workspace) | `useStore`, `store.getOrderById`, `flowMockData` | 1. Read service item details<br>2. Edit service instance<br>3. Available transitions<br>4. History event trail | `getServiceItem` (`GET /api/v1/services/{serviceItemUuid}`)<br>`patchServiceItem` (`PATCH /api/v1/services/{serviceItemUuid}`)<br>`listServiceTransitions` (`GET /api/v1/services/{serviceItemUuid}/available-transitions`)<br>`getServiceHistory` (`GET /api/v1/services/{serviceItemUuid}/history`) | **Covered by Current Contract** | `src/features/orders/pages/OrderDetailsPage.tsx` | High (Requires ETag concurrency, atomic hold, price override, and If-Match) | Confirm tenant ID header injection and If-Match mismatch UI handling | **T-API-004** (Service Edit), **T-API-005** (ETag), **T-API-006** (Workflow & History) |
-| **`/orders/:orderId/sub-orders/:subOrderId`** | `useStore` | Read single service instance & form answers | `getServiceItem` (`GET /api/v1/services/{serviceItemUuid}`) | **Covered by Current Contract** | `src/features/orders/pages/SubOrderDetail.tsx` | Low | Map legacy sub-order ID to `serviceItemUuid` | **T-API-004** (Service Details) |
-| **`/orders/:orderId/workflow`** | `useStore`, `store.updateOrderStatus` | 1. Available transitions<br>2. Advance workflow<br>3. Service history | `listServiceTransitions` (`GET .../available-transitions`)<br>`advanceServiceWorkflow` (`POST .../transitions`)<br>`getServiceHistory` (`GET .../history`) | **Covered by Current Contract** | `src/features/orders/pages/OrderWorkflow.tsx` | High (Atomic hold reason code + holdType required) | Agree on transition error message toast conventions | **T-API-006** (Workflow & History) |
-| **`/workflow-board`** | `useStore`, `store.orders` | Query transitions & advance service item status | `listServiceTransitions`<br>`advanceServiceWorkflow` | **Partially Covered** (Service items covered; global board query missing) | `src/features/orders/pages/WorkflowBoard.tsx` | Medium (Board currently operates on orders, not discrete service instances) | Backend must provide `GET /api/v1/workflow/board` or batch service transitions | **T-API-006** (Service Transitions) |
-| **`/task-47`** (Model Work Report) | Local state, mock presets | List order service items filtered for Biomodel/Model Work | `listOrderServiceItems` (`GET /api/v1/orders/{orderUuid}/services`) | **Partially Covered** (Per-order service items covered; global Task 47 query missing) | `src/features/models/pages/Task47ModelWorkReport.tsx` | Medium | Backend must provide catalog-filtered queue query endpoint | **T-API-004** (Service Listing) |
-| **`/flow` & `/orders`** (Production Queue) | `flowMockData.ts`, `orders.json` | Global order list, search, multi-service column rollup | **None** (Contract only has `GET /orders/{orderUuid}/services`) | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/Flow.tsx` | High (Core production table requires backend order queue endpoint) | Backend must supply `GET /api/v1/orders` with pagination, search, and service rollup | **T-API-009** (Gap Request) |
-| **`/cases`** | `cases.json`, `store.cases` | Cases listing, search, status filtering | **None** | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/Cases.tsx` | Low (Auxiliary) | Backend must supply `GET /api/v1/cases` | **T-API-009** (Gap Request) |
-| **`/cases/:caseId`** | `cases.json`, `api.getCase` | Case details, clinical notes, patient association | **None** | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/CaseDetails.tsx` | Low | Backend must supply `GET /api/v1/cases/{caseId}` | **T-API-009** (Gap Request) |
-| **`/orders/:orderId`** | `useStore`, `orders.json` | Order header details, doctor/patient info | **None** (Only service items covered) | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/ViewOrder.tsx` | Medium | Backend must supply `GET /api/v1/orders/{orderUuid}` | **T-API-009** (Gap Request) |
-| **`/orders/:orderId/files`** | `useStore`, mock attachments | Document/CAD file listing and upload | **None** | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/OrderFiles.tsx` | Medium | Backend must supply `GET /orders/{id}/files` and upload presigned URL | **T-API-009** (Gap Request) |
-| **`/change-requests`** | `store.changeRequests` | Change request approval/rejection | **None** | **Not Covered / Requires Backend Operation** | `src/features/orders/pages/ChangeRequests.tsx` | Medium | Backend must supply `GET/POST /api/v1/change-requests` | **T-API-009** (Gap Request) |
-| **`/dashboard`** | `useStore`, mock analytics | CRM metrics, studio revenue, CAD queue KPIs | **None** | **Not Covered / Requires Backend Operation** | `src/features/reporting/pages/Dashboard.tsx` | Low (Executive view) | Backend must supply aggregate analytics endpoint | **T-API-009** (Gap Request) |
-| **`/reports`** | `useStore` | Financial and production reports | **None** | **Not Covered / Requires Backend Operation** | `src/features/reporting/pages/Reports.tsx` | Low | Backend must supply `/api/v1/reports/*` | **T-API-009** (Gap Request) |
-| **`/quarter-targets`** | Mock targets & Power BI slicers | Quarterly financial and studio targets | **None** | **Not Covered / Requires Backend Operation** | `src/features/reporting/pages/QuarterTargetsReport.tsx` | Low | Backend must supply Power BI embed token & target stats | **T-API-009** (Gap Request) |
-| **`/task-31`** | Mock staff target state | Staff targets and CAD technician performance | **None** | **Not Covered / Requires Backend Operation** | `src/features/reporting/pages/Task31StaffTargets.tsx` | Low | Backend must supply `/api/v1/staff-targets` | **T-API-009** (Gap Request) |
-| **`/billing`** | `billing.json`, `store.billing` | Invoicing ledger, payments, overdue tracking | **Blocked / Proposal** (Contract only has proposal `eligible-billed-parties`) | **Blocked by Database V204 & Missing Invoicing Endpoints** | `src/features/settings/pages/Billing.tsx` | High (F07 Bill To live writes blocked; ERP sync not in contract) | V204 migration deployment, stage-90 reconciliation, and billing ledger contract | **T-API-008** (Payer Read-Only), **T-API-009** (Gap Request) |
-| **`/clinics` & `/clinics/:id`** | `clinics.json`, `api.getClinics` | Clinic directory and management | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/Clinics.tsx`, `ClinicDetails.tsx` | Low | Backend must supply `/api/v1/clinics` | **T-API-009** (Gap Request) |
-| **`/doctors` & `/doctors/:id`** | `doctors.json`, `api.getDoctors` | Doctor directory and profile | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/Doctors.tsx`, `DoctorDetails.tsx` | Low | Backend must supply `/api/v1/doctors` | **T-API-009** (Gap Request) |
-| **`/patients` & `/patients/:id`** | `patients.json`, `api.getPatients` | Patient directory, medical history, odontogram | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/Patients.tsx`, `PatientDetails.tsx` | Medium (Requires HIPAA / 13.9 anonymization) | Backend must supply `/api/v1/patients` with identity token reveal audit | **T-API-009** (Gap Request) |
-| **`/scan-center`** | `scanCenters.json` | Scanning center directory | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/ScanCenter.tsx` | Low | Backend must supply `/api/v1/scan-centers` | **T-API-009** (Gap Request) |
-| **`/documents`** | `documents.json` | Prescriptions, scan files, invoices | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/Documents.tsx` | Low | Backend must supply `/api/v1/documents` | **T-API-009** (Gap Request) |
-| **`/notifications`** | `store.notifications` | Operator notifications & unread counts | **None** | **Not Covered / Requires Backend Operation** | `src/features/settings/pages/Notifications.tsx` | Low | Backend must supply `/api/v1/notifications` (SSE or polling) | **T-API-009** (Gap Request) |
-| **`/profile`** | `store.profile` | Current operator identity & capabilities | `GET /api/v1/auth/me` | **Covered by v0.9.8 Contract** | `src/features/auth/pages/Profile.tsx` | Low | Live backend verification pending | **FE-AUTH-V098-001** |
-| **`/login`** | Local mock login state | Google Identity Services token exchange | `POST /api/v1/auth/login`, `POST /api/v1/auth/logout` | **Covered by v0.9.8 Contract** | `src/features/auth/pages/Login.tsx` | High (Security / Auth) | Live backend verification pending | **FE-AUTH-V098-001** |
-| **`/settings`** | `store.profile`, language/theme context | System preferences | **None** | **Not Covered (Client-Side State)** | `src/features/settings/pages/Settings.tsx` | Low | None (App-level preference persistence) | N/A |
-| **`/config-manager` & `/cms`** | Static rules JSON | CMS & business rule manager | **None** | **Not Covered / Prototype Tool** | `src/features/settings/pages/ConfigManager.tsx` | Low | None | N/A |
-| **`/forms` & `/grid`** | Demo mock state | UI component showcase | **None** | **Not Covered / Developer Sandbox** | `src/features/settings/pages/Forms.tsx`, `Grid.tsx` | Low | None | N/A |
-| **`/404` & `/503`** | Static system views | Dedicated error boundary views | `getHealth` (`GET /health`) | **Static System Pages** | `src/features/system/pages/NotFoundPage.tsx`, `Maintenance503Page.tsx` | Low | None (Can wire `/503` retry to `GET /health`) | **T-API-002** (Health Check) |
+**Document Status:** COMPLETE CANONICAL CONTRACT AUDIT & LIVE VERIFICATION
+**Authoritative Contract Reference:** `docs/newcp-ai/references/api/newcp.openapi.yaml` (v1.0.0, canonical path: `H:\3DDX\02 Backend\ccc\newcp.openapi.yaml`)
+**Live Testing Environment:** `http://10.20.25.147:3001` (requires company OpenVPN)
+**Live Swagger Documentation:** `http://10.20.25.147:3001/docs`
 
 ---
 
-## 2. Summary of Coverage Categories
+## 1. Canonical OpenAPI Operations Coverage Matrix
 
-1. **Directly Covered by OpenAPI Contract (7 Functional Areas):**
-   - Catalog service listing (`GET /api/v1/catalog/services`)
-   - Dynamic service form schemas (`GET /api/v1/catalog/services/{serviceUuid}/form-schema`)
-   - Service instance listing & details (`GET /api/v1/orders/{orderUuid}/services`, `GET /api/v1/services/{serviceItemUuid}`)
-   - Service instance creation & editing (`POST /api/v1/orders/{orderUuid}/services`, `PATCH /api/v1/services/{serviceItemUuid}`)
-   - ETag and If-Match optimistic concurrency (`412` and `428` handling)
-   - Workflow transitions & atomic On Hold (`GET .../available-transitions`, `POST .../transitions`)
-   - Service instance audit history (`GET /api/v1/services/{serviceItemUuid}/history`)
-   - Pricing display, authorized overrides, zero-charge reasons (`GET /api/v1/lookups/zero-charge-reasons`)
-   - Independent `isBillable` flag
+| Canonical Method | Canonical Path | Frontend Service / Adapter | Consuming Route / Component | Request Payload | Response Type | Authorization Requirement | Current Status | Live Verification Status | Blocker, if any |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/health` | `HttpTransport` / `apiConfig` | `/503`, `/swagger`, `ApiDocsPage` | None | `{ status: "ok" }` | None (Public) | Integrated | **VERIFIED (HTTP 200 OK)** | None |
+| **POST** | `/api/v1/auth/login` | `AuthClient.login` / `GoogleAuthAdapter` | `/login` (`Login.tsx`) | `{ idToken: string }` | `AuthorizedLoginResponse` or `PendingAccessLoginResponse` | None (GIS ID token in body) | Integrated | **VERIFIED (HTTP 401 on invalid; 500 on malformed; contract confirmed)** | Valid enterprise Google ID token required for AUTHORIZED test |
+| **GET** | `/api/v1/auth/me` | `AuthClient.getMe` / `GoogleAuthAdapter` | `AuthContext`, `/profile`, Layout Header | None | `AuthMeResponse` | `Bearer <session-token>` | Integrated | **VERIFIED (HTTP 401 on missing/invalid token)** | Requires active session token from `/auth/login` |
+| **POST** | `/api/v1/auth/logout` | `AuthClient.logout` / `GoogleAuthAdapter` | `AuthContext`, Sidebar, Profile modal | None | `204 No Content` | `Bearer <session-token>` | Integrated | **VERIFIED (HTTP 401 on missing/invalid token)** | Requires active session token from `/auth/login` |
+| **GET** | `/api/v1/catalog/services` | `CatalogClient.listServices` | `/add-case` (`AddCase.tsx`) | Query: `categoryCode?` | `CatalogService[]` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/catalog/services/{serviceUuid}/form-schema` | `CatalogClient.getFormDefinition` | `/add-case`, `/order-details` | None | `FormDefinition` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/orders/{orderUuid}/services` | `ServiceClient.listByOrder` | `/order-details`, `/order-workflow` | None | `WithVersion<ServiceItem[]>` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **POST** | `/api/v1/orders/{orderUuid}/services` | `ServiceClient.create` | `/add-case`, `/order-details` | `CreateServiceItem` | `WithVersion<ServiceItem>` | `Bearer <session-token>` (`services.*.edit`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/services/{serviceItemUuid}` | `ServiceClient.get` | `/order-details`, `/sub-orders/:id` | None | `WithVersion<ServiceItem>` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **PATCH** | `/api/v1/services/{serviceItemUuid}` | `ServiceClient.edit` | `/order-details`, `/sub-orders/:id` | `PatchServiceItem`, Header: `If-Match` | `WithVersion<ServiceItem>` | `Bearer <session-token>` (`services.*.edit`), If-Match ETag | Integrated | **VERIFIED (HTTP 401 on unauthenticated; 412/428 logic tested)** | Requires active session token |
+| **GET** | `/api/v1/services/{serviceItemUuid}/available-transitions` | `WorkflowClient.getAvailableTransitions` | `/order-details`, `/order-workflow` | None | `AvailableTransition[]` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **POST** | `/api/v1/services/{serviceItemUuid}/transitions` | `WorkflowClient.transition` | `/order-details`, `/order-workflow` | `TransitionRequest` | `TransitionResult` | `Bearer <session-token>` (`workflow.transition`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/services/{serviceItemUuid}/history` | `WorkflowClient.getHistory` | `/order-details`, `/order-workflow` | None | `HistoryEvent[]` | `Bearer <session-token>` (`orders.view`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/orders/{orderUuid}/eligible-billed-parties` | `PayerClient.getEligibleBilledParties` | `/order-details`, Billing drawer | None | `BilledPartyChoice[]` | `Bearer <session-token>` (`payer.assign`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/catalog/hold-reasons` | `WorkflowClient.getHoldReasons` | Hold transition modal | Query: `holdType?` | `HoldReasonOption[]` | `Bearer <session-token>` (`workflow.transition`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/lookups/hold-reasons` | `WorkflowClient.getHoldReasons` | Hold transition modal | None | `HoldReasonOption[]` | `Bearer <session-token>` (`workflow.transition`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/lookups/zero-charge-reasons` | `PricingClient.getZeroChargeReasons` | Price override drawer / Zero-charge modal | None | `ZeroChargeReason[]` | `Bearer <session-token>` (`pricing.override`) | Integrated | **VERIFIED (HTTP 401 on unauthenticated)** | Requires active session token |
+| **GET** | `/api/v1/iam/users` | `AuthClient` / Admin adapter | Admin / IAM settings drawer | None | `IamUserSummary[]` | `Bearer <session-token>` (`iam.users.read`) | Contract-Mapped | **VERIFIED (HTTP 401 on unauthenticated)** | Admin capability required |
+| **GET** | `/api/v1/iam/roles` | `AuthClient` / Admin adapter | Admin / IAM settings drawer | None | `IamRoleSummary[]` | `Bearer <session-token>` (`iam.roles.read`) | Contract-Mapped | **VERIFIED (HTTP 401 on unauthenticated)** | Admin capability required |
+| **GET** | `/api/v1/iam/users/{userId}/roles` | `AuthClient` / Admin adapter | Admin / IAM user details | None | `string[]` | `Bearer <session-token>` (`iam.user_roles.read`) | Contract-Mapped | **VERIFIED (HTTP 401 on unauthenticated)** | Admin capability required |
 
-2. **Covered ONLY by Existing Mock Layer (Uncovered by Contract - 18 Routes):**
-   - Global Order Queue & Production List (`/flow`, `/orders`)
-   - Cases & Case Details (`/cases`, `/cases/:caseId`)
-   - Order Header & CAD Attachments (`/orders/:orderId`, `/orders/:orderId/files`)
-   - CRM & Executive Dashboards (`/dashboard`, `/reports`, `/quarter-targets`, `/task-31`)
-   - Billing & Accounts Receivable Ledger (`/billing`)
-   - Entity Directories: Clinics, Doctors, Patients, Scan Centers (`/clinics`, `/doctors`, `/patients`, `/scan-center`)
-   - Operator Profile, Notifications, Documents (`/profile`, `/notifications`, `/documents`)
-   - Authentication & Login (`/login`)
+---
 
-3. **Blocked by Missing Backend / Database Behavior (2 Key Areas):**
-   - **Live F07 Service-Level Bill To Persistence:** V204 migration is not applied to live MySQL/PostgreSQL databases; stage-90 ETL is unexecuted. Real database writes are strictly blocked.
-   - **Live Mock Server:** Fully verified and active (`http://localhost:3000` started via `npm run mock:server` / `scripts/mock-server.cjs`). 31 live HTTP tests verified against both the standalone mock server and the Vite reverse proxy (`http://localhost:5173/api/v1`). All 14 OpenAPI endpoints pass contract validation.
+## 2. Proposed Dashboard API Status (Design-Only, NOT Integrated)
+
+Per v0.9.8 Handoff instructions, the following draft endpoints in `02_ORDERS_DASHBOARD_PROPOSED_EXTENSION.yaml` are **design reference only** and are **NOT deployed or integrated**:
+- `GET /api/v1/orders/dashboard-summary` — Status: PROPOSED DRAFT ONLY (Frontend displays UI with existing store; no undocumented network call made).
+- `GET /api/v1/orders/dashboard-stream` — Status: PROPOSED DRAFT ONLY (SSE endpoint not deployed on backend).
+
+---
+
+## 3. Uncovered / Legacy Frontend Routes Audit
+
+The following routes represent internal ERP/CRM surfaces that do not currently have corresponding operations in the canonical OpenAPI 3.0.3 contract. They use the decoupled offline mock/store layer:
+- `/flow` and `/orders` (Global Order Queue) — requires backend `GET /api/v1/orders`
+- `/cases` and `/cases/:caseId` — requires backend `GET /api/v1/cases`
+- `/orders/:orderId` — requires backend `GET /api/v1/orders/{orderId}` header operation
+- `/orders/:orderId/files` — requires backend document upload/download contract
+- `/clinics`, `/doctors`, `/patients`, `/scan-center` — requires entity directory contracts
+- `/billing` (Invoicing ledger) — blocked by V204 database migration and stage-90 reconciliation

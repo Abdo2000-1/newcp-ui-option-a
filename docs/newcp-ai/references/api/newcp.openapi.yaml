@@ -1,21 +1,11 @@
 openapi: 3.0.3
 info:
-  title: New CP — Service-Instance API (F07 + Billability + Q-B8..15 Approved Clarifications)
+  title: New CP Backend API
   version: 1.0.0
-  description: 'Service-instance API contract for New CP, merging the foundation health
-    probe, F07 per-item billed party target schema, Connect create-service fields,
-    CP internal clerk editing controls, full pricing breakdown, V3 database schema
-    validation, and the Technical Lead approved Q-B8 to Q-B15 clarifications (24 October
-    2026: aggregate ETag/If-Match optimistic concurrency, atomic required hold details
-    on workflow transition, authorized internal price override and zero-charge reasons,
-    canonical field types and typed conditional rules, demo quantity default, and
-    independent billability alongside F07 billed party). The migration and ETL are
-    supplied as implementation artifacts; this document does NOT certify V204 deployment,
-    dump-specific payer mapping, stage-90 reconciliation, downstream finance updates,
-    tenant catalog mappings or live integration tests.'
+  description: New CP backend API contract for authentication, tenant-scoped IAM, and approved service-instance workflows.
 servers:
-- url: http://localhost:3000
-  description: Local New CP backend; URL example, not a verified deployment
+- url: http://localhost:3001
+  description: Local New CP backend
 x-contract-status: APPROVED_QB8_QB15_IMPLEMENTATION_TARGET; F07_AND_LIVE_API_UNVERIFIED;
   NOT_FINAL
 x-source-authority:
@@ -55,9 +45,54 @@ tags:
 - name: Workflow
 - name: Lookups
   description: System lookup values such as zero-charge reasons and hold reasons
+- name: Auth
+  description: Google authentication and server-issued application sessions
+- name: IAM/Admin
+  description: Tenant-scoped IAM dashboard operations
 security:
 - BearerAuth: []
 paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Auth
+      operationId: loginWithGoogle
+      summary: Authenticate with a Google ID token
+      description: Google verifies identity only. Tenant and role authorization is resolved by the backend IAM store; Google Groups are not used for authorization.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginRequest'
+      responses:
+        '200':
+          description: Authenticated identity with either an authorized application session or Pending Access
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/AuthorizedLoginResponse'
+                - $ref: '#/components/schemas/PendingAccessLoginResponse'
+        '400':
+          description: Missing or invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '401':
+          description: Google authentication failed or provisioning eligibility failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '403':
+          description: Configured tenant is unavailable or not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
   /health:
     get:
       tags:
@@ -549,9 +584,9 @@ paths:
       - Service Instances
       operationId: listEligibleOrderItemBilledParties
       summary: List eligible service-level billed parties for one authorized order
-      description: Resolve order Doctor/default and Scanning Center within tenant
+      description: 'Resolve order Doctor/default and Scanning Center within tenant
         and staff permission, return contact UUIDs for selection; do not return unrestricted
-        contacts. Endpoint proposal until backend contract review.
+        contacts. Endpoint proposal until backend contract review.'
       parameters:
       - in: path
         name: orderUuid
@@ -653,6 +688,134 @@ paths:
           description: Not authenticated
         '403':
           description: Denied
+  /api/v1/auth/me:
+    get:
+      tags:
+      - Auth
+      operationId: getCurrentAuthContext
+      summary: Get the current authenticated user and tenant authorization context
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Current authenticated user context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMeResponse'
+        '401':
+          description: Missing, invalid, expired, revoked, or idle-timed-out application session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '403':
+          description: Session tenant authorization was lost
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - Auth
+      operationId: logoutApplicationSession
+      summary: Revoke the current application session
+      description: Requires a valid authenticated session. The handler safely resolves the server-owned session tenant before revoking the session and always returns 204 with no response body. Unknown or already-revoked tokens are safe no-ops.
+      security:
+      - BearerAuth: []
+      responses:
+        '204':
+          description: Session revoked; response has no body
+        '401':
+          description: Missing, invalid, expired, revoked, or idle-timed-out application session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+        '403':
+          description: Session tenant authorization was lost
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+  /api/v1/iam/users:
+    get:
+      tags:
+      - IAM/Admin
+      operationId: listIamUsers
+      summary: List tenant-scoped employee identities for IAM administration
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant-scoped employee identities and assigned roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IamUserSummary'
+        '401':
+          description: Authentication required
+        '403':
+          description: Missing iam.users.read capability or tenant authorization
+  /api/v1/iam/roles:
+    get:
+      tags:
+      - IAM/Admin
+      operationId: listIamRoles
+      summary: List tenant-scoped IAM roles and capabilities
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant-scoped IAM roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IamRoleSummary'
+        '401':
+          description: Authentication required
+        '403':
+          description: Missing iam.roles.read capability or tenant authorization
+  /api/v1/iam/users/{userId}/roles:
+    post:
+      tags:
+      - IAM/Admin
+      operationId: assignIamUserRole
+      summary: Assign a tenant role to an employee
+      description: Requires iam.assign_role. The role is resolved inside the authenticated session tenant. ADMIN-to-ADMIN delegation is explicitly not allowed by the current approved model.
+      security:
+      - BearerAuth: []
+      parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IamRoleAssignmentRequest'
+      responses:
+        '200':
+          description: Existing or newly created idempotent role assignment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IamRoleAssignmentResponse'
+        '400':
+          description: Invalid userId or roleId
+        '401':
+          description: Authentication required
+        '403':
+          description: Missing iam.assign_role, invalid target/role tenant, or ADMIN delegation not allowed
 components:
   securitySchemes:
     BearerAuth:
@@ -660,6 +823,172 @@ components:
       scheme: bearer
       bearerFormat: opaque or JWT per approved Google Auth adapter
   schemas:
+    AuthLoginRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - idToken
+      properties:
+        idToken:
+          type: string
+          minLength: 1
+          description: Google ID token used for authentication only; never treated as an authorization or tenant claim.
+    AuthorizedLoginResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - accessStatus
+      - token
+      - expiresAt
+      properties:
+        accessStatus:
+          type: string
+          enum:
+          - AUTHORIZED
+        token:
+          type: string
+          description: Opaque server-issued application session token.
+        expiresAt:
+          type: string
+          format: date-time
+    PendingAccessLoginResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - accessStatus
+      properties:
+        accessStatus:
+          type: string
+          enum:
+          - PENDING_ACCESS
+          description: Authenticated identity has no valid tenant role assignment; no application session or token is issued.
+    AuthMeResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - userUuid
+      - tenantSlug
+      - roleCodes
+      - capabilities
+      - isPendingAccess
+      properties:
+        email:
+          type: string
+          nullable: true
+        userUuid:
+          type: string
+          format: uuid
+          nullable: true
+        tenantSlug:
+          type: string
+          nullable: true
+        roleCodes:
+          type: array
+          items:
+            type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        isPendingAccess:
+          type: boolean
+          description: Current capability-resolution Pending Access indicator; tenant authorization is separately revalidated by protected middleware.
+    AuthErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Problem'
+    IamRoleAssignmentRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - roleId
+      properties:
+        roleId:
+          type: integer
+          format: int64
+    IamRoleAssignmentResponse:
+      type: object
+      required:
+      - userId
+      - roleId
+      - roleCode
+      - tenantId
+      - grantedAt
+      properties:
+        userId:
+          type: integer
+          format: int64
+        roleId:
+          type: integer
+          format: int64
+        roleCode:
+          type: string
+        tenantId:
+          type: integer
+          format: int64
+        grantedAt:
+          type: string
+          format: date-time
+    IamUserSummary:
+      type: object
+      required:
+      - userId
+      - email
+      - state
+      - hasEmployeeProfile
+      - roles
+      properties:
+        userId:
+          type: integer
+          format: int64
+        email:
+          type: string
+        state:
+          type: string
+        hasEmployeeProfile:
+          type: boolean
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IamAssignedRole'
+    IamAssignedRole:
+      type: object
+      required:
+      - roleId
+      - roleCode
+      properties:
+        roleId:
+          type: integer
+          format: int64
+        roleCode:
+          type: string
+    IamRoleSummary:
+      type: object
+      required:
+      - roleId
+      - code
+      - name
+      - isSystem
+      - capabilities
+      properties:
+        roleId:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+        isSystem:
+          type: boolean
+        capabilities:
+          type: array
+          items:
+            type: string
     Problem:
       type: object
       required:
@@ -885,6 +1214,7 @@ components:
           description: Indicates whether tenant runtime mapping is verified
     FormAnswer:
       type: object
+      additionalProperties: false
       required:
       - fieldCode
       properties:
@@ -892,9 +1222,9 @@ components:
           type: string
           description: Stable machine code of the form question (from catalog.fields.code)
         value:
-          description: 'Natural polymorphic answer value for free-form inputs: string
-            (text or ISO date), number, or boolean. Backend validates and maps to
-            appropriate SQL column.'
+          description: 'Natural polymorphic answer value for free-form inputs (text, number,
+            boolean, date): string (text or ISO date YYYY-MM-DD), number, or boolean. Backend
+            validates and maps to appropriate SQL column.'
           oneOf:
           - type: string
           - type: number
@@ -904,30 +1234,12 @@ components:
           items:
             type: string
           description: 'Unified option codes array for choice-based fields: single-select
-            fields supply 1 element e.g. ["FORMLABS_3B"], multi-select fields supply
-            multiple elements e.g. ["UPPER", "LOWER"], and unselected/cleared fields
+            fields supply 0 or 1 element e.g. ["FORMLABS_3B"], multi-select fields supply
+            0..n elements e.g. ["UPPER", "LOWER"], and unselected/cleared fields
             supply [].'
-        optionCode:
-          type: string
-          description: Compatibility single-select option code (used by v0.9.2 shared
-            TS client); backend normalizes with optionCodes.
-        valueText:
-          type: string
-          description: Compatibility text carrier (used by v0.9.2 shared TS client).
-        valueNumber:
-          type: number
-          description: Compatibility numeric carrier (used by v0.9.2 shared TS client).
-        valueBoolean:
-          type: boolean
-          description: Compatibility boolean carrier (used by v0.9.2 shared TS client).
-        valueDate:
-          type: string
-          format: date
-          description: Compatibility date carrier (used by v0.9.2 shared TS client).
-      description: Form answer model supporting both the clean polymorphic value +
-        optionCodes array (Section 4 Strategy 1 & Section 5 Approach A) and the v0.9.2
-        shared client typed carriers. Validation is performed from tenant catalog
-        + source-evidenced rules, including conditional requiredness.
+      description: Form answer model supporting unified optionCodes array for choice-based
+        fields and natural polymorphic value for free-form inputs. Validation is performed
+        from tenant catalog + source-evidenced rules, including conditional requiredness.
     CreateServiceItem:
       type: object
       required:
@@ -941,6 +1253,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FormAnswer'
+          description: Submitted form answers. One entry per answered field; see FormAnswer.
         isRedo:
           type: boolean
           default: false
@@ -999,6 +1312,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FormAnswer'
+          description: Complete replacement list of form answers. One entry per answered field; see FormAnswer.
         isRedo:
           type: boolean
         redoOfItemUuid:
@@ -1047,21 +1361,37 @@ components:
       minProperties: 1
       description: Do not accept caller-supplied billedPartyOrigin. Reject per-item
         payer changes once a charge, invoice association or invoice line exists. Other
-        monetary changes obey their own permissions and V3 financial locks. Never
-        expose arbitrary status or hold changes here instead of configured workflow
-        actions (POST /transitions). Every service instance independently retains
-        billability and intended payer.
+        monetary changes obey their own permissions and V3 financial locks (e.g. invoiced
+        lines reject unitPrice, quantity, currency, and payer changes). Never expose arbitrary
+        status or hold changes here instead of configured workflow actions (POST /transitions).
+        Every service instance independently retains billability and intended payer.
     ServiceItem:
       type: object
       required:
       - uuid
       - orderUuid
       - sellableItemUuid
+      - lineNumber
       - status
-      - answers
+      - isRedo
+      - isInvoiced
+      - currencyCode
+      - unitPrice
+      - fieldsAmount
+      - discountAmount
+      - voucherAmount
+      - lineTotal
+      - quantity
+      - isBillable
       - billedToContactUuid
       - billedPartyOrigin
-      - isBillable
+      - canEditBilledParty
+      - canEditPrice
+      - canEditBillability
+      - answers
+      - etag
+      - createdAt
+      - updatedAt
       properties:
         uuid:
           type: string
@@ -1114,6 +1444,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FormAnswer'
+          description: Form answers for this service instance. One entry per answered field; see FormAnswer.
         serviceNotes:
           type: string
         billedToContactUuid:

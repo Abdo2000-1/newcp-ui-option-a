@@ -40,8 +40,8 @@ export class AuthClient implements IAuthClient {
   private readonly apiMode: string;
 
   constructor(transport?: IHttpTransport) {
-    this.apiMode = getApiConfig().mode;
     this.transport = transport || new HttpTransport();
+    this.apiMode = (this.transport as any).getMode ? (this.transport as any).getMode() : getApiConfig().mode;
   }
 
   /**
