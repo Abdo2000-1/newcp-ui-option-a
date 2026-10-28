@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip,
@@ -84,12 +84,12 @@ function BrandChartTooltip({ active, payload, label }: BrandChartTooltipProps) {
           </Typography>
           <Chip
             size="small"
-            label="Power BI"
+            label="Metrics"
             sx={{
               height: 18,
               fontSize: '0.65rem',
               fontWeight: 700,
-              bgcolor: 'rgba(2, 132, 199, 0.2)',
+              bgcolor: 'rgba(2, 132, 199, 0.15)',
               color: '#38bdf8',
             }}
           />
@@ -338,6 +338,16 @@ export default function Dashboard() {
 
   const currentQData = QUARTER_DATA_MAP[selectedQuarter] || QUARTER_DATA_MAP.Q4;
 
+  const hasIntersectionObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
+  const scrollRevealProps = (shouldReduceMotion || !hasIntersectionObserver)
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, margin: '-20px' },
+        transition: { duration: 0.35, ease: 'easeOut' as const },
+      };
+
   if (hasError) {
     return (
       <Box sx={{ p: 3 }}>
@@ -354,7 +364,13 @@ export default function Dashboard() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%', minWidth: 0, userSelect: 'none' }}>
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
+      style={{ width: '100%' }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%', minWidth: 0, userSelect: 'none' }}>
 
       {/* Top Header / Control Bar (MUI Card) */}
       <Card
@@ -405,7 +421,7 @@ export default function Dashboard() {
               }}
             >
               <Calendar size={13} />
-              {formatDate(new Date().toISOString())} ÔÇó 3D Diagnostix Dental Intelligence
+              {formatDate(new Date().toISOString())} • 3D Diagnostix Dental Intelligence
             </Typography>
           </Box>
 
@@ -510,6 +526,7 @@ export default function Dashboard() {
 
       {/* Urgent Rush Orders Ticker */}
       {urgentOrders.length > 0 && (
+        <motion.div {...scrollRevealProps}>
         <Card
           elevation={0}
           role="status"
@@ -577,7 +594,7 @@ export default function Dashboard() {
                   <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 800, color: BRAND_BLUE }}>
                     {order.orderNumber}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>ÔÇó</Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>•</Typography>
                   <Typography variant="caption" noWrap sx={{ fontWeight: 600, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {order.patientName}
                   </Typography>
@@ -598,6 +615,7 @@ export default function Dashboard() {
             </Stack>
           </Stack>
         </Card>
+        </motion.div>
       )}
 
       {/* ========================================================= */}
@@ -607,6 +625,7 @@ export default function Dashboard() {
         <Stack spacing={3}>
 
           {/* Power BI Sub-bar with Quarter Slicers */}
+          <motion.div {...scrollRevealProps}>
           <Card
             elevation={0}
             sx={{
@@ -646,11 +665,11 @@ export default function Dashboard() {
                 <Box>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
-                      {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} ÔÇó {currentQData.name}
+                      {t('dashboard.powerbiTelemetry', 'Power BI Executive Telemetry')} • {currentQData.name}
                     </Typography>
                     <Chip
                       size="small"
-                      label="Live DirectQuery"
+                      label="Live Production"
                       sx={{
                         height: 18,
                         fontSize: '0.62rem',
@@ -661,7 +680,7 @@ export default function Dashboard() {
                     />
                   </Stack>
                   <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: 'monospace' }}>
-                    Dataset: [3DDX_DW].[TargetAttainment] ÔÇó Real-time Sync Active
+                    Diagnostic Hub Pipeline • Real-time Sync Active
                   </Typography>
                 </Box>
               </Stack>
@@ -710,8 +729,10 @@ export default function Dashboard() {
               </Box>
             </Stack>
           </Card>
+          </motion.div>
 
           {/* 4 Core KPI Tiles (Responsive CSS Grid via Box) */}
+          <motion.div {...scrollRevealProps}>
           <Box
             sx={{
               display: 'grid',
@@ -986,8 +1007,8 @@ export default function Dashboard() {
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
                       <RechartsTooltip content={<BrandChartTooltip />} />
-                      <Area type="monotone" dataKey="actualRevenue" name="Actual Revenue" stroke={BRAND_BLUE} strokeWidth={3} fill="url(#brandBlueGrad)" />
-                      <Area type="monotone" dataKey="targetRevenue" name="Target Quota" stroke={BRAND_ORANGE} strokeWidth={2} strokeDasharray="4 4" fill="url(#brandOrangeGrad)" />
+                      <Area type="monotone" dataKey="actualRevenue" name="Actual Revenue" stroke={BRAND_BLUE} strokeWidth={3} fill="url(#brandBlueGrad)" isAnimationActive={!shouldReduceMotion} animationDuration={700} animationEasing="ease-out" />
+                      <Area type="monotone" dataKey="targetRevenue" name="Target Quota" stroke={BRAND_ORANGE} strokeWidth={2} strokeDasharray="4 4" fill="url(#brandOrangeGrad)" isAnimationActive={!shouldReduceMotion} animationDuration={700} animationEasing="ease-out" />
                     </AreaChart>
                   ) : (
                     <BarChart data={currentQData.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -995,8 +1016,8 @@ export default function Dashboard() {
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 600 }} tickFormatter={(v) => `$${v / 1000}k`} />
                       <RechartsTooltip content={<BrandChartTooltip />} />
-                      <Bar dataKey="actualRevenue" name="Actual Revenue" fill={BRAND_BLUE} radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="targetRevenue" name="Target Quota" fill={BRAND_ORANGE} radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="actualRevenue" name="Actual Revenue" fill={BRAND_BLUE} radius={[6, 6, 0, 0]} isAnimationActive={!shouldReduceMotion} animationDuration={700} animationEasing="ease-out" />
+                      <Bar dataKey="targetRevenue" name="Target Quota" fill={BRAND_ORANGE} radius={[6, 6, 0, 0]} isAnimationActive={!shouldReduceMotion} animationDuration={700} animationEasing="ease-out" />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
@@ -1096,8 +1117,10 @@ export default function Dashboard() {
               </Button>
             </Card>
           </Box>
+          </motion.div>
 
           {/* Regional Diagnostic Hubs Attainment Table */}
+          <motion.div {...scrollRevealProps}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Box>
@@ -1182,6 +1205,7 @@ export default function Dashboard() {
               </Table>
             </TableContainer>
           </Card>
+          </motion.div>
 
         </Stack>
       )}
@@ -1198,6 +1222,7 @@ export default function Dashboard() {
           }}
         >
           {/* Left Column: Recent Intake Orders Table */}
+          <motion.div {...scrollRevealProps}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Box>
@@ -1283,8 +1308,10 @@ export default function Dashboard() {
               </TableContainer>
             )}
           </Card>
+          </motion.div>
 
           {/* Right Column: Workflow Activity Feed */}
+          <motion.div {...scrollRevealProps}>
           <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1346,9 +1373,11 @@ export default function Dashboard() {
               {t('dashboard.inspectActiveCases', 'Inspect Active Cases')}
             </Button>
           </Card>
+          </motion.div>
         </Box>
       )}
 
-    </Box>
+      </Box>
+    </motion.div>
   );
 }
