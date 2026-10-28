@@ -172,6 +172,7 @@ export const fr: Record<string, string> = {
   'order.title': 'Détails & Gestion de la Commande',
   'order.notFoundTitle': 'Commande Non Trouvée',
   'order.notFoundMsg': 'La commande demandée est introuvable dans la base actuelle.',
+  'order.returnHome': "Retour à l'accueil",
   'order.returnDashboard': 'Retour au Tableau de Bord',
   'order.orderNumber': 'Commande #',
   'order.status': 'Statut de Commande',

@@ -174,7 +174,7 @@ describe('Dashboard-to-OrderDetails ID Match & Routing (UIUX-REQ-003)', () => {
       expect(
         screen.getByText(/No clinical order or case could be found matching identifier "non-existent-order-999"./i)
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /return to dashboard/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /return to home/i })).toBeInTheDocument();
     });
 
     it('no default case is displayed for an unknown identifier', () => {

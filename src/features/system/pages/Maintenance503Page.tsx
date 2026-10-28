@@ -149,7 +149,7 @@ export default function Maintenance503Page() {
             variant="outlined"
             color="primary"
             startIcon={<Home size={16} />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/home')}
             sx={{
               borderRadius: 3,
               px: 3,
@@ -158,7 +158,7 @@ export default function Maintenance503Page() {
               textTransform: 'none',
             }}
           >
-            Go to Dashboard
+            Go to Home
           </Button>
         </Stack>
 

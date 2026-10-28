@@ -127,9 +127,9 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
       expect(logoImg).toBeInTheDocument();
 
       // Logo is a clickable link navigating to /dashboard
-      const logoLink = screen.getByTitle('3DDX Dashboard');
+      const logoLink = screen.getByTitle('3DDX Home');
       expect(logoLink).toBeInTheDocument();
-      expect(logoLink).toHaveAttribute('href', '/dashboard');
+      expect(logoLink).toHaveAttribute('href', '/home');
 
       // No text branding like "DentaLab" or redundant text clutter in sidebar header
       expect(screen.queryByText(/DentaLab/i)).not.toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('Sticky Full-Height Sidebar & Logo-Only Brand Header (UIUX-REQ-011)', (
         </MemoryRouter>
       );
 
-      expect(screen.getByText(/^dashboard$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^home$/i)).toBeInTheDocument();
       expect(screen.getByText(/master orders flow/i)).toBeInTheDocument();
       expect(screen.getByText(/add new case/i)).toBeInTheDocument();
       expect(screen.getByText(/order details/i)).toBeInTheDocument();

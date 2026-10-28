@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ConvertibleNav, NavPosition } from './ConvertibleNav';
 import { Footer } from './Footer';
 import { FloatingSupport } from './FloatingSupport';
+import { GlobalBreadcrumbs } from './GlobalBreadcrumbs';
 import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
@@ -17,8 +18,8 @@ export function Layout() {
     return (saved === 'left' || saved === 'top' || saved === 'right' || saved === 'bottom') ? saved : 'top';
   });
 
-  // Collapsed state: collapsed by default when in sidebar mode!
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  // Collapsed state: open by default when in sidebar mode (Requirement 6: Keep default sidebar open)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Dragging state for 4-way drop zones
   const [isDraggingNav, setIsDraggingNav] = useState(false);
@@ -29,8 +30,8 @@ export function Layout() {
     setNavPosition(newPos);
     localStorage.setItem('3ddx-cp-nav-position', newPos);
     if (newPos === 'left' || newPos === 'right') {
-      // Default to collapsed when converted to sidebar!
-      setSidebarCollapsed(true);
+      // Keep open by default when docked to sidebar
+      setSidebarCollapsed(false);
     }
   };
 
@@ -105,12 +106,12 @@ export function Layout() {
               onDrop={(e) => handleDropOnZone(e, 'bottom')}
               className={`pointer-events-auto absolute bottom-0 left-0 right-0 h-24 flex items-center justify-center border-t-4 border-dashed transition-all cursor-pointer ${
                 hoveredDropZone === 'bottom'
-                  ? 'bg-orange-500/30 border-orange-400 backdrop-blur-md'
-                  : 'bg-slate-950/80 border-orange-500/60 backdrop-blur-xs'
+                  ? 'bg-indigo-500/30 border-indigo-400 backdrop-blur-md'
+                  : 'bg-slate-950/80 border-indigo-500/60 backdrop-blur-xs'
               }`}
             >
               <div className="flex items-center gap-2 text-white font-black text-xs uppercase tracking-wider">
-                <ArrowDown size={20} className="text-orange-400 animate-bounce" />
+                <ArrowDown size={20} className="text-indigo-400 animate-bounce" />
                 <span>Drop or Click Here to Dock as Bottom Taskbar</span>
               </div>
             </div>
@@ -121,15 +122,15 @@ export function Layout() {
               onDragOver={(e) => handleDragOverZone(e, 'left')}
               onDragLeave={() => setHoveredDropZone(null)}
               onDrop={(e) => handleDropOnZone(e, 'left')}
-              className={`pointer-events-auto absolute top-24 bottom-24 left-0 w-36 flex flex-col items-center justify-center border-r-4 border-dashed transition-all cursor-pointer ${
+              className={`pointer-events-auto absolute top-0 bottom-0 left-0 w-28 flex items-center justify-center border-r-4 border-dashed transition-all cursor-pointer ${
                 hoveredDropZone === 'left'
-                  ? 'bg-sky-500/30 border-sky-400 backdrop-blur-md'
-                  : 'bg-slate-950/80 border-sky-500/60 backdrop-blur-xs'
+                  ? 'bg-cyan-500/30 border-cyan-400 backdrop-blur-md'
+                  : 'bg-slate-950/80 border-cyan-500/60 backdrop-blur-xs'
               }`}
             >
-              <div className="flex flex-col items-center text-center gap-2 text-white font-black text-xs uppercase tracking-wider p-2">
-                <ArrowLeft size={22} className="text-sky-400 animate-bounce" />
-                <span>Dock Left Sidebar (Collapsed)</span>
+              <div className="flex flex-col items-center gap-2 text-white font-black text-xs uppercase tracking-wider text-center p-2">
+                <ArrowLeft size={20} className="text-cyan-400 animate-bounce" />
+                <span>Dock Left Sidebar (Open)</span>
               </div>
             </div>
 
@@ -139,15 +140,15 @@ export function Layout() {
               onDragOver={(e) => handleDragOverZone(e, 'right')}
               onDragLeave={() => setHoveredDropZone(null)}
               onDrop={(e) => handleDropOnZone(e, 'right')}
-              className={`pointer-events-auto absolute top-24 bottom-24 right-0 w-36 flex flex-col items-center justify-center border-l-4 border-dashed transition-all cursor-pointer ${
+              className={`pointer-events-auto absolute top-0 bottom-0 right-0 w-28 flex items-center justify-center border-l-4 border-dashed transition-all cursor-pointer ${
                 hoveredDropZone === 'right'
-                  ? 'bg-orange-500/30 border-orange-400 backdrop-blur-md'
-                  : 'bg-slate-950/80 border-orange-500/60 backdrop-blur-xs'
+                  ? 'bg-purple-500/30 border-purple-400 backdrop-blur-md'
+                  : 'bg-slate-950/80 border-purple-500/60 backdrop-blur-xs'
               }`}
             >
-              <div className="flex flex-col items-center text-center gap-2 text-white font-black text-xs uppercase tracking-wider p-2">
-                <ArrowRight size={22} className="text-orange-400 animate-bounce" />
-                <span>Dock Right Sidebar (Collapsed)</span>
+              <div className="flex flex-col items-center gap-2 text-white font-black text-xs uppercase tracking-wider text-center p-2">
+                <ArrowRight size={20} className="text-purple-400 animate-bounce" />
+                <span>Dock Right Sidebar (Open)</span>
               </div>
             </div>
 
@@ -160,6 +161,7 @@ export function Layout() {
         {/* Content Outlet - Full wide width without horizontal scroll */}
         <main className="flex-1 w-full p-3 sm:p-5 lg:p-6">
           <div className="w-full max-w-[1920px] mx-auto min-w-0">
+            <GlobalBreadcrumbs />
             <Outlet />
           </div>
         </main>

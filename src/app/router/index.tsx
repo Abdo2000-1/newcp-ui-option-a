@@ -28,7 +28,6 @@ const ChangeRequests = lazy(() => import('@/features/orders/pages/ChangeRequests
 const Task47ModelWorkReport = lazy(() => import('@/features/models/pages/Task47ModelWorkReport'));
 
 // Reporting
-const Dashboard = lazy(() => import('@/features/reporting/pages/Dashboard'));
 const Reports = lazy(() => import('@/features/reporting/pages/Reports'));
 const QuarterTargetsReport = lazy(() => import('@/features/reporting/pages/QuarterTargetsReport'));
 const Task31StaffTargets = lazy(() => import('@/features/reporting/pages/Task31StaffTargets'));
@@ -50,13 +49,13 @@ const Forms = lazy(() => import('@/features/settings/pages/Forms'));
 const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
 // System & Error Views (UIUX-REQ-021)
+const HomePage = lazy(() => import('@/features/system/pages/HomePage'));
 const NotFoundPage = lazy(() => import('@/features/system/pages/NotFoundPage'));
 const Maintenance503Page = lazy(() => import('@/features/system/pages/Maintenance503Page'));
 
 export const ROUTES = {
-  HOME: '/',
+  HOME: '/home',
   LOGIN: '/login',
-  DASHBOARD: '/dashboard',
   FLOW: '/flow',
   ORDERS: '/orders',
   ADD_CASE: '/add-case',
@@ -155,10 +154,11 @@ export function AppRouter() {
       <Routes>
         <Route path="/login" element={<SuspenseWrapper><Login /></SuspenseWrapper>} />
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          {/* Default landing: 3DDX CP Login */}
-          <Route index element={<Navigate to="/login" replace />} />
+          {/* Default landing: Authenticated users land on Home */}
+          <Route index element={<Navigate to="/home" replace />} />
           
-          {/* 8 Target Modernized Pages */}
+          {/* Target Modernized Pages */}
+          <Route path="home" element={<SuspenseWrapper><HomePage /></SuspenseWrapper>} />
           <Route path="flow" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="orders" element={<SuspenseWrapper><Flow /></SuspenseWrapper>} />
           <Route path="add-case" element={<SuspenseWrapper><AddCase /></SuspenseWrapper>} />
@@ -167,7 +167,6 @@ export function AppRouter() {
           <Route path="task-47" element={<SuspenseWrapper><Task47ModelWorkReport /></SuspenseWrapper>} />
           <Route path="task-31" element={<SuspenseWrapper><Task31StaffTargets /></SuspenseWrapper>} />
           <Route path="edit-case" element={<SuspenseWrapper><EditCasePage /></SuspenseWrapper>} />
-          <Route path="dashboard" element={<SuspenseWrapper><Dashboard /></SuspenseWrapper>} />
           <Route path="profile" element={<SuspenseWrapper><Profile /></SuspenseWrapper>} />
           <Route path="config-manager" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />
           <Route path="cms" element={<SuspenseWrapper><ConfigManager /></SuspenseWrapper>} />

@@ -174,7 +174,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
       expect(googleBtn).toBeDisabled();
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/flow');
+        expect(mockNavigate).toHaveBeenCalledWith('/home');
       });
     });
 
@@ -190,7 +190,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
       fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/flow');
+        expect(mockNavigate).toHaveBeenCalledWith('/home');
       });
     });
   });

@@ -112,7 +112,7 @@ export default function NotFoundPage() {
             variant="contained"
             color="primary"
             startIcon={<Home size={16} />}
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/home')}
             sx={{
               borderRadius: 3,
               px: 3,
@@ -122,7 +122,7 @@ export default function NotFoundPage() {
               boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
             }}
           >
-            Return to Dashboard
+            Return to Home
           </Button>
         </Stack>
 

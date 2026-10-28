@@ -1016,8 +1016,8 @@ Generated on: ${new Date().toLocaleString()}
         <div className="flex items-center gap-3 bg-white dark:bg-[#0b101d] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
           <Button
             variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            aria-label="Back to Dashboard"
+            onClick={() => navigate('/home')}
+            aria-label="Back to Home"
           >
             <ArrowLeft size={16} />
           </Button>
@@ -1034,13 +1034,13 @@ Generated on: ${new Date().toLocaleString()}
                 ? `No clinical order or case could be found matching identifier "${paramId}".`
                 : "No order identifier was specified in the request."
             }
-            suggestion="Verify the order number or navigate from the Dashboard or Production Flow."
+            suggestion="Verify the order number or navigate from Home or Production Flow."
             action={
               <Button
                 variant="primary"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/home')}
               >
-                {t('order.returnDashboard', 'Return to Dashboard')}
+                {t('order.returnHome', 'Return to Home')}
               </Button>
             }
           />

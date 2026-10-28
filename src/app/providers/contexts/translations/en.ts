@@ -5,6 +5,7 @@ export const en: Record<string, string> = {
   'brand.version': 'v4.2 Max Pro',
 
   // Navigation Target Pages
+  'nav.home': 'Home',
   'nav.dashboard': 'Dashboard',
   'nav.flow': 'Master Orders Flow',
   'nav.addCase': 'Add New Case',
@@ -172,6 +173,7 @@ export const en: Record<string, string> = {
   'order.title': 'Order Details & Management',
   'order.notFoundTitle': 'Order Not Found',
   'order.notFoundMsg': 'The requested order could not be located in the current database index.',
+  'order.returnHome': 'Return to Home',
   'order.returnDashboard': 'Return to Dashboard',
   'order.orderNumber': 'Order #',
   'order.status': 'Order Status',
