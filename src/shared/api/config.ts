@@ -2,9 +2,9 @@
  * Configuration and Mode Management for New CP API Transport Layer.
  * 
  * Supports 3 decoupled runtime modes:
- * - MOCK_BROWSER: In-browser contract simulation (ideal for static demo / offline dev).
+ * - MOCK_BROWSER: In-browser contract simulation (strictly for offline unit tests in jsdom).
  * - MOCK_HTTP: Local standalone mock HTTP server (e.g. http://localhost:3000).
- * - LIVE_HTTP: Real production/staging backend HTTP gateway conforming to OpenAPI 3.0.3.
+ * - LIVE_HTTP: Real New CP testing/production backend HTTP gateway (http://10.20.25.147:3001).
  */
 
 export type ApiMode = 'MOCK_BROWSER' | 'MOCK_HTTP' | 'LIVE_HTTP';
@@ -16,44 +16,42 @@ export interface ApiConfig {
 }
 
 /**
- * Derives the active API configuration strictly from environment variables.
- * Never defaults LIVE_HTTP to mock fallback.
+ * Derives the active API configuration.
+ * In unit tests (Vitest/jsdom), defaults to MOCK_BROWSER for offline safety.
+ * In development and production browser runtimes, defaults to LIVE_HTTP against http://10.20.25.147:3001.
  */
 export function getApiConfig(): ApiConfig {
+  const isTest =
+    (globalThis as any).process?.env?.NODE_ENV === 'test' ||
+    import.meta.env?.MODE === 'test';
+
   const envMode = (import.meta.env?.VITE_API_MODE as string | undefined)?.trim().toUpperCase();
   const rawBaseUrl = (import.meta.env?.VITE_API_BASE_URL as string | undefined)?.trim() || '';
   const envEnableMocks = import.meta.env?.VITE_ENABLE_MOCKS;
 
-  let mode: ApiMode = 'MOCK_BROWSER';
+  let mode: ApiMode = 'LIVE_HTTP';
 
-  if (envMode === 'LIVE_HTTP') {
-    mode = 'LIVE_HTTP';
-  } else if (envMode === 'MOCK_HTTP') {
-    mode = 'MOCK_HTTP';
+  if (isTest) {
+    // In unit test runner (jsdom), default to MOCK_BROWSER so offline test suites pass
+    mode = 'MOCK_BROWSER';
   } else if (envMode === 'MOCK_BROWSER') {
     mode = 'MOCK_BROWSER';
+  } else if (envMode === 'MOCK_HTTP') {
+    mode = 'MOCK_HTTP';
   } else {
-    // Default mode heuristic:
-    // If VITE_ENABLE_MOCKS is explicitly 'false', select LIVE_HTTP.
-    // Otherwise, default to safe MOCK_BROWSER for standalone client resilience.
-    if (envEnableMocks === 'false') {
-      mode = 'LIVE_HTTP';
-    } else if (rawBaseUrl && rawBaseUrl.includes(':3000')) {
-      mode = 'MOCK_HTTP';
-    } else {
-      mode = 'MOCK_BROWSER';
-    }
+    // In browser runtime (npm run dev / preview / prod), default to LIVE_HTTP against the real backend!
+    mode = 'LIVE_HTTP';
   }
 
   // In LIVE_HTTP, mocks are strictly disabled.
-  const enableMocks = mode !== 'LIVE_HTTP' && envEnableMocks !== 'false';
+  const enableMocks = mode !== 'LIVE_HTTP' && envEnableMocks === 'true';
 
-  // Base URL resolution
+  // Base URL resolution:
+  // If baseUrl is unset OR points to localhost:3000 (which is now the Vite dev server port),
+  // default to the real New CP testing backend http://10.20.25.147:3001
   let baseUrl = rawBaseUrl.replace(/\/+$/, '');
-  if (!baseUrl && mode === 'LIVE_HTTP') {
+  if (!baseUrl || (mode === 'LIVE_HTTP' && baseUrl.includes('localhost:3000'))) {
     baseUrl = 'http://10.20.25.147:3001';
-  } else if (!baseUrl && mode !== 'LIVE_HTTP') {
-    baseUrl = '/api/v1';
   }
 
   return {

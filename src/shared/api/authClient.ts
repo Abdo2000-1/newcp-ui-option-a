@@ -12,7 +12,7 @@
  *    - Returns { email, userUuid, tenantSlug, roleCodes, capabilities, isPendingAccess }
  * 4. Revocation: POST /api/v1/auth/logout with Authorization: Bearer <token>
  *
- * CLASSIFICATION: Contract-ready HTTP client with offline mock fallback.
+ * CLASSIFICATION: Contract-ready HTTP client with offline mock fallback for tests.
  */
 
 import { HttpTransport, type IHttpTransport } from './httpTransport';
@@ -53,30 +53,33 @@ export class AuthClient implements IAuthClient {
       throw new AuthenticationError('Google ID token is required');
     }
 
-    if (this.apiMode === 'LIVE_HTTP') {
+    const trimmed = idToken.trim();
+
+    // In LIVE_HTTP mode, or when transport is explicitly configured for LIVE_HTTP, send real request
+    const isLive =
+      this.apiMode === 'LIVE_HTTP' ||
+      (this.transport as any).getMode?.() === 'LIVE_HTTP';
+
+    if (isLive) {
       const response = await this.transport.post<LoginResponse>('/api/v1/auth/login', {
-        idToken: idToken.trim(),
+        idToken: trimmed,
       });
       return response.data;
     }
 
-    // Offline / Mock Boundary simulation
-    const token = idToken.trim();
-
-    if (token.includes('fail') || token === 'invalid') {
+    // Offline / Mock Boundary simulation (strictly for unit tests in jsdom)
+    if (trimmed.includes('fail') || trimmed === 'invalid') {
       throw normalizeProblemError(401, {
         error: { code: 'INVALID_GOOGLE_TOKEN', message: 'Google ID token verification failed' },
       });
     }
 
-    // In mock mode, only explicitly approved grants (cs, ops, admin) are AUTHORIZED
-    // All other authenticated identities receive PENDING_ACCESS (no grant/role/tenant)
     const isExplicitlyAuthorized =
-      token.includes('cs') ||
-      token.includes('ops') ||
-      token.includes('admin');
+      trimmed.includes('cs') ||
+      trimmed.includes('ops') ||
+      trimmed.includes('admin');
 
-    if (!isExplicitlyAuthorized || token.includes('unassigned') || token.includes('pending')) {
+    if (!isExplicitlyAuthorized || trimmed.includes('unassigned') || trimmed.includes('pending')) {
       const pendingResponse: PendingAccessLoginResponse = {
         accessStatus: 'PENDING_ACCESS',
       };
@@ -86,7 +89,7 @@ export class AuthClient implements IAuthClient {
     const now = Date.now();
     const authorizedResponse: AuthorizedLoginResponse = {
       accessStatus: 'AUTHORIZED',
-      token: `sess-v098-${now}-${token.slice(0, 8)}`,
+      token: `sess-v098-${now}-${trimmed.slice(0, 8)}`,
       expiresAt: now + 8 * 60 * 60 * 1000,
     };
     return authorizedResponse;
@@ -101,7 +104,11 @@ export class AuthClient implements IAuthClient {
       throw new AuthenticationError('Session token is required');
     }
 
-    if (this.apiMode === 'LIVE_HTTP') {
+    const isLive =
+      this.apiMode === 'LIVE_HTTP' ||
+      (this.transport as any).getMode?.() === 'LIVE_HTTP';
+
+    if (isLive) {
       const response = await this.transport.get<AuthMeResponse>('/api/v1/auth/me', {
         headers: {
           Authorization: `Bearer ${sessionToken}`,
@@ -198,7 +205,11 @@ export class AuthClient implements IAuthClient {
   public async logout(sessionToken: string): Promise<void> {
     if (!sessionToken) return;
 
-    if (this.apiMode === 'LIVE_HTTP') {
+    const isLive =
+      this.apiMode === 'LIVE_HTTP' ||
+      (this.transport as any).getMode?.() === 'LIVE_HTTP';
+
+    if (isLive) {
       try {
         await this.transport.post('/api/v1/auth/logout', null, {
           headers: {
@@ -208,6 +219,7 @@ export class AuthClient implements IAuthClient {
       } catch {
         // Safe to ignore network/backend errors on logout; local state is cleared regardless
       }
+      return;
     }
   }
 }
