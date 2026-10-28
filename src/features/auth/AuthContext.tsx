@@ -51,7 +51,7 @@ export interface UserSession {
   userId: string;
   email: string;
   fullName: string;
-  tenantSlug: string | null;
+  tenantSlug?: string | null;
   activeTenant: ActiveTenantContext | null; // null if unassigned or pending
   tenantId: number | null; // strictly null when not authorized; never fallback to 1
   sessionToken?: string;
@@ -61,7 +61,7 @@ export interface UserSession {
   capabilities: string[];
   status: SessionStatus;
   accessStatus: AccessStatus;
-  isPendingAccess: boolean;
+  isPendingAccess?: boolean;
   tenantSwitchingEnabled: boolean;
   issuedAt: number;
   lastActivityAt: number;
