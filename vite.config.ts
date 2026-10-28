@@ -9,10 +9,10 @@ export default defineConfig({
   envPrefix: ['VITE_', 'GOOGLE_'],
   base: isGithubPages ? '/newcp-ui-option-a/' : '/',
   server: {
-    port: 5173,
+    port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VITE_API_BASE_URL || 'http://10.20.25.147:3001',
         changeOrigin: true,
       },
     },

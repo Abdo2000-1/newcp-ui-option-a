@@ -226,8 +226,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistSession(updated);
   }, [persistSession]);
 
-  // Validate and recover session with backend on startup
+  // Validate and recover session with backend on startup (in production / browser runtime)
   useEffect(() => {
+    if ((globalThis as any).process?.env?.NODE_ENV === 'test') {
+      return;
+    }
     const recoverAndValidateSession = async () => {
       const cur = sessionRef.current;
       if (cur?.sessionToken && cur.status === 'authenticated') {

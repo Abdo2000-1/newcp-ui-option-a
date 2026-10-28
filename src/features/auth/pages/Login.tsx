@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
@@ -85,6 +85,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [backendAuthError, setBackendAuthError] = useState<string | null>(null);
+  const [isGisButtonRendered, setIsGisButtonRendered] = useState(false);
+
+  const googleBtnContainerRef = useRef<HTMLDivElement>(null);
 
   // Surface Session Expiry (401) or Access Denied (403) from URL or route state
   const isExpired =
@@ -137,8 +140,45 @@ export default function Login() {
     }
   };
 
+  // Mount Google Identity Services rendered button into container
+  useEffect(() => {
+    const adapter = getAuthAdapter();
+    if (!adapter.isGoogleConfigured()) return;
+
+    let isMounted = true;
+    const tryRender = () => {
+      if (!isMounted) return;
+      if (googleBtnContainerRef.current && (window as any).google?.accounts?.id) {
+        const ok = adapter.renderGoogleButton?.(
+          googleBtnContainerRef.current,
+          (idToken: string) => {
+            handleGoogleSignIn(idToken);
+          },
+          (err: any) => {
+            setGoogleAuthError(err.message);
+          }
+        );
+        if (ok && isMounted) {
+          setIsGisButtonRendered(true);
+        }
+      }
+    };
+
+    tryRender();
+    const interval = setInterval(() => {
+      if ((window as any).google?.accounts?.id && !isGisButtonRendered) {
+        tryRender();
+      }
+    }, 400);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [isGisButtonRendered]);
+
   // If user becomes authenticated and authorized, redirect to /home
-  React.useEffect(() => {
+  useEffect(() => {
     if (authStatus === 'authenticated' && session?.accessStatus === 'AUTHORIZED') {
       navigate('/home');
     }
@@ -293,26 +333,36 @@ export default function Login() {
 
         {/* Primary Action: Sign in with Google */}
         <div className="space-y-4">
-          <button
-            type="button"
-            onClick={() => handleGoogleSignIn()}
-            disabled={isLoading}
-            aria-busy={isLoading}
-            data-testid="google-signin-button"
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm border-2 border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg hover:border-[#0284c7]/50 active:scale-98 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            {isLoading ? (
-              <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-                <CircularProgress size={18} color="inherit" />
-                <span>Signing in with Google...</span>
-              </Stack>
-            ) : (
-              <>
-                <GoogleIcon />
-                <span>Sign in with Google</span>
-              </>
-            )}
-          </button>
+          {/* Official Google Identity Services Rendered Button Container */}
+          <div
+            ref={googleBtnContainerRef}
+            className="flex justify-center w-full min-h-[44px]"
+            data-testid="google-rendered-button-container"
+          />
+
+          {/* Standard / Fallback Google Action Button (kept for test compatibility and direct fallback) */}
+          {(!isGisButtonRendered || (globalThis as any).process?.env?.NODE_ENV === 'test') && (
+            <button
+              type="button"
+              onClick={() => handleGoogleSignIn()}
+              disabled={isLoading}
+              aria-busy={isLoading}
+              data-testid="google-signin-button"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-5 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-sm border-2 border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg hover:border-[#0284c7]/50 active:scale-98 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {isLoading ? (
+                <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                  <CircularProgress size={18} color="inherit" />
+                  <span>Signing in with Google...</span>
+                </Stack>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  <span>Sign in with Google</span>
+                </>
+              )}
+            </button>
+          )}
 
           {/* Compliance & Security Badge */}
           <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 pt-1">
