@@ -40,8 +40,18 @@ import {
   Building2,
   UserCheck,
   Receipt,
-  Settings
+  Settings,
+  Home,
+  FolderOpen,
+  GitBranch,
+  RefreshCcw,
+  BarChart3,
+  ScanLine,
+  Users,
+  Bell,
+  Sliders
 } from 'lucide-react';
+import { useAuth } from '@/features/auth';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
 import { useLanguage, LANGUAGES, LanguageFlag } from '@/app/providers/contexts/LanguageContext';
 import { useStore } from '@/shared/hooks/useStore';
@@ -92,19 +102,34 @@ export function ConvertibleNav({
   const moreDropdownRef = useRef<HTMLDivElement>(null);
   const posRef = useRef<HTMLDivElement>(null);
 
-  // Global Ctrl+K / Cmd+K listener
+  const profile = useStore((s) => s.getProfile());
+  const { session } = useAuth();
+  const isAdmin = Boolean(
+    session?.roles?.includes('admin') ||
+    session?.roles?.includes('ADMIN') ||
+    (session as any)?.role === 'admin' ||
+    profile?.role?.toLowerCase() === 'admin'
+  );
+
+  // Global Keyboard listener: Ctrl+K for search, Escape to close open dropdowns
   useEffect(() => {
     function handleGlobalKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchModalOpen((prev) => !prev);
+      } else if (e.key === 'Escape') {
+        setOrdersDropdownOpen(false);
+        setOpsDropdownOpen(false);
+        setMoreDropdownOpen(false);
+        setLangDropdownOpen(false);
+        setProfileDropdownOpen(false);
+        setPosDropdownOpen(false);
       }
     }
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  const profile = useStore((s) => s.getProfile());
 
   // 8 Target Pages from 3DDX CP (For vertical sidebar)
   const targetNavItems = [
@@ -767,6 +792,39 @@ export function ConvertibleNav({
             >
               {/* Categorized Spread Menus */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 }, position: 'relative' }}>
+                {/* 0. Home */}
+                <NavLink
+                  to="/home"
+                  style={{ textDecoration: 'none' }}
+                >
+                  {({ isActive }) => (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: 2,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        transition: 'all 0.15s ease',
+                        bgcolor: isActive ? (isDark ? '#0c1222' : '#ffffff') : 'transparent',
+                        color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
+                        border: `1px solid ${isActive ? (isDark ? alpha('#38bdf8', 0.3) : alpha('#0284c7', 0.2)) : 'transparent'}`,
+                        boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                        '&:hover': {
+                          color: isDark ? '#f8fafc' : '#0f172a',
+                          bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
+                        },
+                      }}
+                    >
+                      <Home size={13} />
+                      <span>Home</span>
+                    </Box>
+                  )}
+                </NavLink>
+
                 {/* 1. Dashboard */}
                 <NavLink
                   to="/dashboard"
@@ -823,13 +881,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/order-details', '/cases', '/workflow-board', '/change-requests', '/edit-case'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname)
+                      color: ordersDropdownOpen || ['/flow', '/orders', '/order-details', '/cases', '/workflow-board', '/change-requests', '/edit-case'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/order-details', '/edit-case'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/order-details', '/cases', '/workflow-board', '/change-requests', '/edit-case'].some(p => location.pathname === p || location.pathname.startsWith(p + '/')) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -844,10 +902,31 @@ export function ConvertibleNav({
                   {ordersDropdownOpen && (
                     <div
                       data-testid="orders-dropdown-menu"
-                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                      role="menu"
+                      aria-label="Orders & Cases Menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-72 max-h-[min(75vh,520px)] overflow-y-auto overscroll-contain rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 space-y-1`}
                     >
+                      {/* Section: Active Production */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Active Production
+                      </Typography>
+
                       <NavLink
                         to="/flow"
+                        role="menuitem"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -875,7 +954,37 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
+                        to="/workflow-board"
+                        role="menuitem"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <GitBranch size={15} color="#0284c7" />
+                          <Box>
+                            <div>Workflow Board</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Visual status transition lanes</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
                         to="/order-details?id=504901"
+                        role="menuitem"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -902,8 +1011,58 @@ export function ConvertibleNav({
                         </Box>
                       </NavLink>
 
+                      <Divider sx={{ my: 0.5 }} />
+
+                      {/* Section: Cases & Changes */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Cases & Revisions
+                      </Typography>
+
+                      <NavLink
+                        to="/cases"
+                        role="menuitem"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <FolderOpen size={15} color="#059669" />
+                          <Box>
+                            <div>Cases Archive</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Clinical cases repository</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
                       <NavLink
                         to="/edit-case"
+                        role="menuitem"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -927,6 +1086,50 @@ export function ConvertibleNav({
                             <div>Edit Case</div>
                             <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Revisions & remakes</Typography>
                           </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/change-requests"
+                        role="menuitem"
+                        onClick={() => setOrdersDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <RefreshCcw size={15} color="#e11d48" />
+                            <Box>
+                              <div>Change Requests</div>
+                              <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Doctor modification tickets</Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label="4"
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.625rem',
+                              fontWeight: 900,
+                              bgcolor: '#e11d48',
+                              color: '#ffffff',
+                              '& .MuiChip-label': { px: 0.75 },
+                            }}
+                          />
                         </Box>
                       </NavLink>
                     </div>
@@ -956,13 +1159,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports', '/scan-center', '/documents'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname)
+                      color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports', '/scan-center', '/documents'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31'].includes(location.pathname) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports', '/scan-center', '/documents'].some(p => location.pathname === p || location.pathname.startsWith(p + '/')) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -977,10 +1180,31 @@ export function ConvertibleNav({
                   {opsDropdownOpen && (
                     <div
                       data-testid="ops-dropdown-menu"
-                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-64 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                      role="menu"
+                      aria-label="Operations & Reports Menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-72 max-h-[min(75vh,520px)] overflow-y-auto overscroll-contain rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 space-y-1`}
                     >
+                      {/* Section: Analytics & SLAs */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Analytics & SLAs
+                      </Typography>
+
                       <NavLink
                         to="/quarter-targets"
+                        role="menuitem"
                         onClick={() => setOpsDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1008,35 +1232,8 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
-                        to="/task-47"
-                        onClick={() => setOpsDropdownOpen(false)}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            p: 1.25,
-                            borderRadius: 2,
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            color: isDark ? '#e2e8f0' : '#1e293b',
-                            '&:hover': {
-                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
-                            },
-                          }}
-                        >
-                          <Boxes size={15} color="#059669" />
-                          <Box>
-                            <div>Task 47: Models Report</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>3D Model logs & units</Typography>
-                          </Box>
-                        </Box>
-                      </NavLink>
-
-                      <NavLink
                         to="/task-31"
+                        role="menuitem"
                         onClick={() => setOpsDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1059,6 +1256,142 @@ export function ConvertibleNav({
                           <Box>
                             <div>Task 31: Staff Targets</div>
                             <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Technician volume tiers</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/reports"
+                        role="menuitem"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <BarChart3 size={15} color="#059669" />
+                          <Box>
+                            <div>Reports Hub</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Clinical summaries & exports</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <Divider sx={{ my: 0.5 }} />
+
+                      {/* Section: Laboratory & Intake */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Laboratory & Intake
+                      </Typography>
+
+                      <NavLink
+                        to="/task-47"
+                        role="menuitem"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Boxes size={15} color="#6366f1" />
+                          <Box>
+                            <div>Task 47: Models Report</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>3D Model logs & units</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/scan-center"
+                        role="menuitem"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <ScanLine size={15} color="#0284c7" />
+                          <Box>
+                            <div>Scan Center</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>CBCT & optical scans intake</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
+                        to="/documents"
+                        role="menuitem"
+                        onClick={() => setOpsDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <FileText size={15} color="#a855f7" />
+                          <Box>
+                            <div>Documents & Prescriptions</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Work orders & digital prescriptions</Typography>
                           </Box>
                         </Box>
                       </NavLink>
@@ -1088,9 +1421,13 @@ export function ConvertibleNav({
                       fontSize: '0.75rem',
                       fontWeight: 700,
                       transition: 'all 0.15s ease',
-                      bgcolor: moreDropdownOpen ? (isDark ? '#0c1222' : '#ffffff') : 'transparent',
-                      color: moreDropdownOpen ? (isDark ? '#38bdf8' : '#0284c7') : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${moreDropdownOpen ? (isDark ? alpha('#38bdf8', 0.3) : alpha('#0284c7', 0.2)) : 'transparent'}`,
+                      bgcolor: moreDropdownOpen || ['/patients', '/clinics', '/doctors', '/billing', '/settings', '/notifications', '/cms', '/config-manager'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
+                        ? (isDark ? '#0c1222' : '#ffffff')
+                        : 'transparent',
+                      color: moreDropdownOpen || ['/patients', '/clinics', '/doctors', '/billing', '/settings', '/notifications', '/cms', '/config-manager'].some(p => location.pathname === p || location.pathname.startsWith(p + '/'))
+                        ? (isDark ? '#38bdf8' : '#0284c7')
+                        : (isDark ? '#94a3b8' : '#475569'),
+                      border: `1px solid ${moreDropdownOpen || ['/patients', '/clinics', '/doctors', '/billing', '/settings', '/notifications', '/cms', '/config-manager'].some(p => location.pathname === p || location.pathname.startsWith(p + '/')) ? (isDark ? alpha('#38bdf8', 0.3) : alpha('#0284c7', 0.2)) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -1111,10 +1448,60 @@ export function ConvertibleNav({
                   {moreDropdownOpen && (
                     <div
                       data-testid="more-dropdown-menu"
-                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-60 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
+                      role="menu"
+                      aria-label="More Navigation Menu"
+                      className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 sm:left-auto sm:right-0 w-72 max-h-[min(75vh,520px)] overflow-y-auto overscroll-contain rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 space-y-1`}
                     >
+                      {/* Section: Directories */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Directories & Network
+                      </Typography>
+
+                      <NavLink
+                        to="/patients"
+                        role="menuitem"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Users size={15} color="#0284c7" />
+                          <Box>
+                            <div>Patients Directory</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Patient records & history</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
                       <NavLink
                         to="/clinics"
+                        role="menuitem"
                         onClick={() => setMoreDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1143,6 +1530,7 @@ export function ConvertibleNav({
 
                       <NavLink
                         to="/doctors"
+                        role="menuitem"
                         onClick={() => setMoreDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1169,8 +1557,29 @@ export function ConvertibleNav({
                         </Box>
                       </NavLink>
 
+                      <Divider sx={{ my: 0.5 }} />
+
+                      {/* Section: Finance & Preferences */}
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          px: 1.25,
+                          pt: 0.5,
+                          pb: 0.25,
+                          display: 'block',
+                          fontSize: '0.625rem',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Finance & Settings
+                      </Typography>
+
                       <NavLink
                         to="/billing"
+                        role="menuitem"
                         onClick={() => setMoreDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1198,7 +1607,37 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
+                        to="/notifications"
+                        role="menuitem"
+                        onClick={() => setMoreDropdownOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.25,
+                            borderRadius: 2,
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isDark ? '#e2e8f0' : '#1e293b',
+                            '&:hover': {
+                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                            },
+                          }}
+                        >
+                          <Bell size={15} color="#f59e0b" />
+                          <Box>
+                            <div>Notifications</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Alerts & team notices</Typography>
+                          </Box>
+                        </Box>
+                      </NavLink>
+
+                      <NavLink
                         to="/settings"
+                        role="menuitem"
                         onClick={() => setMoreDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
                       >
@@ -1224,6 +1663,88 @@ export function ConvertibleNav({
                           </Box>
                         </Box>
                       </NavLink>
+
+                      {isAdmin && (
+                        <>
+                          <Divider sx={{ my: 0.5 }} />
+
+                          {/* Section: Administration */}
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              px: 1.25,
+                              pt: 0.5,
+                              pb: 0.25,
+                              display: 'block',
+                              fontSize: '0.625rem',
+                              fontWeight: 800,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.08em',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            Administration
+                          </Typography>
+
+                          <NavLink
+                            to="/cms"
+                            role="menuitem"
+                            onClick={() => setMoreDropdownOpen(false)}
+                            style={{ textDecoration: 'none' }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                p: 1.25,
+                                borderRadius: 2,
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: isDark ? '#e2e8f0' : '#1e293b',
+                                '&:hover': {
+                                  bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                                },
+                              }}
+                            >
+                              <Sliders size={15} color="#0284c7" />
+                              <Box>
+                                <div>CMS Controls</div>
+                                <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Visual & branding CMS</Typography>
+                              </Box>
+                            </Box>
+                          </NavLink>
+
+                          <NavLink
+                            to="/config-manager"
+                            role="menuitem"
+                            onClick={() => setMoreDropdownOpen(false)}
+                            style={{ textDecoration: 'none' }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                                p: 1.25,
+                                borderRadius: 2,
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: isDark ? '#e2e8f0' : '#1e293b',
+                                '&:hover': {
+                                  bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
+                                },
+                              }}
+                            >
+                              <Code2 size={15} color="#6366f1" />
+                              <Box>
+                                <div>Config Manager</div>
+                                <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Dynamic configuration & flags</Typography>
+                              </Box>
+                            </Box>
+                          </NavLink>
+                        </>
+                      )}
                     </div>
                   )}
                 </Box>
