@@ -31,7 +31,6 @@ import {
   Plus,
   Code2,
   Sparkles,
-  Printer,
   Mail,
   Share2,
   Paperclip,
@@ -252,7 +251,6 @@ export default function OrderDetailsPage() {
   };
 
   const [activeTab, setActiveTab] = useState<'prescription' | '3dviewer' | 'suborders'>('prescription');
-  const [orderStatus, setOrderStatus] = useState<string>(primaryService?.actionLabel || 'Not available');
   const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
 
   // Core Form Fields
@@ -285,7 +283,6 @@ export default function OrderDetailsPage() {
       setDoctorName(flowOrder.doctorName || 'Not available');
       setPatientName(flowOrder.patientName || 'Not available');
       setScanCenter(flowOrder.scanCenter || 'Not available');
-      setOrderStatus(flowOrder.services[0]?.actionLabel || 'Not available');
 
       const isCurrentDemo = flowOrder.orderNum === '504901' || flowOrder.id === '504901';
       if (isCurrentDemo) {
@@ -317,8 +314,6 @@ export default function OrderDetailsPage() {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   // Prototype mock action states (UIUX-REQ-016)
-  const [isSavingSpecialRequest, setIsSavingSpecialRequest] = useState(false);
-  const [isSavingClientNote, setIsSavingClientNote] = useState(false);
   const [isDispatchingNote, setIsDispatchingNote] = useState(false);
 
   // Preview Modal State
@@ -838,45 +833,6 @@ export default function OrderDetailsPage() {
     setNewInternalNote((prev) => (prev ? `${prev} - ${text}` : text));
   };
 
-  const copyPrescriptionSummary = () => {
-    if (!flowOrder) return;
-    const activeOrder = flowOrder;
-    const summary = `3D DIAGNOSTIX CLINICAL CASE SUMMARY
-=========================================
-Order ID: #${activeOrder.orderNum}
-Status: ${orderStatus}
-Primary Service: ${primaryService.title} (${primaryService.format || 'Not available'})
-Doctor: ${doctorName}
-Patient: ${patientName}
-Scanning Center: ${scanCenter}
-Dr. Special Request: ${drSpecialRequest || 'Not available'}
-Client Note: ${clientNote || 'Not available'}
-Registration Type: ${registrationType ? registrationType.toUpperCase() : 'Not available'}
-Shipping Instructions: ${specialPreShippingOld || 'Not available'}
-Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} (${typeof s.amount === 'number' ? `${s.amount}` : 'Not available'})`).join(', ')}
-Total Value: ${activeOrder.services.some(s => typeof s.amount === 'number') ? `${activeOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
-Generated on: ${new Date().toLocaleString()}
-`;
-    navigator.clipboard.writeText(summary);
-    triggerToast('Case prescription summary copied to clipboard!');
-  };
-
-  const handleSaveSpecialRequest = () => {
-    setIsSavingSpecialRequest(true);
-    setTimeout(() => {
-      setIsSavingSpecialRequest(false);
-      triggerToast('[MOCK / NOT_INTEGRATED] Dr. Special Request saved to local case state.');
-    }, 300);
-  };
-
-  const handleSaveClientNote = () => {
-    setIsSavingClientNote(true);
-    setTimeout(() => {
-      setIsSavingClientNote(false);
-      triggerToast('[MOCK / NOT_INTEGRATED] Client Note saved to case file.');
-    }, 300);
-  };
-
   const handlePostInternalNote = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newInternalNote.trim() || isDispatchingNote) {
@@ -981,35 +937,6 @@ Generated on: ${new Date().toLocaleString()}
     triggerToast('Special Pre-Shipping instructions updated!');
   };
 
-  const exportCaseSummary = () => {
-    if (!flowOrder) return;
-    const activeOrder = flowOrder;
-    const summary = `3D DIAGNOSTIX CLINICAL CASE SUMMARY
-=========================================
-Order ID: #${activeOrder.orderNum}
-Status: ${orderStatus}
-Primary Service: ${primaryService.title} (${primaryService.format || 'Not available'})
-Doctor: ${doctorName}
-Patient: ${patientName}
-Scanning Center: ${scanCenter}
-Dr. Special Request: ${drSpecialRequest || 'Not available'}
-Client Note: ${clientNote || 'Not available'}
-Registration Type: ${registrationType ? registrationType.toUpperCase() : 'Not available'}
-Shipping Instructions: ${specialPreShippingOld || 'Not available'}
-Active Modules: ${activeOrder.services.map((s) => `${s.typeCode}: ${s.title} (${typeof s.amount === 'number' ? `$${s.amount}` : 'Not available'})`).join(', ')}
-Total Value: ${activeOrder.services.some(s => typeof s.amount === 'number') ? `$${activeOrder.services.reduce((a, s) => a + (typeof s.amount === 'number' ? s.amount : 0), 0)}.00 USD` : 'Not available'}
-Generated on: ${new Date().toLocaleString()}
-`;
-    const blob = new Blob([summary], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Case_${activeOrder.orderNum}_Prescription_Summary.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    triggerToast('Prescription summary downloaded successfully!');
-  };
-
   if (!flowOrder) {
     return (
       <div className="space-y-4 w-full min-w-0 pb-16 select-none">
@@ -1067,25 +994,6 @@ Generated on: ${new Date().toLocaleString()}
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-purple-300 dark:border-purple-500/50 text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-500/10">
                 {flowOrder.source || 'Via CP'}
               </span>
-
-              {/* Working Status Pill Selector */}
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{t('action.status', 'Status')}:</span>
-                <select
-                  value={orderStatus}
-                  onChange={(e) => {
-                    setOrderStatus(e.target.value);
-                    triggerToast(`Order status updated to: ${e.target.value}`);
-                  }}
-                  className="text-[11px] font-bold py-0.5 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
-                >
-                  <option value="In Progress">In Progress</option>
-                  <option value="Revision Required">Revision Required</option>
-                  <option value="Ready for Manufacture">Ready for Manufacture</option>
-                  <option value="Completed">Completed</option>
-                  <option value="On Hold">On Hold</option>
-                </select>
-              </div>
 
               {/* RUSH ORDER Toggle Button */}
               <button
@@ -1151,48 +1059,6 @@ Generated on: ${new Date().toLocaleString()}
                   {isCopiedId ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                 </button>
               </div>
-            </div>
-
-            {/* Quick Action Buttons */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-sky-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title={t('order.printPrescription', 'Print Clinical Prescription')}
-              >
-                <Printer size={13} />
-                <span className="hidden sm:inline">{t('action.print', 'Print')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={copyPrescriptionSummary}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-amber-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title="Copy case prescription summary to clipboard"
-              >
-                <Copy size={13} />
-                <span className="hidden sm:inline">Copy Summary</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={exportCaseSummary}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-500 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
-                title={t('action.download', 'Download Summary File')}
-              >
-                <Download size={13} />
-                <span className="hidden sm:inline">{t('action.export', 'Export')}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate('/flow')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-sky-500 text-slate-800 dark:text-slate-200 text-xs font-extrabold transition-all cursor-pointer shadow-xs"
-              >
-                <ArrowLeft size={13} />
-                <span>Back to Flow</span>
-              </button>
             </div>
           </div>
 
@@ -1352,86 +1218,59 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             </div>
 
-            {/* Editable Form Fields: Dr Special Request, Sc Special Request, Client Note */}
-            <div className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+            {/* Clinical Specifications & Notes (Read-Only) */}
+            <div className="divide-y divide-slate-200/80 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
 
-              {/* Dr. Special Request */}
-              <div className="grid grid-cols-12 py-2.5 px-3.5 items-center gap-2">
-                <div className="col-span-3 font-extrabold text-slate-700 dark:text-slate-300">Dr. Special Request</div>
-                <div className="col-span-9 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={drSpecialRequest}
-                    onChange={(e) => setDrSpecialRequest(e.target.value)}
-                    placeholder="Enter clinician specific surgical or restoration requests..."
-                    className="flex-1 px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                  <button
-                    type="button"
-                    disabled={isSavingSpecialRequest}
-                    onClick={handleSaveSpecialRequest}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0 disabled:opacity-50 transition-all"
-                  >
-                    <Save size={12} />
-                    <span>{isSavingSpecialRequest ? 'Saving...' : 'Save'}</span>
-                  </button>
+              {/* Dr. Special Request (Read-Only) */}
+              <div className="grid grid-cols-12 py-3 px-3.5 items-center gap-2">
+                <div className="col-span-12 sm:col-span-3 font-extrabold text-slate-700 dark:text-slate-300 text-xs">
+                  Dr. Special Request
                 </div>
-              </div>
-
-              {/* Sc. Special Request */}
-              <div className="grid grid-cols-12 py-2.5 px-3.5 items-center gap-2">
-                <div className="col-span-3 font-extrabold text-slate-700 dark:text-slate-300">Sc. Special Request</div>
-                <div className="col-span-9 flex items-center gap-3 flex-wrap">
-                  <select
-                    value={scSpecialRequest}
-                    onChange={(e) => {
-                      setScSpecialRequest(e.target.value);
-                      triggerToast(`Sc. Special Request set to ${e.target.value}`);
-                    }}
-                    className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+                <div className="col-span-12 sm:col-span-9">
+                  <div
+                    data-testid="readonly-dr-special-request"
+                    className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium select-text break-words"
                   >
-                    <option value="Not available">Not available</option>
-                    <option value="None">None</option>
-                    <option value="General">General</option>
-                    <option value="Urgent Pre-Check">Urgent Pre-Check</option>
-                    <option value="High Density Mesh">High Density Mesh</option>
-                    <option value="Fast Track Delivery">Fast Track Delivery</option>
-                  </select>
-
-                  <span className="text-slate-400">|</span>
-
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] text-slate-500">Value:</span>
-                    <input
-                      type="number"
-                      value={scSpecialValue}
-                      onChange={(e) => setScSpecialValue(e.target.value)}
-                      className="w-16 px-2 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono font-bold text-center"
-                    />
+                    {drSpecialRequest || 'Not available'}
                   </div>
                 </div>
               </div>
 
-              {/* Client Note */}
-              <div className="grid grid-cols-12 py-2.5 px-3.5 items-center gap-2">
-                <div className="col-span-3 font-extrabold text-slate-700 dark:text-slate-300">Client Note</div>
-                <div className="col-span-9 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={clientNote}
-                    onChange={(e) => setClientNote(e.target.value)}
-                    placeholder="Add client portal communication notes..."
-                    className="flex-1 px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  />
-                  <button
-                    type="button"
-                    disabled={isSavingClientNote}
-                    onClick={handleSaveClientNote}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-sky-400 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 text-[11px] font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 cursor-pointer shrink-0 disabled:opacity-50 transition-all"
+              {/* Sc. Special Request (Read-Only) */}
+              <div className="grid grid-cols-12 py-3 px-3.5 items-center gap-2">
+                <div className="col-span-12 sm:col-span-3 font-extrabold text-slate-700 dark:text-slate-300 text-xs">
+                  Sc. Special Request
+                </div>
+                <div className="col-span-12 sm:col-span-9 flex items-center gap-2">
+                  <div
+                    data-testid="readonly-sc-special-request"
+                    className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium flex items-center gap-2 select-text"
                   >
-                    <Save size={12} />
-                    <span>{isSavingClientNote ? 'Saving...' : 'Save'}</span>
-                  </button>
+                    <span className="font-bold">{scSpecialRequest || 'Not available'}</span>
+                    {scSpecialValue ? (
+                      <>
+                        <span className="text-slate-400">|</span>
+                        <span className="text-slate-500 font-mono text-[11px]">
+                          Value: <strong className="text-slate-800 dark:text-slate-200">{scSpecialValue}</strong>
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Note (Read-Only) */}
+              <div className="grid grid-cols-12 py-3 px-3.5 items-center gap-2">
+                <div className="col-span-12 sm:col-span-3 font-extrabold text-slate-700 dark:text-slate-300 text-xs">
+                  Client Note
+                </div>
+                <div className="col-span-12 sm:col-span-9">
+                  <div
+                    data-testid="readonly-client-note"
+                    className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium select-text break-words"
+                  >
+                    {clientNote || 'Not available'}
+                  </div>
                 </div>
               </div>
 
