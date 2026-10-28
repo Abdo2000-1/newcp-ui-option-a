@@ -213,7 +213,7 @@ describe('UIUX-REQ-016: Functional Mock Wiring for Prototype Actions', () => {
   });
 
   describe('OrderDetailsPage Prototype Actions', () => {
-    it('handles Dr. Special Request save action with loading feedback and mock notice', async () => {
+    it('renders Dr. Special Request as read-only text without editing controls or save button', () => {
       render(
         <MemoryRouter initialEntries={['/order-details?ID=504901']}>
           <AppProviders>
@@ -224,23 +224,13 @@ describe('UIUX-REQ-016: Functional Mock Wiring for Prototype Actions', () => {
         </MemoryRouter>
       );
 
-      const saveButtons = screen.getAllByRole('button', { name: /save/i });
-      expect(saveButtons.length).toBeGreaterThanOrEqual(1);
-
-      // Click Dr. Special Request save button
-      fireEvent.click(saveButtons[0]);
-
-      await waitFor(
-        () => {
-          expect(
-            screen.getByText(/Dr\. Special Request saved to local case state\./i)
-          ).toBeInTheDocument();
-        },
-        { timeout: 1500 }
-      );
+      const readonlyElem = screen.getByTestId('readonly-dr-special-request');
+      expect(readonlyElem).toBeInTheDocument();
+      expect(readonlyElem).toHaveTextContent(/Immediate implant placement planned/i);
+      expect(screen.queryByPlaceholderText(/Enter clinician specific surgical/i)).not.toBeInTheDocument();
     });
 
-    it('handles Client Note save action with loading feedback', async () => {
+    it('renders Client Note as read-only text without editing controls or save button', () => {
       render(
         <MemoryRouter initialEntries={['/order-details?ID=504901']}>
           <AppProviders>
@@ -251,18 +241,10 @@ describe('UIUX-REQ-016: Functional Mock Wiring for Prototype Actions', () => {
         </MemoryRouter>
       );
 
-      const saveButtons = screen.getAllByRole('button', { name: /save/i });
-      // Client note save button is the second one
-      fireEvent.click(saveButtons[1]);
-
-      await waitFor(
-        () => {
-          expect(
-            screen.getByText(/Client Note saved to case file\./i)
-          ).toBeInTheDocument();
-        },
-        { timeout: 1500 }
-      );
+      const readonlyElem = screen.getByTestId('readonly-client-note');
+      expect(readonlyElem).toBeInTheDocument();
+      expect(readonlyElem).toHaveTextContent(/Please send digital STL plan approval/i);
+      expect(screen.queryByPlaceholderText(/Add client portal communication/i)).not.toBeInTheDocument();
     });
 
     it('handles Internal Case Note dispatching with local mock updates and dispatching state', async () => {

@@ -181,7 +181,7 @@ describe('UIUX-REQ-015: Order Details Automation & Unified Table System', () => 
       expect((textarea as HTMLTextAreaElement).value).toContain('DICOM artifact detected');
     });
 
-    it('copies case prescription summary to clipboard with one-click action', () => {
+    it('copies order ID to clipboard with one-click action and omits Copy Summary button', () => {
       render(
         <MemoryRouter initialEntries={['/order-details?ID=504901']}>
           <AppProviders>
@@ -192,13 +192,12 @@ describe('UIUX-REQ-015: Order Details Automation & Unified Table System', () => 
         </MemoryRouter>
       );
 
-      const copySummaryBtn = screen.getByRole('button', { name: /copy summary/i });
-      fireEvent.click(copySummaryBtn);
+      expect(screen.queryByRole('button', { name: /copy summary/i })).not.toBeInTheDocument();
 
-      expect(navigator.clipboard.writeText).toHaveBeenCalled();
-      expect(
-        screen.getByText('Case prescription summary copied to clipboard!')
-      ).toBeInTheDocument();
+      const copyIdBtn = screen.getByTitle(/copy id/i);
+      fireEvent.click(copyIdBtn);
+
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('504901');
     });
 
     it('renders Sub-orders Matrix Breakdown with unified table and toggle to card view', () => {
