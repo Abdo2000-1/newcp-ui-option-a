@@ -158,7 +158,7 @@ describe('Canonical API Types & Error Normalization (v0.9.8)', () => {
       const me: AuthMeResponse = await client.getMe('sess-v098-cs-token');
       expect(me.email).toBe('cs.demo@3ddx.com');
       expect(me.userUuid).toBe('usr-cs-001');
-      expect(me.tenantSlug).toBe('3ddx');
+      expect(me.tenantSlug).toBe('3ddx.com');
       expect(me.roleCodes).toContain('cs_operator');
       expect(me.capabilities).toContain('orders.view');
       expect(me.capabilities).toContain('services.models.edit');

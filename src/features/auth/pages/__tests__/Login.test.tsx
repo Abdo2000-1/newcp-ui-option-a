@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Login from '../Login';
 import { AppProviders } from '@/app/providers';
+import { getAuthAdapter, GoogleAuthError, BackendAuthError } from '@/features/auth/authAdapter';
 
 /**
  * ============================================================================
@@ -197,6 +198,11 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
 
   describe('Authentication Error and Status States', () => {
     it('11. Handles and displays Google authentication error state', async () => {
+      const adapter = getAuthAdapter();
+      vi.spyOn(adapter, 'signInWithGoogle').mockRejectedValueOnce(
+        new GoogleAuthError('Google sign-in popup was closed before completing authentication.', 'POPUP_CLOSED')
+      );
+
       render(
         <MemoryRouter>
           <AppProviders>
@@ -205,17 +211,21 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByText(/demo verification options/i));
-      const failBtn = screen.getByText(/simulate google error/i);
-      fireEvent.click(failBtn);
+      fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('google-auth-error-alert')).toBeInTheDocument();
-        expect(screen.getByText(/google sign-in failed/i)).toBeInTheDocument();
+        expect(screen.getByText(/google sign-in popup was closed/i)).toBeInTheDocument();
       });
     });
 
     it('12. Handles and displays backend authentication error state', async () => {
+      const adapter = getAuthAdapter();
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('valid-google-token');
+      vi.spyOn(adapter, 'exchangeTokenForSession').mockRejectedValueOnce(
+        new BackendAuthError('Backend authentication service unavailable (503).', 503, 'SERVICE_UNAVAILABLE')
+      );
+
       render(
         <MemoryRouter>
           <AppProviders>
@@ -224,17 +234,21 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByText(/demo verification options/i));
-      const failBtn = screen.getByText(/simulate backend error/i);
-      fireEvent.click(failBtn);
+      fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('backend-auth-error-alert')).toBeInTheDocument();
-        expect(screen.getByText(/backend authentication failed/i)).toBeInTheDocument();
+        expect(screen.getByText(/backend authentication service unavailable/i)).toBeInTheDocument();
       });
     });
 
     it('13. Displays Pending Access message when authenticated user lacks tenant role assignment', async () => {
+      const adapter = getAuthAdapter();
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
+        accessStatus: 'PENDING_ACCESS',
+      });
+
       render(
         <MemoryRouter>
           <AppProviders>
@@ -243,9 +257,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByText(/demo verification options/i));
-      const unassignedBtn = screen.getByText(/unassigned internal employee/i);
-      fireEvent.click(unassignedBtn);
+      fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('pending-access-alert')).toBeInTheDocument();
@@ -257,7 +269,7 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         ).toBeInTheDocument();
       });
 
-      // Does NOT navigate to /flow
+      // Does NOT navigate to /home
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
@@ -304,6 +316,12 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
     });
 
     it('17. Does NOT hardcode tenant 1 for unassigned users', async () => {
+      const adapter = getAuthAdapter();
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
+        accessStatus: 'PENDING_ACCESS',
+      });
+
       render(
         <MemoryRouter>
           <AppProviders>
@@ -312,15 +330,14 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByText(/demo verification options/i));
-      fireEvent.click(screen.getByText(/unassigned internal employee/i));
+      fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('pending-access-alert')).toBeInTheDocument();
       });
 
       // Confirms session state in localStorage has tenantId: null, NEVER falling back to 1
-      const stored = localStorage.getItem('newcp_iam_session_v097');
+      const stored = localStorage.getItem('newcp_iam_session_v098');
       expect(stored).not.toBeNull();
       const parsed = JSON.parse(stored!);
       expect(parsed.tenantId).toBeNull();
@@ -331,6 +348,12 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
     it('18. External Google Groups claims do NOT grant authorization', async () => {
       // Confirms that signing in with an unassigned Google email leaves the account in Pending Access
       // regardless of any external Google Groups claims
+      const adapter = getAuthAdapter();
+      vi.spyOn(adapter, 'signInWithGoogle').mockResolvedValueOnce('token-unassigned-employee');
+      vi.spyOn(adapter, 'exchangeTokenForSession').mockResolvedValueOnce({
+        accessStatus: 'PENDING_ACCESS',
+      });
+
       render(
         <MemoryRouter>
           <AppProviders>
@@ -339,14 +362,13 @@ describe('Login Page — Google-Only Authentication & States (IAM-TENANT-002)', 
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByText(/demo verification options/i));
-      fireEvent.click(screen.getByText(/unassigned internal employee/i));
+      fireEvent.click(screen.getByTestId('google-signin-button'));
 
       await waitFor(() => {
         expect(screen.getByTestId('pending-access-alert')).toBeInTheDocument();
       });
 
-      const stored = JSON.parse(localStorage.getItem('newcp_iam_session_v097')!);
+      const stored = JSON.parse(localStorage.getItem('newcp_iam_session_v098')!);
       expect(stored.roles).toEqual([]);
       expect(stored.capabilities).toEqual([]);
     });

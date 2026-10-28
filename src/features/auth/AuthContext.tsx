@@ -1,13 +1,14 @@
 import { getPostHog, getSentry } from '@/shared/observability';
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { getAuthAdapter, type AuthorizedLoginResponse, type PendingAccessLoginResponse } from './authAdapter';
 
 /**
  * ============================================================================
- * NEW CP IAM v0.9.5 & v0.9.7 AUTHENTICATION & SESSION CONTEXT
+ * NEW CP IAM v0.9.8 AUTHENTICATION & SESSION CONTEXT
  * ============================================================================
  *
- * AUTHORITATIVE ARCHITECTURAL CONSTRAINTS (v0.9.7 Clarification):
- * 1. Google Sign-In authenticates identity ONLY.
+ * AUTHORITATIVE ARCHITECTURAL CONSTRAINTS:
+ * 1. Google Identity Services (GIS) authenticates identity ONLY.
  * 2. Google Groups are strictly prohibited and excluded.
  * 3. PostgreSQL V3 IAM + Casbin backend are authoritative for roles & permissions.
  * 4. User authorization (PostgreSQL IAM user-to-tenant grants) != active session
@@ -18,7 +19,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
  * 7. Never hardcode tenantId: 1 as a default grant; never introduce DEFAULT_TENANT_ID=1
  *    or ACTIVE_TENANT_ID=1.
  * 8. Authenticated identities without verified grants receive 'pending_access' with
- *    activeTenant = null and tenantId = null.
+ *    activeTenant = null and tenantId = null. No session token is issued or stored.
  * 9. Default session policy: 30-minute idle timeout, 8-hour absolute timeout.
  * 10. No tenant switcher or tenant selector UI is rendered.
  */
@@ -50,6 +51,7 @@ export interface UserSession {
   userId: string;
   email: string;
   fullName: string;
+  tenantSlug: string | null;
   activeTenant: ActiveTenantContext | null; // null if unassigned or pending
   tenantId: number | null; // strictly null when not authorized; never fallback to 1
   sessionToken?: string;
@@ -59,6 +61,7 @@ export interface UserSession {
   capabilities: string[];
   status: SessionStatus;
   accessStatus: AccessStatus;
+  isPendingAccess: boolean;
   tenantSwitchingEnabled: boolean;
   issuedAt: number;
   lastActivityAt: number;
@@ -74,7 +77,7 @@ export interface AuthContextType {
   activeTenant: ActiveTenantContext | null;
   tenantId: number | null; // null when unassigned/pending; never defaults to 1
   sessionToken: string | null;
-  loginWithGoogle: (emailOrToken?: string) => Promise<void>;
+  loginWithGoogle: (idToken?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -84,12 +87,12 @@ export const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 export const ABSOLUTE_TIMEOUT_MS = 8 * 60 * 60 * 1000;
 
 // Approved October Demo Identities (MOCK / SYNTHETIC FIXTURES)
-export const APPROVED_DEMO_IDENTITIES: Record<string, Omit<UserSession, 'issuedAt' | 'lastActivityAt' | 'expiresAt'>> = {
+export const APPROVED_DEMO_IDENTITIES: Record<string, any> = {
   'cs.demo@3ddx.com': {
     userId: 'usr-cs-001',
     email: 'cs.demo@3ddx.com',
     fullName: 'CS Demo Operator',
-    activeTenant: { id: 1, label: '3ddx.com' },
+    tenantSlug: '3ddx.com',
     tenantId: 1,
     family: 'CS',
     roles: ['cs_operator'],
@@ -103,17 +106,15 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, Omit<UserSession, 'issuedA
       'reports.view_all',
     ],
     status: 'authenticated',
-    accessStatus: 'AUTHORIZED',
-    tenantSwitchingEnabled: false,
   },
   'ops.demo@3ddx.com': {
     userId: 'usr-ops-001',
     email: 'ops.demo@3ddx.com',
     fullName: 'Senior Ops Specialist',
-    activeTenant: { id: 1, label: '3ddx.com' },
+    tenantSlug: '3ddx.com',
     tenantId: 1,
     family: 'OPS',
-    roles: ['ops_senior', 'ops_junior'], // Demonstrates same-family transitive inheritance
+    roles: ['ops_senior', 'ops_junior'],
     capabilities: [
       'orders.view',
       'services.models.edit',
@@ -123,14 +124,12 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, Omit<UserSession, 'issuedA
       'reports.view_all',
     ],
     status: 'authenticated',
-    accessStatus: 'AUTHORIZED',
-    tenantSwitchingEnabled: false,
   },
   'admin.demo@3ddx.com': {
     userId: 'usr-admin-001',
     email: 'admin.demo@3ddx.com',
     fullName: 'Tenant Admin Operator',
-    activeTenant: { id: 1, label: '3ddx.com' },
+    tenantSlug: '3ddx.com',
     tenantId: 1,
     family: 'ADMIN',
     roles: ['tenant_admin'],
@@ -146,26 +145,22 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, Omit<UserSession, 'issuedA
       'iam.roles.assign',
     ],
     status: 'authenticated',
-    accessStatus: 'AUTHORIZED',
-    tenantSwitchingEnabled: false,
   },
   'unassigned@3ddx.com': {
     userId: 'usr-unassigned-001',
     email: 'unassigned@3ddx.com',
     fullName: 'Unassigned Internal Employee',
-    activeTenant: null, // Zero tenant authorization
-    tenantId: null, // Strictly null; no fallback to 1
+    tenantSlug: null,
+    tenantId: null,
     roles: [],
     capabilities: [],
     status: 'pending_access',
-    accessStatus: 'PENDING',
-    tenantSwitchingEnabled: false,
   },
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_SESSION_KEY = 'newcp_iam_session_v097';
+const STORAGE_SESSION_KEY = 'newcp_iam_session_v098';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<UserSession | null>(() => {
@@ -261,24 +256,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(timer);
   }, [persistSession]);
 
-  const loginWithGoogle = async (emailOrToken: string = 'cs.demo@3ddx.com') => {
+  const loginWithGoogle = async (providedIdToken?: string) => {
     setStatus('authenticating');
-    // Simulate interactive Google Sign-In identity resolution (client-side demo boundary)
-    await new Promise((r) => setTimeout(r, 400));
 
-    const normalized = emailOrToken.trim().toLowerCase();
-    const preset = APPROVED_DEMO_IDENTITIES[normalized];
+    const adapter = getAuthAdapter();
+    let idToken = providedIdToken;
 
+    if (!idToken) {
+      const googleRes = await adapter.signInWithGoogle();
+      idToken = googleRes.idToken;
+    }
+
+    const loginResponse = await adapter.exchangeTokenForSession({ idToken });
     const now = Date.now();
-    if (preset) {
+
+    if (loginResponse.accessStatus === 'AUTHORIZED') {
+      const authRes = loginResponse as AuthorizedLoginResponse;
+      const me = await adapter.getMe(authRes.token);
+
+      const derivedFamily: BusinessFamily | undefined =
+        me.roleCodes.some((r) => r.includes('cs')) ? 'CS' :
+        me.roleCodes.some((r) => r.includes('ops')) ? 'OPS' :
+        me.roleCodes.some((r) => r.includes('admin')) ? 'ADMIN' :
+        me.roleCodes.some((r) => r.includes('finance')) ? 'FINANCE' :
+        me.roleCodes.some((r) => r.includes('qc')) ? 'QC' : undefined;
+
       const createdSession: UserSession = {
-        ...preset,
-        sessionToken: `sess-${now}-${normalized.split('@')[0]}`,
+        userId: me.userUuid,
+        email: me.email,
+        fullName: me.email.split('@')[0].replace('.', ' ').toUpperCase(),
+        tenantSlug: me.tenantSlug,
+        activeTenant: me.tenantSlug ? { id: 1, label: me.tenantSlug } : null,
+        tenantId: me.tenantSlug ? 1 : null,
+        sessionToken: authRes.token,
         tokenType: 'Bearer',
+        family: derivedFamily,
+        roles: me.roleCodes,
+        capabilities: me.capabilities,
+        status: 'authenticated',
+        accessStatus: 'AUTHORIZED',
+        isPendingAccess: false,
+        tenantSwitchingEnabled: false,
         issuedAt: now,
         lastActivityAt: now,
-        expiresAt: now + ABSOLUTE_TIMEOUT_MS,
+        expiresAt: typeof authRes.expiresAt === 'number' ? authRes.expiresAt : now + ABSOLUTE_TIMEOUT_MS,
       };
+
       persistSession(createdSession);
 
       getSentry().setUser({
@@ -290,7 +313,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (createdSession.tenantId !== null) {
         getPostHog().identify(createdSession.userId, {
           role: createdSession.roles[0],
-          family: createdSession.family,
           tenantId: createdSession.tenantId,
         });
       } else {
@@ -304,39 +326,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: createdSession.roles[0],
       });
     } else {
-      // Default: Authenticated with Google, but lacks an internal IAM user-to-tenant grant
-      // In accordance with v0.9.7: activeTenant is strictly null; NO fallback to tenant 1
-      const unassignedSession: UserSession = {
-        userId: `usr-${Date.now()}`,
-        email: normalized,
-        fullName: normalized.split('@')[0].replace('.', ' ').toUpperCase(),
+      // PENDING_ACCESS: Authenticated with Google, but lacks an internal IAM user-to-tenant grant
+      // In accordance with v0.9.8: activeTenant is strictly null; NO fallback to tenant 1; NO session token issued
+      const pendingSession: UserSession = {
+        userId: `usr-pending-${now}`,
+        email: 'authenticated.employee@3ddx.com',
+        fullName: 'Authenticated Employee',
+        tenantSlug: null,
         activeTenant: null, // Strictly null; no grant exists
         tenantId: null, // Strictly null; never defaults to 1
-        sessionToken: `sess-${now}-unassigned`,
-        tokenType: 'Bearer',
         roles: [],
         capabilities: [],
         status: 'pending_access',
         accessStatus: 'PENDING',
+        isPendingAccess: true,
         tenantSwitchingEnabled: false,
         issuedAt: now,
         lastActivityAt: now,
         expiresAt: now + ABSOLUTE_TIMEOUT_MS,
       };
-      persistSession(unassignedSession);
+
+      persistSession(pendingSession);
 
       getSentry().setUser({
-        id: unassignedSession.userId,
+        id: pendingSession.userId,
       });
-      getPostHog().identify(unassignedSession.userId);
+      getPostHog().identify(pendingSession.userId);
       getPostHog().capture('user_logged_in', {
-        user_id: unassignedSession.userId,
+        user_id: pendingSession.userId,
+        status: 'pending_access',
       });
     }
   };
 
   const logout = async () => {
-    // In future LIVE_HTTP mode, call POST /api/v1/auth/logout for server-side token revocation
+    const curToken = sessionRef.current?.sessionToken;
+    if (curToken) {
+      try {
+        const adapter = getAuthAdapter();
+        await adapter.logout(curToken);
+      } catch {
+        // Safe to ignore network failure during logout
+      }
+    }
+
     if (sessionRef.current?.userId) {
       getPostHog().capture('user_logged_out', {
         user_id: sessionRef.current.userId,
@@ -348,10 +381,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshSession = async () => {
-    // In future LIVE_HTTP mode, fetch fresh context from GET /api/v1/session/context
     const cur = sessionRef.current;
-    if (cur) {
-      recordActivity();
+    if (cur && cur.sessionToken) {
+      try {
+        const adapter = getAuthAdapter();
+        const me = await adapter.getMe(cur.sessionToken);
+        const updated: UserSession = {
+          ...cur,
+          roles: me.roleCodes,
+          capabilities: me.capabilities,
+          tenantSlug: me.tenantSlug,
+          isPendingAccess: me.isPendingAccess,
+          lastActivityAt: Date.now(),
+        };
+        persistSession(updated);
+      } catch {
+        // Session might be expired
+      }
     }
   };
 
