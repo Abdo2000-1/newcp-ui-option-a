@@ -229,9 +229,7 @@ export default function Login() {
       >
         {/* Brand & Platform Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#38bdf8] text-white shadow-lg shadow-[#0284c7]/25 mb-1">
-            <span className="font-mono text-xl font-black tracking-tighter">3D</span>
-          </div>
+          <img src={`${import.meta.env.BASE_URL}logo-3ddx-full.png`} alt="3D Diagnostix" className="h-10 mx-auto object-contain dark:brightness-110" data-testid="company-logo" />
 
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">

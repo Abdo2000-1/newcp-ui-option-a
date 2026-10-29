@@ -156,7 +156,7 @@ describe('UIUX-NAV-001: Sectioned Navigation Architecture Acceptance', () => {
       // Approved routes are rendered
       expect(screen.getByText(/^home$/i)).toBeInTheDocument();
       expect(screen.getByText(/^orders$/i)).toBeInTheDocument();
-      expect(screen.getByText(/^cases$/i)).toBeInTheDocument();
+      expect(screen.queryByText(/^cases$/i)).not.toBeInTheDocument();
       expect(screen.getByText(/add case/i)).toBeInTheDocument();
       expect(screen.getByText(/workflow board/i)).toBeInTheDocument();
       expect(screen.getByText(/change requests/i)).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('UIUX-NAV-001: Sectioned Navigation Architecture Acceptance', () => {
       expect(screen.getByText(/scan center/i)).toBeInTheDocument();
       expect(screen.getByText(/documents/i)).toBeInTheDocument();
       expect(screen.getByText(/billing/i)).toBeInTheDocument();
-      expect(screen.getByText(/notifications/i)).toBeInTheDocument();
+      expect(screen.queryByText(/notifications/i)).not.toBeInTheDocument();
       expect(screen.getByText(/cms controls/i)).toBeInTheDocument();
       expect(screen.getByText(/api documentation/i)).toBeInTheDocument();
     });
@@ -292,7 +292,7 @@ describe('UIUX-NAV-001: Sectioned Navigation Architecture Acceptance', () => {
       expect(ordersLink).toHaveAttribute('aria-current', 'page');
     });
 
-    it('highlights Cases when viewing /edit-case', () => {
+    it('highlights Orders when viewing /edit-case', () => {
       render(
         <MemoryRouter initialEntries={['/edit-case?id=123']}>
           <AppProviders>
@@ -301,8 +301,8 @@ describe('UIUX-NAV-001: Sectioned Navigation Architecture Acceptance', () => {
         </MemoryRouter>
       );
 
-      const casesLink = screen.getByTestId('nav-link-cases');
-      expect(casesLink).toHaveAttribute('aria-current', 'page');
+      const ordersLink = screen.getByTestId('nav-link-orders');
+      expect(ordersLink).toHaveAttribute('aria-current', 'page');
     });
   });
 

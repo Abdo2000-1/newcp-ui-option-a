@@ -58,7 +58,6 @@ export const APPROVED_NAV_SECTIONS: NavSection[] = [
     items: [
       { id: 'home', label: 'Home', path: '/home', icon: Home },
       { id: 'orders', label: 'Orders', path: '/orders', icon: Package },
-      { id: 'cases', label: 'Cases', path: '/cases', icon: FolderOpen },
       { id: 'addCase', label: 'Add Case', path: '/add-case', icon: FilePlus2 },
       { id: 'workflowBoard', label: 'Workflow Board', path: '/workflow-board', icon: GitBranch },
       { id: 'changeRequests', label: 'Change Requests', path: '/change-requests', icon: RefreshCcw, badge: 4 },
@@ -90,7 +89,6 @@ export const APPROVED_NAV_SECTIONS: NavSection[] = [
     id: 'system',
     title: 'Preferences & System',
     items: [
-      { id: 'notifications', label: 'Notifications', path: '/notifications', icon: Bell },
       { id: 'settings', label: 'Settings', path: '/settings', icon: Settings },
     ],
   },
@@ -155,17 +153,11 @@ export function isRouteActive(currentPath: string, itemPath: string): boolean {
       currentPath === '/orders' ||
       currentPath.startsWith('/orders/') ||
       currentPath === '/flow' ||
-      currentPath.startsWith('/order-details')
+      currentPath.startsWith('/order-details') || currentPath.startsWith('/edit-case')
     );
   }
 
-  if (itemPath === '/cases') {
-    return (
-      currentPath === '/cases' ||
-      currentPath.startsWith('/cases/') ||
-      currentPath.startsWith('/edit-case')
-    );
-  }
+
 
   if (itemPath === '/home') {
     return currentPath === '/home';

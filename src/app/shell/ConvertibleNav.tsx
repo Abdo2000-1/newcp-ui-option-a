@@ -112,6 +112,16 @@ export function ConvertibleNav({
   }, []);
 
   const { session, logout } = useAuth();
+  const backendUserName = session?.fullName || (session?.email ? session.email.split('@')[0] : 'Authenticated User');
+  const backendEmail = session?.email || '';
+  const backendUserId = session?.userId ? ("ID: " + session.userId.slice(0, 8)) : "";
+  const backendUserInitials = (session?.fullName || session?.email || 'AU')
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const backendUserRole = session?.roles?.[0] ? session.roles[0].replace(/_/g, ' ').toUpperCase() : (session?.family || 'CP Specialist');
   const isAuthorizedForAdmin = canAccessAdministration(session);
   const visibleSections = APPROVED_NAV_SECTIONS.filter((section) => !section.adminOnly || isAuthorizedForAdmin);
   const profile = useStore((s) => s.getProfile());
@@ -861,13 +871,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
+                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
+                      color: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/cases', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -908,34 +918,6 @@ export function ConvertibleNav({
                           <Box>
                             <div>Workflow Queue</div>
                             <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Master production queue</Typography>
-                          </Box>
-                        </Box>
-                      </NavLink>
-
-                      <NavLink
-                        to="/cases"
-                        onClick={() => setOrdersDropdownOpen(false)}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            p: 1.25,
-                            borderRadius: 2,
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            color: isDark ? '#e2e8f0' : '#1e293b',
-                            '&:hover': {
-                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
-                            },
-                          }}
-                        >
-                          <Boxes size={15} color="#0284c7" />
-                          <Box>
-                            <div>Cases Archive</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Case histories & patient files</Typography>
                           </Box>
                         </Box>
                       </NavLink>
@@ -1298,13 +1280,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p)
+                      bgcolor: prefsDropdownOpen || ['/settings'].some(p => location.pathname === p)
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p)
+                      color: prefsDropdownOpen || ['/settings'].some(p => location.pathname === p)
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${prefsDropdownOpen || ['/notifications', '/settings'].some(p => location.pathname === p) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${prefsDropdownOpen || ['/settings'].some(p => location.pathname === p) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -1321,27 +1303,6 @@ export function ConvertibleNav({
                       data-testid="prefs-dropdown-menu"
                       className={`absolute ${position === 'bottom' ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-56 rounded-2xl bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 space-y-1`}
                     >
-                      <NavLink
-                        to="/notifications"
-                        onClick={() => setPrefsDropdownOpen(false)}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Box
-                          sx={{
-                            p: 1.25,
-                            borderRadius: 2,
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            color: isDark ? '#e2e8f0' : '#1e293b',
-                            '&:hover': {
-                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
-                            },
-                          }}
-                        >
-                          <div>Notifications</div>
-                          <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>System alerts & updates</Typography>
-                        </Box>
-                      </NavLink>
                       <NavLink
                         to="/settings"
                         onClick={() => setPrefsDropdownOpen(false)}

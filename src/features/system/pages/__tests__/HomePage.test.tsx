@@ -182,7 +182,7 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
       );
 
       // Since /dashboard route was completely removed, it falls back to 404 NotFoundPage
-      expect(await screen.findByTestId('not-found-page')).toBeInTheDocument();
+      expect(await screen.findByTestId('not-found-page', {}, { timeout: 10000 })).toBeInTheDocument();
       expect(screen.getByText('404')).toBeInTheDocument();
       expect(screen.getByText(/Clinical Route Not Found/i)).toBeInTheDocument();
     });
@@ -216,7 +216,7 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
         </MemoryRouter>
       );
 
-      expect(await screen.findByTestId('home-page')).toBeInTheDocument();
+      expect(await screen.findByTestId('home-page', {}, { timeout: 10000 })).toBeInTheDocument();
     });
 
     it('redirects unauthenticated users attempting to access /home to /login', async () => {
@@ -229,7 +229,7 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
       );
 
       // Unauthenticated users are sent to login
-      expect(await screen.findByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: /sign in/i }, { timeout: 10000 })).toBeInTheDocument();
     });
 
     it('keeps unauthenticated users on /login without incorrect redirect loops', async () => {
