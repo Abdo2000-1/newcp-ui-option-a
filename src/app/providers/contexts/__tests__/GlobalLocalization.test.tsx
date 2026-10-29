@@ -192,8 +192,7 @@ describe('Global Application Localization (UIUX-REQ-004)', () => {
       );
 
       expect(screen.getByText(/panoramica ordine & medico/i)).toBeInTheDocument();
-      expect(screen.getByText(/anteprima 3d cad \/ sezioni dicom/i)).toBeInTheDocument();
-      expect(screen.getByText(/matrice sotto-ordini/i)).toBeInTheDocument();
+            expect(screen.getByText(/matrice sotto-ordini/i)).toBeInTheDocument();
     });
 
     it('translates Workflow Board into Spanish (es)', () => {

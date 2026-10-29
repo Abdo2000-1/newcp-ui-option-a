@@ -106,8 +106,14 @@ const mockPendingSession: UserSession = {
 
 function renderConfigManager(session: UserSession | null = mockAdminSession) {
   if (session) {
-    localStorage.setItem('newcp_iam_session_v098', JSON.stringify(session));
-    localStorage.setItem('newcp_iam_session_v097', JSON.stringify(session));
+    const activeSession: UserSession = {
+      ...session,
+      issuedAt: Date.now(),
+      lastActivityAt: Date.now(),
+      expiresAt: Date.now() + 3600000,
+    };
+    localStorage.setItem('newcp_iam_session_v098', JSON.stringify(activeSession));
+    localStorage.setItem('newcp_iam_session_v097', JSON.stringify(activeSession));
   } else {
     localStorage.removeItem('newcp_iam_session_v098');
     localStorage.removeItem('newcp_iam_session_v097');

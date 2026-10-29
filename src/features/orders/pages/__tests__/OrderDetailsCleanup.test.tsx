@@ -58,6 +58,13 @@ describe('UIUX-DETAILS-001: Order Details Simplification & Read-Only Notes', () 
       expect(screen.queryByRole('option', { name: /revision required/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('option', { name: /ready for manufacture/i })).not.toBeInTheDocument();
     });
+
+    it('does NOT render 3D Cam or DICOM Slices Preview tab', () => {
+      renderComponent();
+      expect(screen.queryByRole('button', { name: /3d dicom cad/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /dicom slices/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/reset 3d camera/i)).not.toBeInTheDocument();
+    });
   });
 
   describe('2. Completely Read-Only Clinical Notes', () => {

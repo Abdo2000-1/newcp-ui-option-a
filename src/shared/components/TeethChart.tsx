@@ -1052,6 +1052,7 @@ export function TeethChart({
     return (
       <div
         key={tooth.universal}
+        data-testid={`tooth-${tooth.universal}`}
         onClick={() => handleToothClick(tooth)}
         onMouseEnter={() => setHoveredTooth(tooth)}
         onMouseLeave={() => setHoveredTooth(null)}
@@ -1118,6 +1119,7 @@ export function TeethChart({
     return (
       <div
         key={tooth.universal}
+        data-testid={`tooth-${tooth.universal}`}
         onClick={() => handleToothClick(tooth)}
         onMouseEnter={() => setHoveredTooth(tooth)}
         onMouseLeave={() => setHoveredTooth(null)}
@@ -1681,12 +1683,12 @@ export function TeethChart({
 
       {/* SELECTED RESTORATION UNITS SUMMARY TAGS GROUPED BY PROCEDURE (Image 1) */}
       {activeSelected.length > 0 && (
-        <div className="mt-4 pt-3.5 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
-          <div className="flex flex-col gap-2 w-full md:w-auto">
+        <div data-testid="selected-procedures-summary" className="mt-4 pt-3.5 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs w-full max-w-full overflow-hidden">
+          <div className="flex flex-col gap-2 w-full min-w-0 flex-1">
             <span className="font-extrabold text-slate-700 dark:text-slate-300">
               Selected Procedures Summary ({activeSelected.length} Units):
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 w-full min-w-0 max-w-full" data-testid="selected-procedures-list">
               {Object.entries(groupedProcedures).map(([resType, toothNums]) => {
                 const resConfig = RESTORATION_TYPES.find(r => r.id === resType);
                 const label = resConfig?.label || resType;
@@ -1697,23 +1699,25 @@ export function TeethChart({
                 return (
                   <div
                     key={resType}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${borderColor} ${bgColor} ${textColor} font-bold shadow-xs`}
+                    data-testid={`procedure-group-${resType}`}
+                    className={`flex flex-wrap items-center gap-2 p-2 sm:px-3 sm:py-1.5 rounded-xl border ${borderColor} ${bgColor} ${textColor} font-bold shadow-xs max-w-full`}
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <ProcedureIcon type={resType} className="w-3.5 h-3.5" />
                       <span className="font-extrabold text-[12px]">{label}:</span>
                     </div>
 
-                    <div className="flex items-center gap-1 font-mono text-[11px]">
+                    <div className="flex flex-wrap items-center gap-1 font-mono text-[11px] max-w-full min-w-0" data-testid={`teeth-list-${resType}`}>
                       {toothNums.map((num) => {
                         const t = ODONTO_DATABASE.find(item => item.universal === num);
                         const display = system === 'universal' ? `#${num}` : `FDI ${t?.fdi || num}`;
                         return (
                           <span
                             key={num}
-                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-black/40 border border-current/20"
+                            data-testid={`tooth-chip-${num}`}
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white/60 dark:bg-black/40 border border-current/20 shrink-0"
                           >
-                            <span>{display}</span>
+                            <span data-testid={`tooth-num-${num}`}>{display}</span>
                             {!readonly && (
                               <button
                                 type="button"
