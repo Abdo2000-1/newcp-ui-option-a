@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/shared/hooks/useStore';
 import { useAuth } from '@/features/auth';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import {
   APPROVED_NAV_SECTIONS,
   canAccessAdministration,
@@ -35,6 +36,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const location = useLocation();
   const muiTheme = useMuiTheme();
   const isDark = muiTheme.palette.mode === 'dark';
+  const { t } = useLanguage();
 
   const { session, logout } = useAuth();
   const backendUserName = session?.fullName || (session?.email ? session.email.split('@')[0] : 'Authenticated User');
@@ -97,7 +99,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                 userSelect: 'none',
               }}
             >
-              {section.title}
+              {t(`nav.section.${section.id}`, section.title)}
             </Typography>
             {section.adminOnly && (
               <Chip
@@ -127,7 +129,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           const buttonContent = (
             <ButtonBase
               tabIndex={0}
-              aria-label={item.label}
+              aria-label={t(`nav.item.${item.id}`, item.label)}
               aria-current={active ? 'page' : undefined}
               data-testid={`nav-link-${item.id}`}
               sx={{
@@ -226,7 +228,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               style={{ textDecoration: 'none' }}
             >
               {collapsed ? (
-                <Tooltip title={item.label} arrow placement="right">
+                <Tooltip title={t(`nav.item.${item.id}`, item.label)} arrow placement="right">
                   {buttonContent}
                 </Tooltip>
               ) : (
@@ -432,7 +434,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                   whiteSpace: 'nowrap',
                 }}
               >
-                {backendUserRole} • Online
+                {backendUserRole} • {t('profile.online', 'Online')}
               </Typography>
             </Box>
           )}

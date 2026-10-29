@@ -8,7 +8,6 @@ import {
   Check,
   Save,
   CheckCircle2,
-  Clock,
   Calendar,
 } from 'lucide-react';
 import { useThemeContext } from '@/app/providers/contexts/ThemeContext';
@@ -77,7 +76,7 @@ export default function Settings() {
       sound.playSuccess?.();
       setSaveStatus({
         success: true,
-        message: 'Settings saved successfully',
+        message: t('settings.saved', 'Settings saved successfully'),
       });
 
       const timer = setTimeout(() => {
@@ -100,10 +99,10 @@ export default function Settings() {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
             <Palette size={24} className="text-[#0284c7]" />
-            <span>Settings</span>
+            <span>{t('settings.title', 'Settings')}</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage supported application appearance, localization, and regional preferences.
+            {t('settings.subtitle', 'Manage supported application appearance, localization, and regional preferences.')}
           </p>
         </div>
 
@@ -115,7 +114,7 @@ export default function Settings() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer"
           >
             <Save size={15} />
-            <span>Save Settings</span>
+            <span>{t('settings.save', 'Save Settings')}</span>
           </button>
         </div>
       </div>
@@ -152,7 +151,7 @@ export default function Settings() {
           }`}
         >
           <Palette size={15} />
-          <span>Appearance</span>
+          <span>{t('settings.tabAppearance', 'Appearance')}</span>
         </button>
 
         <button
@@ -167,7 +166,7 @@ export default function Settings() {
           }`}
         >
           <Globe size={15} />
-          <span>Language & Region</span>
+          <span>{t('settings.tabLanguage', 'Language & Region')}</span>
         </button>
       </div>
 
@@ -178,18 +177,18 @@ export default function Settings() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Palette size={16} className="text-[#0284c7]" />
-                <span>Application Theme</span>
+                <span>{t('settings.themeTitle', 'Application Theme')}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Choose light, dark, or system mode. Theme selection applies globally across all portals and clinical tables.
+                {t('settings.themeDesc', 'Choose light, dark, or system mode. Theme selection applies globally across all portals and clinical tables.')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               {[
-                { id: 'dark' as const, label: 'Dark Mode', desc: 'High-contrast clinical dark theme', icon: Moon },
-                { id: 'light' as const, label: 'Light Mode', desc: 'Clean high-readability daylight theme', icon: Sun },
-                { id: 'system' as const, label: 'System Default', desc: 'Follows operating system appearance', icon: Monitor },
+                { id: 'dark' as const, label: t('settings.darkMode', 'Dark Mode'), desc: t('settings.darkDesc', 'High-contrast clinical dark theme'), icon: Moon },
+                { id: 'light' as const, label: t('settings.lightMode', 'Light Mode'), desc: t('settings.lightDesc', 'Clean high-readability daylight theme'), icon: Sun },
+                { id: 'system' as const, label: t('settings.systemDefault', 'System Default'), desc: t('settings.systemDesc', 'Follows operating system appearance'), icon: Monitor },
               ].map((item) => {
                 const isSelected = selectedTheme === item.id;
                 const Icon = item.icon;
@@ -238,16 +237,16 @@ export default function Settings() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Globe size={16} className="text-[#0284c7]" />
-                <span>Studio Language</span>
+                <span>{t('settings.languageTitle', 'Studio Language')}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                English is the default language. Selecting a language affects all navigation, table headings, and workflow controls.
+                {t('settings.languageDesc', 'English is the default language. Selecting a language affects all navigation, table headings, and workflow controls.')}
               </p>
             </div>
 
             <div className="max-w-md pt-2 space-y-2">
               <label htmlFor="studio-language-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                Studio Language
+                {t('settings.languageTitle', 'Studio Language')}
               </label>
               <select
                 id="studio-language-select"
@@ -292,10 +291,10 @@ export default function Settings() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Calendar size={16} className="text-[#0284c7]" />
-                <span>Regional Formatting & Timezone</span>
+                <span>{t('settings.regionalFormatting', 'Regional Formatting & Timezone')}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Configure preferred clinical date formatting and operational timezone.
+                {t('settings.regionalFormattingDesc', 'Configure preferred clinical date formatting and operational timezone.')}
               </p>
             </div>
 
@@ -303,7 +302,7 @@ export default function Settings() {
               {/* Date Format */}
               <div className="space-y-1.5">
                 <label htmlFor="date-format-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Date Format
+                  {t('settings.dateFormat', 'Date Format')}
                 </label>
                 <select
                   id="date-format-select"
@@ -321,7 +320,7 @@ export default function Settings() {
               {/* Timezone */}
               <div className="space-y-1.5">
                 <label htmlFor="timezone-select" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Operational Timezone
+                  {t('settings.timezone', 'Operational Timezone')}
                 </label>
                 <select
                   id="timezone-select"

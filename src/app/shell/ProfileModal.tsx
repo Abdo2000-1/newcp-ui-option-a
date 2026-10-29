@@ -2,20 +2,16 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  User,
   Shield,
   Building2,
   Mail,
-  Phone,
   CheckCircle2,
-  FileBadge,
-  Sparkles,
   LogOut,
-  Sliders,
-  Database,
-  Monitor
+  Key,
+  Copy,
+  Check,
 } from 'lucide-react';
-import { useStore } from '@/shared/hooks/useStore';
+import { useAuth } from '@/features/auth';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 interface ProfileModalProps {
@@ -24,18 +20,37 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  const { session, logout } = useAuth();
   const { t } = useLanguage();
-  const profile = useStore((s) => s.getProfile());
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'preferences'>('overview');
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
+  const displayName = session?.fullName || (session?.email ? session.email.split('@')[0] : t('profile.authenticatedUser', 'Authenticated User'));
+  const displayEmail = session?.email || t('profile.noEmail', 'No email provided');
+  const roles = session?.roles || [];
+  const capabilities = session?.capabilities || [];
+  const activeTenant = session?.activeTenant;
+  const tenantSlug = session?.tenantSlug;
+
+  const initials = (session?.fullName || session?.email || 'AU')
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   const handleCopyId = () => {
-    navigator.clipboard?.writeText?.('3DDX-TECH-9942-CP');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (session?.userId) {
+      navigator.clipboard?.writeText?.(session.userId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleSignOut = async () => {
+    onClose();
+    await logout();
   };
 
   return (
@@ -58,220 +73,156 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           transition={{ duration: 0.2 }}
           className="relative w-full max-w-xl bg-white dark:bg-[#0c1222] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-10 select-none"
         >
-          {/* Header Banner with Brand Gradient */}
-          <div className="h-28 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#ea580c] relative p-6 flex items-end justify-between">
+          {/* Header Banner */}
+          <div className="h-24 bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#ea580c] relative p-6 flex items-end justify-between">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+              aria-label={t('common.close', 'Close')}
+              className="absolute top-4 right-4 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors cursor-pointer"
             >
               <X size={18} />
             </button>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
-                CP PRO MAX • Technician Credentials
+                {t('profile.accountProfile', 'Account Profile')}
               </span>
             </div>
           </div>
 
           {/* Profile Header Overlap */}
           <div className="px-6 pb-6 pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-12 mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-10 mb-6 gap-4">
               <div className="flex items-end gap-4">
                 <div className="relative">
-                  <div className="w-22 h-22 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#ea580c] p-1 shadow-xl ring-4 ring-white dark:ring-[#0c1222]">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#ea580c] p-1 shadow-xl ring-4 ring-white dark:ring-[#0c1222]">
                     <div className="w-full h-full rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center font-black text-2xl text-[#0284c7] dark:text-sky-400">
-                      {profile?.avatarInitials || '3D'}
+                      {initials}
                     </div>
                   </div>
-                  <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0c1222]" title="Active Online" />
+                  {session?.status === 'authenticated' && (
+                    <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#0c1222]" title="Active Online" />
+                  )}
                 </div>
 
                 <div className="mb-1">
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                      {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
+                      {displayName}
                     </h2>
-                    <span className="text-emerald-500" title="Verified CP Specialist">
-                      <CheckCircle2 size={16} />
-                    </span>
+                    {session?.accessStatus && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        {session.accessStatus}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs font-bold text-[#ea580c] dark:text-orange-400">
-                    Lead CAD/CAM Engineer & Co-Diagnostix Director
+                  <p className="text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                    <Mail size={13} className="text-slate-400" />
+                    <span>{displayEmail}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hover:border-[#0284c7] transition-colors"
-                >
-                  {copied ? 'Copied!' : 'ID: 3DDX-9942'}
-                </button>
-              </div>
+              {session?.userId && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyId}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hover:border-[#0284c7] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                    <span>{copied ? t('common.copied', 'Copied!') : `ID: ${session.userId.slice(0, 8)}`}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 mb-6 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setActiveTab('overview')}
-                className={`pb-2.5 px-1 border-b-2 transition-colors ${
-                  activeTab === 'overview'
-                    ? 'border-[#0284c7] text-[#0284c7] dark:text-sky-400'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Operator Details
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('security')}
-                className={`pb-2.5 px-1 border-b-2 transition-colors ${
-                  activeTab === 'security'
-                    ? 'border-[#0284c7] text-[#0284c7] dark:text-sky-400'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Roles & Access
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('preferences')}
-                className={`pb-2.5 px-1 border-b-2 transition-colors ${
-                  activeTab === 'preferences'
-                    ? 'border-[#0284c7] text-[#0284c7] dark:text-sky-400'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Workstation Settings
-              </button>
-            </div>
-
-            {/* Tab Contents */}
-            {activeTab === 'overview' && (
-              <div className="space-y-4 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Details Section */}
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Tenant Info if available */}
+                {(activeTenant || tenantSlug) && (
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Organization
+                      {t('profile.tenantOrg', 'Tenant Organization')}
                     </span>
                     <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                       <Building2 size={15} className="text-[#0284c7]" />
-                      <span>3D Diagnostix Hub (Boston / Cairo)</span>
+                      <span>{activeTenant ? `${activeTenant.label} (#${activeTenant.id})` : tenantSlug}</span>
                     </div>
                   </div>
+                )}
 
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Division
-                    </span>
-                    <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-                      <FileBadge size={15} className="text-[#ea580c]" />
-                      <span>Guided Surgery & 3D Restorations</span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Official Email
-                    </span>
-                    <div className="flex items-center gap-2 font-mono font-bold text-slate-900 dark:text-white">
-                      <Mail size={15} className="text-[#0284c7]" />
-                      <span>a.aladawy@3ddx.com</span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      PACS Telemetry Server
-                    </span>
-                    <div className="flex items-center gap-2 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      <Database size={15} />
-                      <span>pacs-prod.3ddx.org (Connected)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/40 flex items-start gap-3">
-                  <Sparkles size={18} className="text-[#0284c7] shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-extrabold text-[#0284c7] dark:text-sky-300 block">
-                      CP PRO MAX Verified Operator
-                    </span>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
-                      You are authorized to review CT scans, validate coDiagnostiX surgical guide designs, approve QC checkpoints, and submit lab orders.
-                    </p>
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    {t('profile.sessionState', 'Session State')}
+                  </span>
+                  <div className="flex items-center gap-2 font-mono font-bold text-slate-900 dark:text-white capitalize">
+                    <CheckCircle2 size={15} className="text-emerald-500" />
+                    <span>{session?.status || 'authenticated'}</span>
                   </div>
                 </div>
               </div>
-            )}
 
-            {activeTab === 'security' && (
-              <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <Shield size={18} className="text-[#0284c7]" />
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white block">Full Production Access</span>
-                      <span className="text-[11px] text-slate-500">Flow, AddCase, OrderDetails, Reports, Task 47, Task 31</span>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 font-bold text-[10px]">
-                    Granted
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <Database size={18} className="text-[#ea580c]" />
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white block">Power BI Enterprise Suite</span>
-                      <span className="text-[11px] text-slate-500">Quarter Targets, DAX Metrics & Quotas</span>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 font-bold text-[10px]">
-                    Active
-                  </span>
+              {/* Roles */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1.5">
+                  <Shield size={13} className="text-[#0284c7]" />
+                  <span>{t('profile.assignedRoles', 'Assigned Roles')}</span>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {roles.length > 0 ? (
+                    roles.map((r) => (
+                      <span
+                        key={r}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold bg-sky-50 dark:bg-sky-950/40 text-[#0284c7] dark:text-sky-300 border border-sky-200 dark:border-sky-800"
+                      >
+                        {r}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 italic text-[11px]">{t('profile.noRoles', 'No role codes assigned')}</span>
+                  )}
                 </div>
               </div>
-            )}
 
-            {activeTab === 'preferences' && (
-              <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <Monitor size={18} className="text-[#0284c7]" />
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white block">22" High-DPI Workspace</span>
-                      <span className="text-[11px] text-slate-500">Zero horizontal scroll table optimization</span>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-600 font-bold text-[10px]">
-                    Enabled
+              {/* Capabilities */}
+              {capabilities.length > 0 && (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 space-y-2 max-h-36 overflow-y-auto">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1.5">
+                    <Key size={13} className="text-[#0284c7]" />
+                    <span>{t('profile.backendCapabilities', 'Backend Capabilities & Permissions')} ({capabilities.length})</span>
                   </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {capabilities.map((cap) => (
+                      <span
+                        key={cap}
+                        className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                      >
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Footer Buttons */}
             <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <button
                 type="button"
-                onClick={onClose}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition-colors"
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition-colors cursor-pointer"
               >
                 <LogOut size={14} />
-                <span>Sign Out</span>
+                <span>{t('profile.signOut', 'Sign Out')}</span>
               </button>
 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0284c7] to-[#ea580c] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
               >
-                Close Profile
+                {t('common.close', 'Close')}
               </button>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  User,
   Shield,
   Mail,
   Building2,
@@ -24,8 +23,8 @@ export default function Profile() {
     navigate('/login');
   };
 
-  const displayName = session?.fullName || (session?.email ? session.email.split('@')[0] : 'Authenticated User');
-  const displayEmail = session?.email || 'No email provided';
+  const displayName = session?.fullName || (session?.email ? session.email.split('@')[0] : t('profile.authenticatedUser', 'Authenticated User'));
+  const displayEmail = session?.email || t('profile.noEmail', 'No email provided');
   const displayUserId = session?.userId || 'N/A';
   const roles = session?.roles || [];
   const capabilities = session?.capabilities || [];
@@ -83,7 +82,7 @@ export default function Profile() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
           >
             <LogOut size={15} />
-            <span>Sign Out</span>
+            <span>{t('profile.signOut', 'Sign Out')}</span>
           </button>
         </div>
       </div>
@@ -94,22 +93,22 @@ export default function Profile() {
         <div className="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             <IdCard size={17} className="text-[#0284c7]" />
-            <span>Identity & Account</span>
+            <span>{t('profile.identityAccount', 'Identity & Account')}</span>
           </div>
 
           <div className="space-y-3 text-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-slate-50 dark:border-slate-800/50 gap-1">
-              <span className="text-slate-500 dark:text-slate-400">Authenticated User</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('profile.authenticatedUser', 'Authenticated User')}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">{displayName}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-slate-50 dark:border-slate-800/50 gap-1">
-              <span className="text-slate-500 dark:text-slate-400">Email Address</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('profile.emailAddress', 'Email Address')}</span>
               <span className="font-mono text-slate-800 dark:text-slate-200">{displayEmail}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-slate-50 dark:border-slate-800/50 gap-1">
-              <span className="text-slate-500 dark:text-slate-400">User Identifier</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('profile.userIdentifier', 'User Identifier')}</span>
               <span className="font-mono text-slate-800 dark:text-slate-200" data-testid="profile-user-id">{displayUserId}</span>
             </div>
 
@@ -118,7 +117,7 @@ export default function Profile() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-slate-50 dark:border-slate-800/50 gap-1" data-testid="profile-tenant-info">
                 <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                   <Building2 size={13} className="text-[#0284c7]" />
-                  <span>Tenant Organization</span>
+                  <span>{t('profile.tenantOrg', 'Tenant Organization')}</span>
                 </span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200 font-mono">
                   {activeTenant ? `${activeTenant.label} (ID #${activeTenant.id})` : tenantSlug}
@@ -129,7 +128,7 @@ export default function Profile() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 gap-1">
               <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Clock size={13} className="text-slate-400" />
-                <span>Session State</span>
+                <span>{t('profile.sessionState', 'Session State')}</span>
               </span>
               <span className="font-mono text-slate-800 dark:text-slate-200 capitalize">
                 {session?.status || (isAuthenticated ? 'authenticated' : 'unauthenticated')}
@@ -142,12 +141,12 @@ export default function Profile() {
         <div className="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
             <Shield size={17} className="text-[#0284c7]" />
-            <span>Assigned Roles</span>
+            <span>{t('profile.assignedRoles', 'Assigned Roles')}</span>
           </div>
 
           <div className="space-y-3">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Role designations authoritative in backend IAM and Casbin authorization policies:
+              {t('profile.rolesDesc', 'Role designations authoritative in backend IAM and Casbin authorization policies:')}
             </p>
 
             <div className="flex flex-wrap gap-2 pt-1" data-testid="profile-role-codes">
@@ -163,7 +162,7 @@ export default function Profile() {
                   </span>
                 ))
               ) : (
-                <span className="text-xs text-slate-400 italic">No role codes assigned</span>
+                <span className="text-xs text-slate-400 italic">{t('profile.noRoles', 'No role codes assigned')}</span>
               )}
             </div>
           </div>
@@ -175,15 +174,15 @@ export default function Profile() {
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
             <Key size={17} className="text-[#0284c7]" />
-            <span>Backend Capabilities & Permissions</span>
+            <span>{t('profile.capabilitiesTitle', 'Backend Capabilities & Permissions')}</span>
           </div>
           <span className="text-xs font-mono text-slate-400">
-            {capabilities.length} granted
+            {capabilities.length} {t('profile.granted', 'granted')}
           </span>
         </div>
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Individual capabilities resolved and returned by backend <code className="font-mono text-slate-700 dark:text-slate-300">GET /api/v1/auth/me</code>:
+          {t('profile.capabilitiesDesc', 'Individual capabilities resolved and returned by backend GET /api/v1/auth/me:')}
         </p>
 
         <div className="flex flex-wrap gap-2 pt-2" data-testid="profile-capabilities">
@@ -199,7 +198,7 @@ export default function Profile() {
               </span>
             ))
           ) : (
-            <span className="text-xs text-slate-400 italic">No explicit capabilities returned by backend</span>
+            <span className="text-xs text-slate-400 italic">{t('profile.noCapabilities', 'No explicit capabilities returned by backend')}</span>
           )}
         </div>
       </div>

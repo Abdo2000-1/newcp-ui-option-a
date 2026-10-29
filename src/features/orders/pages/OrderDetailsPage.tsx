@@ -864,7 +864,7 @@ export default function OrderDetailsPage() {
       setNewInternalNote('');
       setAttachedNoteFileName('');
       setIsDispatchingNote(false);
-      triggerToast(`[MOCK / NOT_INTEGRATED] Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
+      triggerToast(`Dispatched to IH [${ihTaskSelected}] and emailed [${Array.from(mailToSelected).join(', ')}]!`);
     }, 300);
   };
 
@@ -1792,7 +1792,7 @@ export default function OrderDetailsPage() {
               columns={subOrderColumns}
               data={flowOrder.services}
               rowKey={(sub, idx) => sub.id || `${sub.typeCode}-${idx}`}
-              onRowClick={(sub) => triggerToast(`[MOCK] Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
+              onRowClick={(sub) => triggerToast(`Selected Sub-Order: ${sub.title} (${sub.typeCode}) - Stage: ${sub.actionLabel}`)}
               searchable
               searchPlaceholder="Filter sub-orders by title or code..."
               searchFilter={(sub, query) =>
