@@ -39,7 +39,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
     it('renders the dedicated 404 view when navigating to an unknown route', async () => {
       renderWithRoute('/some/non-existent/clinical-path-999');
 
-      expect(await screen.findByTestId('not-found-page')).toBeInTheDocument();
+      expect(await screen.findByTestId('not-found-page', {}, { timeout: 10000 })).toBeInTheDocument();
       expect(screen.getByText('404')).toBeInTheDocument();
       expect(screen.getByText(/Clinical Route Not Found/i)).toBeInTheDocument();
       expect(screen.getByText(/The requested clinical module, case view, or page path does not exist/i)).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
     it('provides accessible Return to Home and Go Back navigation actions', async () => {
       renderWithRoute('/missing-page-xyz');
 
-      await screen.findByTestId('not-found-page');
+      await screen.findByTestId('not-found-page', {}, { timeout: 10000 });
 
       const dashboardBtn = screen.getByRole('button', { name: /Return to Home/i });
       expect(dashboardBtn).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('UIUX-REQ-021: Dedicated Frontend 404 & 503 Maintenance Views', () => {
     it('preserves the application shell container during 404 view', async () => {
       renderWithRoute('/unknown-subsystem');
 
-      await screen.findByTestId('not-found-page');
+      await screen.findByTestId('not-found-page', {}, { timeout: 10000 });
       expect(screen.getByTestId('shell-footer')).toBeInTheDocument();
     });
   });

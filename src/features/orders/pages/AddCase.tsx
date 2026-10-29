@@ -53,6 +53,8 @@ export default function AddCase() {
   const [patientDob, setPatientDob] = useState('1985-06-15');
   const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Male');
   const [showErrors, setShowErrors] = useState(false);
+  const [showStep2Errors, setShowStep2Errors] = useState(false);
+  const [showStep3Errors, setShowStep3Errors] = useState(false);
 
   const isStep1Valid = Boolean(
     patientFirstName.trim() &&
@@ -74,6 +76,8 @@ export default function AddCase() {
   });
 
   const [isRushExpress, setIsRushExpress] = useState(false);
+
+
 
   // Surgical Guide Specs
   const [guideSupport, setGuideSupport] = useState<'Tooth-Supported' | 'Bone-Supported' | 'Mucosa-Supported'>('Tooth-Supported');
@@ -99,6 +103,58 @@ export default function AddCase() {
     16: 'crown'
   });
   const [toothActionCategory, setToothActionCategory] = useState<'implants' | 'missing' | 'extracted' | 'abutments' | 'crowns'>('implants');
+
+  const hasSelectedServices = Boolean(
+    Object.values(services).some(Boolean)
+  );
+
+  const requiresToothChart = Boolean(
+    services.sg ||
+    services.tp ||
+    services.mod ||
+    services.restTemp ||
+    services.restFinal
+  );
+
+  const isStep2Valid = hasSelectedServices;
+  const isStep3Valid = !requiresToothChart || selectedTeeth.length > 0;
+
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep === 1) {
+      setCurrentStep(1);
+      return;
+    }
+
+    if (!isStep1Valid) {
+      setShowErrors(true);
+      setCurrentStep(1);
+      return;
+    }
+
+    if (targetStep === 2) {
+      setCurrentStep(2);
+      return;
+    }
+
+    if (!isStep2Valid) {
+      setShowStep2Errors(true);
+      setCurrentStep(2);
+      return;
+    }
+
+    if (targetStep === 3) {
+      setCurrentStep(3);
+      return;
+    }
+
+    if (!isStep3Valid) {
+      setShowStep3Errors(true);
+      setCurrentStep(3);
+      return;
+    }
+
+    setCurrentStep(4);
+  };
 
   // Convert active services boolean map into DentalServiceId array
   const activeServiceIds = useMemo(() => {
@@ -142,6 +198,8 @@ export default function AddCase() {
     setUpperStl('Upper_Arch_Intraoral.stl');
     setLowerStl('Lower_Arch_Intraoral.stl');
     setShowErrors(false);
+    setShowStep2Errors(false);
+    setShowStep3Errors(false);
     setCurrentStep(1);
     triggerToast('[MOCK] Prescription draft reset to initial values.');
   };
@@ -177,7 +235,7 @@ export default function AddCase() {
     setTimeout(() => {
       const newOrderNum = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
       const fullName = `${patientFirstName.trim()} ${patientLastName.trim()}`.trim();
-      
+
       store.createOrder({
         orderNumber: newOrderNum,
         patientName: fullName,
@@ -211,7 +269,7 @@ export default function AddCase() {
 
   return (
     <div className="space-y-4 w-full min-w-0">
-      
+
       {/* Mock action feedback notification */}
       {toastMessage && (
         <div
@@ -343,7 +401,7 @@ export default function AddCase() {
             </div>
           ) : (
             <div className="bg-white dark:bg-[#0b101d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
-              
+
               {/* Stepper Progress Bar */}
               <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
                 <div className="grid grid-cols-4 gap-2">
@@ -356,13 +414,7 @@ export default function AddCase() {
                     <button
                       key={s.num}
                       type="button"
-                      onClick={() => {
-                        if (s.num > 1 && !isStep1Valid) {
-                          setShowErrors(true);
-                          return;
-                        }
-                        setCurrentStep(s.num);
-                      }}
+                      onClick={() => handleStepClick(s.num)}
                       className={`flex items-center gap-2 p-2 rounded-xl text-left transition-colors cursor-pointer ${
                         currentStep === s.num
                           ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30'
@@ -388,7 +440,7 @@ export default function AddCase() {
 
               {/* Form Content */}
               <form onSubmit={(e) => e.preventDefault()} className="p-5 space-y-6">
-                
+
                 {/* STEP 1: Clinician & Patient Info */}
                 {currentStep === 1 && (
                   <div className="space-y-4">
@@ -573,6 +625,12 @@ export default function AddCase() {
                       <span>Services Selection & Surgical Specs</span>
                     </h3>
 
+                    {showStep2Errors && !isStep2Valid && (
+                      <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+                        <span>Please select at least one clinical service or catalog item to proceed.</span>
+                      </div>
+                    )}
+
                     {/* Arch Selection */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">
@@ -597,16 +655,15 @@ export default function AddCase() {
                     </div>
 
                     {/* Live OpenAPI 3.0.3 Master Catalog */}
-                    <div className="p-4 rounded-2xl border border-cyan-500/40 bg-cyan-500/5 mb-4">
+                    <div data-testid="service-guide-section" className="p-4 rounded-2xl border border-sky-500/30 bg-sky-500/5 mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200 uppercase tracking-wider">
-                            Prescribed Clinical Services Catalog
+                          <span className="text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-wider">
+                            Prescribed Clinical Services Catalog & Guide Specs
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono bg-cyan-200/50 dark:bg-cyan-900/50 text-cyan-800 dark:text-cyan-300 px-2 py-0.5 rounded font-bold">
-                          HTTP 200 OK
+                        <span className="text-[10px] font-mono bg-sky-100 dark:bg-sky-900/50 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded font-bold">
+                          Active Catalog
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
@@ -617,7 +674,7 @@ export default function AddCase() {
                           <button
                             key={item.uuid}
                             type="button"
-                            onClick={() => setSelectedCatalogUuid(item.uuid)}
+                            onClick={() => setSelectedCatalogUuid(prev => prev === item.uuid ? "" : item.uuid)}
                             className={`p-3 rounded-xl border text-left transition-all ${
                               selectedCatalogUuid === item.uuid
                                 ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm ring-2 ring-cyan-500/30'
@@ -731,6 +788,12 @@ export default function AddCase() {
                     <p className="text-xs text-slate-600 dark:text-slate-400">
                       Pick your active tool below (Crown, Implant, Missing, Bridge) and click on any tooth to assign. Clicking an assigned tooth with the same tool unselects it.
                     </p>
+
+                    {showStep3Errors && selectedTeeth.length === 0 && (
+                      <div role="alert" className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+                        <span>Please select at least one tooth on the Tooth Chart to define the treatment/surgical site.</span>
+                      </div>
+                    )}
 
                     {/* Visual Teeth Chart */}
                     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -943,11 +1006,34 @@ export default function AddCase() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (currentStep === 1 && !isStep1Valid) {
-                          setShowErrors(true);
+                        if (currentStep === 1) {
+                          if (!isStep1Valid) {
+                            setShowErrors(true);
+                            return;
+                          }
+                          setCurrentStep(2);
                           return;
                         }
-                        setCurrentStep(currentStep + 1);
+                        if (currentStep === 2) {
+                          if (!isStep2Valid) {
+                            setShowStep2Errors(true);
+                            return;
+                          }
+                          if (requiresToothChart) {
+                            setCurrentStep(3);
+                          } else {
+                            setCurrentStep(4);
+                          }
+                          return;
+                        }
+                        if (currentStep === 3) {
+                          if (!isStep3Valid) {
+                            setShowStep3Errors(true);
+                            return;
+                          }
+                          setCurrentStep(4);
+                          return;
+                        }
                       }}
                       className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0284c7] hover:bg-sky-600 text-white font-bold text-xs shadow-md shadow-sky-500/20 cursor-pointer"
                     >

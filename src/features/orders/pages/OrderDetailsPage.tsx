@@ -77,7 +77,6 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { Button } from '@/shared/components/Button';
-import { DicomMprViewer } from '@/features/conversion/components/DicomMprViewer';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 import { MASTER_WORKFLOW_ORDERS, MasterWorkflowOrder, SubServiceItem } from '@/shared/data/flowMockData';
 import { useStore } from '@/shared/hooks/useStore';
@@ -250,7 +249,7 @@ export default function OrderDetailsPage() {
     },
   };
 
-  const [activeTab, setActiveTab] = useState<'prescription' | '3dviewer' | 'suborders'>('prescription');
+  const [activeTab, setActiveTab] = useState<'prescription' | 'suborders'>('prescription');
   const [isCopiedId, setIsCopiedId] = useState<boolean>(false);
 
   // Core Form Fields
@@ -1106,18 +1105,7 @@ export default function OrderDetailsPage() {
           <span>{t('order.overview', 'Official Prescription & Case Dispatch')}</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('3dviewer')}
-          className={`flex items-center gap-2 py-2 px-4 rounded-xl transition-all cursor-pointer ${
-            activeTab === '3dviewer'
-              ? 'border border-sky-400 dark:border-sky-500/60 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-500/15 shadow-xs'
-              : 'border border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Box size={15} />
-          <span>{t('order.viewer3d', '3D DICOM CAD & Co-Diagnostix™ Viewport')}</span>
-        </button>
+
 
         <button
           type="button"
@@ -1721,20 +1709,7 @@ export default function OrderDetailsPage() {
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* TAB 2: CLINICAL 3D DICOM CAD & CO-DIAGNOSTIX VIEWPORT              */}
-      {/* ------------------------------------------------------------------ */}
-      {activeTab === '3dviewer' && (
-        <DicomMprViewer
-          orderNumber={flowOrder.orderNum}
-          patientName={patientName}
-          implantSite="Tooth #19 (Mandibular 1st Molar)"
-          implantModel="Straumann® BLT Ø4.1mm RC x 10mm"
-          sleeveModel="T-Sleeve Straumann (Ø5.0mm, H: 5mm)"
-          sleeveOffset={9.0}
-          nerveClearance={3.2}
-        />
-      )}
+
 
       {/* ------------------------------------------------------------------ */}
       {/* TAB 3: SUB-ORDERS MATRIX BREAKDOWN (LIVE OPENAPI 3.0.3 CONTRACT)    */}
