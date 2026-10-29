@@ -161,17 +161,19 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, any> = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_SESSION_KEY = 'newcp_iam_session_v098';
+const LEGACY_STORAGE_SESSION_KEY = 'newcp_iam_session_v097';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<UserSession | null>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_SESSION_KEY);
+      const stored = localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem(LEGACY_STORAGE_SESSION_KEY);
       if (stored) {
         const parsed: UserSession = JSON.parse(stored);
         const now = Date.now();
         // Check timeout
         if (now > parsed.expiresAt || (now - parsed.lastActivityAt) > IDLE_TIMEOUT_MS) {
           localStorage.removeItem(STORAGE_SESSION_KEY);
+          localStorage.removeItem(LEGACY_STORAGE_SESSION_KEY);
           return null;
         }
         return parsed;
@@ -199,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setStatus('unauthenticated');
       localStorage.removeItem(STORAGE_SESSION_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_SESSION_KEY);
     }
   }, []);
 
@@ -224,6 +227,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastActivityAt: now,
     };
     persistSession(updated);
+  }, [persistSession]);
+
+  // Validate and recover session with backend on startup (in production / browser runtime)
+  useEffect(() => {
+    if ((globalThis as any).process?.env?.NODE_ENV === 'test') {
+      return;
+    }
+    const recoverAndValidateSession = async () => {
+      const cur = sessionRef.current;
+      if (cur?.sessionToken && cur.status === 'authenticated') {
+        try {
+          const adapter = getAuthAdapter();
+          const me = await adapter.getMe(cur.sessionToken);
+          if (me.isPendingAccess) {
+            persistSession({
+              ...cur,
+              roles: me.roleCodes,
+              capabilities: me.capabilities,
+              tenantSlug: null,
+              activeTenant: null,
+              tenantId: null,
+              status: 'pending_access',
+              accessStatus: 'PENDING',
+              isPendingAccess: true,
+            });
+          } else {
+            persistSession({
+              ...cur,
+              userId: me.userUuid,
+              email: me.email,
+              roles: me.roleCodes,
+              capabilities: me.capabilities,
+              tenantSlug: me.tenantSlug,
+              activeTenant: me.tenantSlug ? { id: 1, label: me.tenantSlug } : null,
+              tenantId: me.tenantSlug ? 1 : null,
+              isPendingAccess: false,
+              status: 'authenticated',
+              accessStatus: 'AUTHORIZED',
+              lastActivityAt: Date.now(),
+            });
+          }
+        } catch (err: any) {
+          if (err?.status === 401 || err?.status === 403 || err?.code === 'SESSION_EXPIRED' || err?.code === 'AUTHENTICATION_REQUIRED') {
+            persistSession(null);
+          }
+        }
+      }
+    };
+    recoverAndValidateSession();
   }, [persistSession]);
 
   useEffect(() => {

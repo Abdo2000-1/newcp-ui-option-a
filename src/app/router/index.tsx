@@ -94,13 +94,17 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isPublicSystemRoute = ['/503', '/maintenance', '/404'].includes(location.pathname);
   if (isPublicSystemRoute) return <>{children}</>;
-  const legacyAuth = typeof window !== 'undefined' && localStorage.getItem('3ddx-auth') === 'true';
 
   if (isPendingAccess) {
     return <PendingAccessView />;
   }
 
-  if (!isAuthenticated && !legacyAuth && status !== 'authenticating') {
+  const isTestFixture =
+    (globalThis as any).process?.env?.NODE_ENV === 'test' &&
+    typeof window !== 'undefined' &&
+    localStorage.getItem('3ddx-auth') === 'true';
+
+  if (!isAuthenticated && !isTestFixture && status !== 'authenticating') {
     return <Navigate to="/login" replace />;
   }
 

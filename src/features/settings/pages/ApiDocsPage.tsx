@@ -73,14 +73,6 @@ export const API_ENDPOINT_INVENTORY: EndpointSpec[] = [
   },
   {
     method: 'GET',
-    path: '/api/v1/session/context',
-    summary: 'Validated active session and tenant context',
-    category: 'CANONICAL',
-    tag: 'IAM',
-    notes: 'Canonical session context retrieval.',
-  },
-  {
-    method: 'GET',
     path: '/api/v1/catalog/services',
     summary: 'Clinical service types & dynamic form schemas',
     category: 'CANONICAL',
@@ -88,44 +80,108 @@ export const API_ENDPOINT_INVENTORY: EndpointSpec[] = [
     notes: 'Returns catalog metadata, forms schemas, and allowable service codes.',
   },
   {
+    method: 'GET',
+    path: '/api/v1/catalog/services/{serviceUuid}/form-schema',
+    summary: 'Get dynamic form definition for a catalog service',
+    category: 'CANONICAL',
+    tag: 'Catalog',
+    notes: 'Returns fields, validations, and conditional rules for dynamic service intake form.',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/orders/{orderUuid}/services',
+    summary: 'List service items for an order',
+    category: 'CANONICAL',
+    tag: 'Services',
+    notes: 'Returns all billable service instances under an order.',
+  },
+  {
     method: 'POST',
-    path: '/api/v1/orders/{orderId}/services',
+    path: '/api/v1/orders/{orderUuid}/services',
     summary: 'Create new billable service instance',
     category: 'CANONICAL',
     tag: 'Services',
     notes: 'Creates an independent service instance with assigned itemId and initial ETag.',
   },
   {
+    method: 'GET',
+    path: '/api/v1/services/{serviceItemUuid}',
+    summary: 'Get single service instance with version ETag',
+    category: 'CANONICAL',
+    tag: 'Services',
+    notes: 'Retrieves service instance with answers, financial lines, and current revision ETag.',
+  },
+  {
     method: 'PATCH',
-    path: '/api/v1/orders/{orderId}/services/{itemId}',
+    path: '/api/v1/services/{serviceItemUuid}',
     summary: 'ETag concurrency-safe service update',
     category: 'CANONICAL',
     tag: 'Services',
     notes: 'Requires If-Match header with matching ETag. Returns 412 on stale or 428 if missing.',
   },
   {
-    method: 'POST',
-    path: '/api/v1/orders/{orderId}/services/{itemId}/hold',
-    summary: 'Transition service line into or out of hold',
+    method: 'GET',
+    path: '/api/v1/services/{serviceItemUuid}/available-transitions',
+    summary: 'List permitted workflow transitions for service item',
     category: 'CANONICAL',
     tag: 'Workflow',
-    notes: 'Requires valid hold type (e.g. CLINICAL, BILLING) and hold reason.',
+    notes: 'Returns available transitions based on item status and user capabilities.',
   },
   {
-    method: 'GET',
-    path: '/api/v1/orders/{orderId}/services/{itemId}/pricing',
-    summary: 'Retrieve item pricing & billability verdict',
+    method: 'POST',
+    path: '/api/v1/services/{serviceItemUuid}/transitions',
+    summary: 'Execute state transition for service item',
     category: 'CANONICAL',
-    tag: 'Pricing',
-    notes: 'Calculates price and enforces independent isBillable verdict.',
+    tag: 'Workflow',
+    notes: 'Executes atomic transition, supporting hold reasons when transitioning into on_hold.',
   },
   {
     method: 'GET',
-    path: '/api/v1/orders/{orderId}/payer',
-    summary: 'Read billing party and payer selection boundary',
+    path: '/api/v1/services/{serviceItemUuid}/history',
+    summary: 'Audit log of workflow transitions and events',
+    category: 'CANONICAL',
+    tag: 'Workflow',
+    notes: 'Chronological timeline of state changes and clerk comments.',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/orders/{orderUuid}/eligible-billed-parties',
+    summary: 'Read eligible billing parties (F07 doctor/clinic/scanning center)',
     category: 'CANONICAL',
     tag: 'Billing',
-    notes: 'Payer assignment and billing boundary determination.',
+    notes: 'Payer assignment and eligible billed party choices for service items.',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/lookups/hold-reasons',
+    summary: 'Standard clinical and administrative hold reasons',
+    category: 'CANONICAL',
+    tag: 'Lookups',
+    notes: 'Lookup values for hold transitions.',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/lookups/zero-charge-reasons',
+    summary: 'Mandatory zero-charge reasons when unit price is 0.00',
+    category: 'CANONICAL',
+    tag: 'Lookups',
+    notes: 'Lookup codes required when unitPrice=0.00 to satisfy financial validation.',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/iam/users',
+    summary: 'Tenant-scoped IAM employee identities',
+    category: 'CANONICAL',
+    tag: 'IAM',
+    notes: 'List tenant employee identities for IAM administration (requires iam.users.read).',
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/iam/roles',
+    summary: 'Available IAM role codes and capabilities',
+    category: 'CANONICAL',
+    tag: 'IAM',
+    notes: 'List roles and capabilities (requires iam.roles.read).',
   },
   // Proposed Orders Dashboard Endpoints (Draft Extension Only - NOT Integrated)
   {
@@ -176,12 +232,11 @@ export default function ApiDocsPage() {
   const muiTheme = useMuiTheme();
   const isDark = muiTheme.palette.mode === 'dark';
 
-  const defaultApiHost =
-    import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL ||
-    'http://localhost:3000';
+  const configuredApiHost = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').trim();
+  const defaultApiHost = configuredApiHost || 'http://10.20.25.147:3001';
 
   const [swaggerHost, setSwaggerHost] = useState<string>(() => {
+    if (configuredApiHost) return configuredApiHost;
     return localStorage.getItem('3ddx-swagger-host') || defaultApiHost;
   });
 
@@ -191,15 +246,46 @@ export default function ApiDocsPage() {
   const [selectedFilter, setSelectedFilter] = useState<EndpointCategory | 'ALL'>('ALL');
   const [_iframeError, setIframeError] = useState<boolean>(false);
 
-  // Formulate backend docs URL (points to /docs route on backend)
-  const docsUrl = `${swaggerHost.replace(/\/+$/, '')}/docs`;
+  // Formulate backend docs and health URLs (strips any trailing /api/v1)
+  const normalizedBase = swaggerHost.replace(/\/+$/, '').replace(/\/api\/v1\/?$/, '');
+  const docsUrl = `${normalizedBase}/docs`;
+  const healthUrl = `${normalizedBase}/health`;
+
+  // Automatic liveness probe on mount or host change
+  React.useEffect(() => {
+    let isCancelled = false;
+    setConnectionStatus('testing');
+    setStatusMessage(`Pinging backend service at ${swaggerHost}...`);
+
+    fetch(healthUrl, { method: 'GET', mode: 'cors' })
+      .then((res) => {
+        if (isCancelled) return;
+        if (res.ok) {
+          setConnectionStatus('connected');
+          setStatusMessage('Live backend service verified and healthy.');
+          setIframeError(false);
+        } else {
+          setConnectionStatus('offline');
+          setStatusMessage(`Server responded with HTTP ${res.status}. Falling back to contract simulation.`);
+        }
+      })
+      .catch((err) => {
+        if (isCancelled) return;
+        setConnectionStatus('offline');
+        setStatusMessage(`Host unreachable (${err?.message || 'Network error'}). Backend /docs is offline or blocked.`);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [healthUrl, swaggerHost]);
 
   const handleSaveHost = () => {
     localStorage.setItem('3ddx-swagger-host', swaggerHost);
     setConnectionStatus('testing');
     setStatusMessage(`Pinging backend service at ${swaggerHost}...`);
 
-    fetch(`${swaggerHost.replace(/\/+$/, '')}/health`, { method: 'GET', mode: 'cors' })
+    fetch(healthUrl, { method: 'GET', mode: 'cors' })
       .then((res) => {
         if (res.ok) {
           setConnectionStatus('connected');

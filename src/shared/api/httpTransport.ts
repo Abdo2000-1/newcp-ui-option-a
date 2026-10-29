@@ -1,7 +1,6 @@
 import { getSentry } from '@/shared/observability';
 import { normalizeProblemError, ApiClientError } from './errors';
 import { getApiConfig, type ApiMode } from './config';
-import type { Problem } from './contractTypes';
 
 export interface HttpTransportConfig {
   baseUrl?: string;
@@ -9,6 +8,7 @@ export interface HttpTransportConfig {
   getAuthToken?: () => string | Promise<string | null> | null;
   customFetch?: typeof fetch;
   defaultHeaders?: Record<string, string>;
+  defaultTimeoutMs?: number;
 }
 
 export interface HttpRequestOptions {
@@ -17,7 +17,9 @@ export interface HttpRequestOptions {
   params?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
   ifMatch?: string;
-  tenantId?: string;
+  tenantId?: string; // Kept for type signature compatibility; NOT transmitted as client override header
+  requestId?: string;
+  timeoutMs?: number;
 }
 
 export interface HttpResponse<T> {
@@ -25,6 +27,7 @@ export interface HttpResponse<T> {
   status: number;
   headers: Headers;
   etag: string | null;
+  requestId?: string | null;
 }
 
 export interface IHttpTransport {
@@ -41,6 +44,7 @@ export class HttpTransport implements IHttpTransport {
   private getAuthToken?: () => string | Promise<string | null> | null;
   private fetchFn: typeof fetch;
   private defaultHeaders: Record<string, string>;
+  private defaultTimeoutMs: number;
 
   constructor(config?: HttpTransportConfig) {
     const apiCfg = getApiConfig();
@@ -50,6 +54,7 @@ export class HttpTransport implements IHttpTransport {
     this.getAuthToken = config?.getAuthToken;
     this.fetchFn = config?.customFetch || fetch.bind(globalThis);
     this.defaultHeaders = config?.defaultHeaders || {};
+    this.defaultTimeoutMs = config?.defaultTimeoutMs || 15000;
   }
 
   public getMode(): ApiMode {
@@ -61,7 +66,23 @@ export class HttpTransport implements IHttpTransport {
   }
 
   public async request<T = unknown>(path: string, options: HttpRequestOptions = {}): Promise<HttpResponse<T>> {
-    // In LIVE_HTTP mode, baseUrl must be explicitly configured
+    // Browser CORS mitigation:
+    // When running in a browser on localhost (Vite dev server) and target is a cross-origin backend,
+    // the backend at http://10.20.25.147:3001 does not return Access-Control-Allow-Origin headers.
+    // To prevent browser CORS rejection (Failed to fetch), route via same-origin Vite proxy (/api, /health, /docs).
+    let effectiveBaseUrl = this.baseUrl;
+    if (
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.hostname === 'localhost' &&
+      effectiveBaseUrl &&
+      !effectiveBaseUrl.startsWith(window.location.origin) &&
+      (globalThis as any).process?.env?.NODE_ENV !== 'test'
+    ) {
+      effectiveBaseUrl = '';
+    }
+
+    // In LIVE_HTTP mode, baseUrl must be explicitly configured or defaulted
     if (this.mode === 'LIVE_HTTP' && !this.baseUrl) {
       throw new ApiClientError(
         500,
@@ -70,7 +91,20 @@ export class HttpTransport implements IHttpTransport {
     }
 
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    let url = `${this.baseUrl}${cleanPath}`;
+    let url = `${effectiveBaseUrl}${cleanPath}`;
+
+    if (effectiveBaseUrl.endsWith('/api/v1') && cleanPath.startsWith('/api/v1/')) {
+      url = `${effectiveBaseUrl}${cleanPath.slice(7)}`;
+    } else if (
+      !effectiveBaseUrl.includes('/api/v1') &&
+      !cleanPath.startsWith('/api/v1') &&
+      cleanPath !== '/health' &&
+      !cleanPath.startsWith('/health/') &&
+      cleanPath !== '/docs' &&
+      !cleanPath.startsWith('/docs/')
+    ) {
+      url = `${effectiveBaseUrl}/api/v1${cleanPath}`;
+    }
 
     if (options.params) {
       const searchParams = new URLSearchParams();
@@ -93,15 +127,33 @@ export class HttpTransport implements IHttpTransport {
       headers.set(k, v);
     }
 
-    // Token injection
-    if (this.getAuthToken) {
-      const token = await this.getAuthToken();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+    // Token injection:
+    // 1. Explicit getAuthToken callback if provided
+    // 2. Or fallback to stored active session token in localStorage
+    if (!headers.has('Authorization')) {
+      if (this.getAuthToken) {
+        const token = await this.getAuthToken();
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`);
+        }
+      } else {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            const stored = localStorage.getItem('newcp_iam_session_v098');
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              if (parsed?.sessionToken) {
+                headers.set('Authorization', `Bearer ${parsed.sessionToken}`);
+              }
+            }
+          }
+        } catch {
+          // ignore parsing error
+        }
       }
     }
 
-    // Tenant Header
+    // Tenant header (when explicitly provided by tests)
     if (options.tenantId) {
       headers.set('X-Tenant-ID', options.tenantId);
     }
@@ -111,7 +163,12 @@ export class HttpTransport implements IHttpTransport {
       headers.set('If-Match', options.ifMatch);
     }
 
-    // Custom option headers
+    // Request Correlation ID
+    if (options.requestId) {
+      headers.set('X-Request-ID', options.requestId);
+    }
+
+    // Custom option headers (e.g. override Authorization if specified in options)
     if (options.headers) {
       for (const [k, v] of Object.entries(options.headers)) {
         headers.set(k, v);
@@ -129,13 +186,34 @@ export class HttpTransport implements IHttpTransport {
     }
 
     const method = options.method || 'GET';
-    const response = await this.fetchFn(url, {
-      method,
-      headers,
-      body: bodyStr,
-    });
+    const timeoutMs = options.timeoutMs || this.defaultTimeoutMs;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response: Response;
+    try {
+      response = await this.fetchFn(url, {
+        method,
+        headers,
+        body: bodyStr,
+        signal: controller.signal,
+      });
+    } catch (networkErr: any) {
+      clearTimeout(timer);
+      if (networkErr?.name === 'AbortError') {
+        throw new ApiClientError(408, `Request timeout after ${timeoutMs}ms: ${method} ${cleanPath}`);
+      }
+      throw new ApiClientError(
+        0,
+        `Network failure: unable to connect to backend at ${this.baseUrl || url}. ${networkErr?.message || ''}`.trim()
+      );
+    } finally {
+      clearTimeout(timer);
+    }
 
     const etag = response.headers.get('ETag') || response.headers.get('etag');
+    const requestId = response.headers.get('x-request-id') || response.headers.get('X-Request-ID');
 
     if (!response.ok) {
       let errorPayload: unknown;
@@ -151,13 +229,30 @@ export class HttpTransport implements IHttpTransport {
       }
 
       const normError = normalizeProblemError(response.status, errorPayload);
+      if (requestId && 'problem' in normError && (normError as any).problem) {
+        if (!(normError as any).problem.requestId) {
+          (normError as any).problem.requestId = requestId;
+        }
+      }
+
       if (!getSentry().isExpectedDomainError(normError)) {
         getSentry().captureException(normError, {
           tags: { status: String(response.status), method },
-          extra: { path },
+          extra: { path: cleanPath, requestId: requestId || undefined },
         });
       }
       throw normError;
+    }
+
+    // 204 No Content
+    if (response.status === 204) {
+      return {
+        data: undefined as unknown as T,
+        status: response.status,
+        headers: response.headers,
+        etag,
+        requestId,
+      };
     }
 
     let responseData: T;
@@ -173,6 +268,7 @@ export class HttpTransport implements IHttpTransport {
       status: response.status,
       headers: response.headers,
       etag,
+      requestId,
     };
   }
 

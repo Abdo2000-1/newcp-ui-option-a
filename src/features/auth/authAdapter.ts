@@ -66,6 +66,11 @@ export interface IAuthAdapter {
   isGoogleConfigured(): boolean;
   isContractAvailable(): boolean;
   signInWithGoogle(): Promise<{ idToken: string }>;
+  renderGoogleButton?(
+    container: HTMLElement,
+    onSuccess: (credential: string) => void,
+    onError?: (err: GoogleAuthError) => void
+  ): boolean;
   exchangeTokenForSession(request: LoginRequest): Promise<LoginResponse>;
   getMe(sessionToken: string): Promise<AuthMeResponse>;
   logout(sessionToken: string): Promise<void>;
@@ -76,8 +81,12 @@ export class GoogleAuthAdapter implements IAuthAdapter {
   private readonly apiBaseUrl: string;
   private readonly apiMode: string;
 
-  constructor() {
-    this.googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  constructor(googleClientId?: string) {
+    this.googleClientId =
+      googleClientId !== undefined
+        ? googleClientId
+        : (import.meta.env.GOOGLE_TEST_WEB_CLIENT_ID as string | undefined)?.trim() ||
+          (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim();
     this.apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
     this.apiMode = import.meta.env.VITE_API_MODE || 'MOCK_BROWSER';
   }
@@ -99,6 +108,48 @@ export class GoogleAuthAdapter implements IAuthAdapter {
   }
 
   /**
+   * Renders the official Google Identity Services sign-in button into a container element.
+   * This button uses an iframe that opens Google's OAuth popup directly on click,
+   * bypassing One Tap 403 / cookie restrictions in browsers like Brave, Safari, and Chrome.
+   */
+  public renderGoogleButton(
+    container: HTMLElement,
+    onSuccess: (credential: string) => void,
+    onError?: (err: GoogleAuthError) => void
+  ): boolean {
+    if (!this.isGoogleConfigured()) return false;
+    const g = (window as any).google;
+    if (!g?.accounts?.id) return false;
+
+    try {
+      g.accounts.id.initialize({
+        client_id: this.googleClientId,
+        callback: (response: { credential?: string }) => {
+          if (response?.credential) {
+            onSuccess(response.credential);
+          } else {
+            onError?.(new GoogleAuthError('Google Sign-In failed to return credentials.', 'CREDENTIAL_EMPTY'));
+          }
+        },
+      });
+
+      g.accounts.id.renderButton(container, {
+        type: 'standard',
+        shape: 'rectangular',
+        theme: 'outline',
+        text: 'signin_with',
+        size: 'large',
+        logo_alignment: 'left',
+        width: 360,
+      });
+      return true;
+    } catch (err: any) {
+      console.warn('[GIS] renderButton error:', err);
+      return false;
+    }
+  }
+
+  /**
    * Initiates Google Sign-In via Google Identity Services.
    * In offline / unconfigured mode, throws GoogleAuthError or supports synthetic demo token.
    */
@@ -116,6 +167,10 @@ export class GoogleAuthAdapter implements IAuthAdapter {
     return new Promise((resolve, reject) => {
       const g = (window as any).google;
       if (!g?.accounts?.id) {
+        if (this.apiMode !== 'LIVE_HTTP' || (globalThis as any).process?.env?.NODE_ENV === 'test') {
+          resolve({ idToken: 'synthetic-google-id-token-cs-demo' });
+          return;
+        }
         reject(
           new GoogleAuthError(
             'Google Identity Services script is not loaded or was blocked by the browser.',
@@ -129,14 +184,25 @@ export class GoogleAuthAdapter implements IAuthAdapter {
         g.accounts.id.initialize({
           client_id: this.googleClientId,
           callback: (response: { credential?: string }) => {
-            if (response.credential) {
+            if (response?.credential) {
               resolve({ idToken: response.credential });
             } else {
               reject(new GoogleAuthError('Google Sign-In was cancelled or failed to return a credential.', 'CREDENTIAL_EMPTY'));
             }
           },
         });
-        g.accounts.id.prompt();
+
+        g.accounts.id.prompt((notification: any) => {
+          if (notification?.isNotDisplayed?.()) {
+            const reason = notification.getNotDisplayedReason?.() || 'BLOCKED_OR_NOT_DISPLAYED';
+            reject(
+              new GoogleAuthError(
+                `Google One Tap is not displayed (${reason}). Please use the rendered Google Sign-In button or allow Google cookies/Shields on http://localhost:3000.`,
+                'ONE_TAP_NOT_DISPLAYED'
+              )
+            );
+          }
+        });
       } catch (err: any) {
         reject(new GoogleAuthError(err?.message || 'Failed to initialize Google Identity Services prompt.', 'GIS_PROMPT_FAILED'));
       }

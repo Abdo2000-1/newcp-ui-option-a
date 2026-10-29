@@ -21,7 +21,7 @@
     "clinical-cad"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3000",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
