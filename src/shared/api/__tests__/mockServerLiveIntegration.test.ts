@@ -26,7 +26,10 @@ describe('OpenAPI Mock Server Live HTTP Contract Verification', () => {
       const res = await fetch(HEALTH_URL);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
-        isServerUp = true;
+        const body = await res.json();
+        if (body?.service === 'newcp-api-contract-mock') {
+          isServerUp = true;
+        }
       }
     } catch {
       isServerUp = false;

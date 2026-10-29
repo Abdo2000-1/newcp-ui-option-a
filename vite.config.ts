@@ -20,6 +20,14 @@ export default defineConfig({
         target: apiTarget,
         changeOrigin: true,
       },
+      '/health': {
+        target: apiTarget,
+        changeOrigin: true,
+      },
+      '/docs': {
+        target: apiTarget,
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react(), tailwindcss()],

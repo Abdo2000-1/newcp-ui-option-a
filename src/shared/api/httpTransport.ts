@@ -66,6 +66,22 @@ export class HttpTransport implements IHttpTransport {
   }
 
   public async request<T = unknown>(path: string, options: HttpRequestOptions = {}): Promise<HttpResponse<T>> {
+    // Browser CORS mitigation:
+    // When running in a browser on localhost (Vite dev server) and target is a cross-origin backend,
+    // the backend at http://10.20.25.147:3001 does not return Access-Control-Allow-Origin headers.
+    // To prevent browser CORS rejection (Failed to fetch), route via same-origin Vite proxy (/api, /health, /docs).
+    let effectiveBaseUrl = this.baseUrl;
+    if (
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.hostname === 'localhost' &&
+      effectiveBaseUrl &&
+      !effectiveBaseUrl.startsWith(window.location.origin) &&
+      (globalThis as any).process?.env?.NODE_ENV !== 'test'
+    ) {
+      effectiveBaseUrl = '';
+    }
+
     // In LIVE_HTTP mode, baseUrl must be explicitly configured or defaulted
     if (this.mode === 'LIVE_HTTP' && !this.baseUrl) {
       throw new ApiClientError(
@@ -75,19 +91,19 @@ export class HttpTransport implements IHttpTransport {
     }
 
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    let url = `${this.baseUrl}${cleanPath}`;
+    let url = `${effectiveBaseUrl}${cleanPath}`;
 
-    if (this.baseUrl.endsWith('/api/v1') && cleanPath.startsWith('/api/v1/')) {
-      url = `${this.baseUrl}${cleanPath.slice(7)}`;
+    if (effectiveBaseUrl.endsWith('/api/v1') && cleanPath.startsWith('/api/v1/')) {
+      url = `${effectiveBaseUrl}${cleanPath.slice(7)}`;
     } else if (
-      !this.baseUrl.includes('/api/v1') &&
+      !effectiveBaseUrl.includes('/api/v1') &&
       !cleanPath.startsWith('/api/v1') &&
       cleanPath !== '/health' &&
       !cleanPath.startsWith('/health/') &&
       cleanPath !== '/docs' &&
       !cleanPath.startsWith('/docs/')
     ) {
-      url = `${this.baseUrl}/api/v1${cleanPath}`;
+      url = `${effectiveBaseUrl}/api/v1${cleanPath}`;
     }
 
     if (options.params) {
