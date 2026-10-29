@@ -38,6 +38,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const muiTheme = useMuiTheme();
   const { theme, toggleTheme } = useThemeContext();
+  const authContext = useAuth();
 
   const isDark = muiTheme.palette.mode === 'dark';
 
@@ -55,6 +56,14 @@ export function Header({ onMenuClick }: HeaderProps) {
   const profile = useStore(s => s.getProfile());
 
   const unreadNotifs = notifications.filter(n => !n.read);
+  const backendUserName = authContext?.session?.fullName || (authContext?.session?.email ? authContext.session.email.split('@')[0] : 'Authenticated User');
+  const backendUserInitials = (authContext?.session?.fullName || authContext?.session?.email || 'AU')
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const backendUserRole = authContext?.session?.roles?.[0] ? authContext.session.roles[0].replace(/_/g, ' ').toUpperCase() : (authContext?.session?.family || 'USER');
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -87,8 +96,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const currentTitle = pathSegments.length > 0 
     ? pathSegments[0].charAt(0).toUpperCase() + pathSegments[0].slice(1).replace(/-/g, ' ') 
     : 'Home';
-
-  const authContext = useAuth();
 
   const handleLogout = () => {
     authContext?.logout();
@@ -340,7 +347,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1, borderBottom: `1px solid ${headerBorder}` }}>
-                <Typography sx={{ fontWeight: 800, fontSize: '0.875rem' }}>Recent Alerts</Typography>
+                <Typography sx={{ fontWeight: 800, fontSize: '0.875rem' }}>Notifications</Typography>
                 {unreadNotifs.length > 0 && (
                   <Button
                     onClick={() => store.markAllNotificationsAsRead()}
@@ -389,11 +396,11 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Divider sx={{ my: 1 }} />
               <Box sx={{ textAlign: 'center' }}>
                 <Button
-                  onClick={() => { navigate('/notifications'); setNotifsOpen(false); }}
+                  onClick={() => setNotifsOpen(false)}
                   size="small"
                   sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284c7' }}
                 >
-                  View All Notifications →
+                  Close
                 </Button>
               </Box>
             </Paper>
@@ -428,7 +435,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 fontWeight: 800,
               }}
             >
-              {profile.avatarInitials || `${profile.firstName?.[0] || 'J'}${profile.lastName?.[0] || 'R'}`}
+              {backendUserInitials}
             </Box>
             <ChevronDown size={14} style={{ marginLeft: 4, opacity: 0.6 }} />
           </IconButton>
@@ -450,10 +457,10 @@ export function Header({ onMenuClick }: HeaderProps) {
             >
               <Box sx={{ px: 1.5, py: 1, borderBottom: `1px solid ${headerBorder}` }}>
                 <Typography sx={{ fontWeight: 800, fontSize: '0.8125rem' }}>
-                  {authContext?.session?.fullName || `${profile.firstName} ${profile.lastName}`}
+                  {backendUserName}
                 </Typography>
                 <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
-                  {authContext?.session?.roles[0] || profile.role} • Pro
+                  {backendUserRole}
                 </Typography>
                 {authContext?.session?.activeTenant && (
                   <Typography

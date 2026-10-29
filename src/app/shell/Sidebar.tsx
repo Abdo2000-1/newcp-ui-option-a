@@ -37,6 +37,14 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const isDark = muiTheme.palette.mode === 'dark';
 
   const { session, logout } = useAuth();
+  const backendUserName = session?.fullName || (session?.email ? session.email.split('@')[0] : 'Authenticated User');
+  const backendUserInitials = (session?.fullName || session?.email || 'AU')
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const backendUserRole = session?.roles?.[0] ? session.roles[0].replace(/_/g, ' ').toUpperCase() : (session?.family || 'USER');
   const unreadNotifs = useStore((s) => s.getNotifications().filter((n) => !n.read).length);
   const profile = useStore((s) => s.getProfile());
 
@@ -113,7 +121,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         {/* Section Navigation Items */}
         {section.items.map((item) => {
           const active = isRouteActive(location.pathname, item.path);
-          const badgeCount = item.path === '/notifications' ? unreadNotifs : item.badge;
+          const badgeCount = item.badge;
           const Icon = item.icon;
 
           const buttonContent = (
@@ -387,7 +395,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               position: 'relative',
             }}
           >
-            {profile.avatarInitials || `${profile.firstName?.[0] || 'J'}${profile.lastName?.[0] || 'R'}`}
+            {backendUserInitials}
             <Box
               sx={{
                 position: 'absolute',
@@ -412,7 +420,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                   whiteSpace: 'nowrap',
                 }}
               >
-                {session?.fullName || `${profile.firstName} ${profile.lastName}`}
+                {backendUserName}
               </Typography>
               <Typography
                 sx={{
@@ -424,7 +432,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                   whiteSpace: 'nowrap',
                 }}
               >
-                {session?.family || profile.role} • Online
+                {backendUserRole} • Online
               </Typography>
             </Box>
           )}

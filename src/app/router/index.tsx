@@ -19,7 +19,6 @@ const ViewOrder = lazy(() => import('@/features/orders/pages/ViewOrder'));
 const OrderWorkflow = lazy(() => import('@/features/orders/pages/OrderWorkflow'));
 const OrderFiles = lazy(() => import('@/features/orders/pages/OrderFiles'));
 const SubOrderDetail = lazy(() => import('@/features/orders/pages/SubOrderDetail'));
-const Cases = lazy(() => import('@/features/orders/pages/Cases'));
 const CaseDetails = lazy(() => import('@/features/orders/pages/CaseDetails'));
 const WorkflowBoard = lazy(() => import('@/features/orders/pages/WorkflowBoard'));
 const ChangeRequests = lazy(() => import('@/features/orders/pages/ChangeRequests'));
@@ -45,7 +44,6 @@ const Patients = lazy(() => import('@/features/settings/pages/Patients'));
 const PatientDetails = lazy(() => import('@/features/settings/pages/PatientDetails'));
 const ScanCenter = lazy(() => import('@/features/settings/pages/ScanCenter'));
 const Documents = lazy(() => import('@/features/settings/pages/Documents'));
-const Notifications = lazy(() => import('@/features/settings/pages/Notifications'));
 const Forms = lazy(() => import('@/features/settings/pages/Forms'));
 const Grid = lazy(() => import('@/features/settings/pages/Grid'));
 
@@ -68,14 +66,12 @@ export const ROUTES = {
   PROFILE: '/profile',
   CONFIG_MANAGER: '/config-manager',
   CMS: '/cms',
-  CASES: '/cases',
   BILLING: '/billing',
   CLINICS: '/clinics',
   DOCTORS: '/doctors',
   PATIENTS: '/patients',
   SCAN_CENTER: '/scan-center',
   DOCUMENTS: '/documents',
-  NOTIFICATIONS: '/notifications',
   CHANGE_REQUESTS: '/change-requests',
   WORKFLOW_BOARD: '/workflow-board',
   REPORTS: '/reports',
@@ -186,7 +182,6 @@ export function AppRouter() {
           <Route path="orders/:orderId/workflow" element={<SuspenseWrapper><OrderWorkflow /></SuspenseWrapper>} />
           <Route path="orders/:orderId/files" element={<SuspenseWrapper><OrderFiles /></SuspenseWrapper>} />
           <Route path="orders/:orderId/sub-orders/:subOrderId" element={<SuspenseWrapper><SubOrderDetail /></SuspenseWrapper>} />
-          <Route path="cases" element={<SuspenseWrapper><Cases /></SuspenseWrapper>} />
           <Route path="cases/:caseId" element={<SuspenseWrapper><CaseDetails /></SuspenseWrapper>} />
           <Route path="patients" element={<SuspenseWrapper><Patients /></SuspenseWrapper>} />
           <Route path="patients/:patientId" element={<SuspenseWrapper><PatientDetails /></SuspenseWrapper>} />
@@ -199,7 +194,6 @@ export function AppRouter() {
           <Route path="forms" element={<SuspenseWrapper><Forms /></SuspenseWrapper>} />
           <Route path="reports" element={<SuspenseWrapper><Reports /></SuspenseWrapper>} />
           <Route path="settings" element={<SuspenseWrapper><Settings /></SuspenseWrapper>} />
-          <Route path="notifications" element={<SuspenseWrapper><Notifications /></SuspenseWrapper>} />
           <Route path="change-requests" element={<SuspenseWrapper><ChangeRequests /></SuspenseWrapper>} />
           <Route path="scan-center" element={<SuspenseWrapper><ScanCenter /></SuspenseWrapper>} />
           <Route path="workflow-board" element={<SuspenseWrapper><WorkflowBoard /></SuspenseWrapper>} />
