@@ -564,7 +564,7 @@ export default function Flow() {
           {/* Filter 1: Services Filter */}
           <div className="flex items-center gap-1.5" data-testid="filter-services-group">
             <label htmlFor="filter-services" className="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">
-              Services:
+              {t('flow.filterServices', 'Services:')}
             </label>
             <select
               id="filter-services"
@@ -593,7 +593,7 @@ export default function Flow() {
           {/* Filter 2: Status Filter */}
           <div className="flex items-center gap-1.5" data-testid="filter-status-group">
             <label htmlFor="filter-status" className="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">
-              Status:
+              {t('flow.filterStatus', 'Status:')}
             </label>
             <select
               id="filter-status"
@@ -618,7 +618,7 @@ export default function Flow() {
           {/* Filter 3: Duration Filter */}
           <div className="flex items-center gap-1.5" data-testid="filter-duration-group">
             <label htmlFor="filter-duration" className="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">
-              Duration:
+              {t('flow.filterDuration', 'Duration:')}
             </label>
             <select
               id="filter-duration"
@@ -647,7 +647,7 @@ export default function Flow() {
             className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold transition-all cursor-pointer self-start lg:self-auto shrink-0"
           >
             <RotateCcw size={12} />
-            <span>Reset Filters</span>
+            <span>{t('flow.resetFilters', 'Reset Filters')}</span>
           </button>
         )}
       </div>

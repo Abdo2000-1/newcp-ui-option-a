@@ -5,6 +5,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { ChevronRight, Home } from 'lucide-react';
+import { useLanguage } from '@/app/providers/contexts/LanguageContext';
 
 const ROUTE_LABELS: Record<string, string> = {
   home: 'Home',
@@ -38,9 +39,9 @@ const ROUTE_LABELS: Record<string, string> = {
   404: 'Page Not Found',
 };
 
-function formatSegmentLabel(segment: string): string {
+function formatSegmentLabel(segment: string, t: (k: string, def?: string) => string): string {
   if (ROUTE_LABELS[segment]) {
-    return ROUTE_LABELS[segment];
+    return t(`breadcrumb.${segment}`, ROUTE_LABELS[segment]);
   }
 
   // Handle order, case, or numeric IDs safely (avoid exposing PHI)
@@ -52,14 +53,16 @@ function formatSegmentLabel(segment: string): string {
   }
 
   // Clean hyphenated strings into Title Case
-  return segment
+  const cleaned = segment
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+  return t(`breadcrumb.${segment}`, cleaned);
 }
 
 export function GlobalBreadcrumbs() {
   const location = useLocation();
+  const { t } = useLanguage();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
   // Do not render breadcrumbs on login or empty root
@@ -70,7 +73,7 @@ export function GlobalBreadcrumbs() {
   return (
     <Box
       component="nav"
-      aria-label="Breadcrumb navigation"
+      aria-label={t('breadcrumb.nav', 'Breadcrumb navigation')}
       data-testid="global-breadcrumbs"
       sx={{
         mb: 2.5,
@@ -106,7 +109,7 @@ export function GlobalBreadcrumbs() {
             }}
           >
             <Home size={14} />
-            <span>Home</span>
+            <span>{t('breadcrumb.home', 'Home')}</span>
           </Typography>
         ) : (
           /* Root Home Link */
@@ -123,10 +126,10 @@ export function GlobalBreadcrumbs() {
               fontWeight: 500,
               '&:hover': { color: '#0284c7' },
             }}
-            aria-label="Navigate to Home"
+            aria-label={t('breadcrumb.toHome', 'Navigate to Home')}
           >
             <Home size={14} />
-            <span>Home</span>
+            <span>{t('breadcrumb.home', 'Home')}</span>
           </Link>
         )}
 
@@ -135,7 +138,7 @@ export function GlobalBreadcrumbs() {
           pathnames.map((value, index) => {
             const last = index === pathnames.length - 1;
             const to = `/${pathnames.slice(0, index + 1).join('/')}`;
-            const label = formatSegmentLabel(value);
+            const label = formatSegmentLabel(value, t);
 
             if (last) {
               return (
@@ -176,3 +179,5 @@ export function GlobalBreadcrumbs() {
     </Box>
   );
 }
+
+export default GlobalBreadcrumbs;

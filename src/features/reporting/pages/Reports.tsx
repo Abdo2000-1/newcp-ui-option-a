@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, 
-  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine 
+import {
+  BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ReferenceLine
 } from 'recharts';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { formatCurrency } from '@/shared/utils/format';
@@ -10,9 +10,9 @@ import { useFetch } from '@/shared/hooks/useFetch';
 import { useStore } from '@/shared/hooks/useStore';
 import { useAuthorization } from '@/shared/hooks';
 import { useLanguage } from '@/app/providers/contexts/LanguageContext';
-import { 
-  TrendingUp, DollarSign, Award, Clock, Activity, Download, 
-  Calendar, CheckCircle2, ArrowUpRight, Filter, Search, ChevronLeft, 
+import {
+  TrendingUp, DollarSign, Award, Clock, Activity, Download,
+  Calendar, CheckCircle2, ArrowUpRight, Filter, Search, ChevronLeft,
   ChevronRight, Sparkles, Layers, ArrowDownRight, Compass,
   Printer
 } from 'lucide-react';
@@ -252,7 +252,7 @@ export default function Reports() {
               placeholder="Filter metrics..."
               className="w-full pl-3 pr-8 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-cyan-400 shadow-xs"
             />
-            <button 
+            <button
               onClick={() => sound.playClick()}
               className="absolute right-1 top-1 h-6 w-6 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center justify-center transition-colors"
             >
@@ -278,7 +278,7 @@ export default function Reports() {
             <span className="inline-block px-2 py-0.5 border border-slate-800 text-[10px] font-mono font-bold uppercase">
               CONFIDENTIAL / CLINICAL AUDIT
             </span>
-            <p className="text-[10px] text-slate-500 mt-1">[MOCK / NOT_INTEGRATED PROTOTYPE]</p>
+
           </div>
         </div>
       </div>
@@ -306,7 +306,7 @@ export default function Reports() {
       {/* ROW 1: 4 WIDGETS (Spline Trajectory, Multi-point Line, Calendar, Dual Gauge) */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {/* CARD 1: Smooth Spline Trajectory with Apex Badge (Top Left of Image 1) */}
         <div className="bg-white dark:bg-[#0b1120] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between relative overflow-hidden">
           <div>
@@ -334,12 +334,12 @@ export default function Reports() {
                     <stop offset="100%" stopColor="#818cf8" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <Area 
-                  type="natural" 
-                  dataKey="value" 
-                  stroke="#6366f1" 
-                  strokeWidth={3} 
-                  fill="url(#purpleSplineGrad)" 
+                <Area
+                  type="natural"
+                  dataKey="value"
+                  stroke="#6366f1"
+                  strokeWidth={3}
+                  fill="url(#purpleSplineGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -362,10 +362,10 @@ export default function Reports() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dynamicMultiLineData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.3} />
-                <Line 
-                  type="linear" 
-                  dataKey="rate" 
-                  stroke="#f59e0b" 
+                <Line
+                  type="linear"
+                  dataKey="rate"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   dot={{ r: 4, stroke: '#00d8fe', strokeWidth: 2, fill: '#6366f1' }}
                   activeDot={{ r: 6, fill: '#00d8fe' }}
@@ -378,8 +378,8 @@ export default function Reports() {
         {/* CARD 3: Interactive Calendar Schedule (Top Mid-Right of Image 1) */}
         <div className="bg-white dark:bg-[#0b1120] rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between px-1">
-            <button 
-              onClick={() => sound.playClick()} 
+            <button
+              onClick={() => sound.playClick()}
               className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
             >
               <ChevronLeft size={14} />
@@ -387,8 +387,8 @@ export default function Reports() {
             <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
               January 2026
             </span>
-            <button 
-              onClick={() => sound.playClick()} 
+            <button
+              onClick={() => sound.playClick()}
               className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
             >
               <ChevronRight size={14} />
@@ -412,11 +412,11 @@ export default function Reports() {
                     type="button"
                     onClick={() => { setSelectedDay(d); sound.playClick(); }}
                     className={`h-5 w-5 mx-auto rounded-full text-[10px] font-mono font-bold flex items-center justify-center transition-all ${
-                      isSelected 
-                        ? 'bg-cyan-500 text-slate-950 ring-2 ring-cyan-400/40 shadow-xs scale-110' 
-                        : isPreset 
+                      isSelected
+                        ? 'bg-cyan-500 text-slate-950 ring-2 ring-cyan-400/40 shadow-xs scale-110'
+                        : isPreset
                         ? 'border border-cyan-400 text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-950'
-                        : isViolet 
+                        : isViolet
                         ? 'border border-indigo-400 text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950'
                         : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
@@ -496,7 +496,7 @@ export default function Reports() {
       {/* ROW 2: 3 WIDGETS (KPI Dual Sparklines, Big 75% Meter, Dual Spline Velocity Area) */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
+
         {/* CARD 5: Dual KPI Metrics with Wavy Sparklines (Col 1-3) */}
         <div className="lg:col-span-3 bg-white dark:bg-[#0b1120] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
           <div className="grid grid-cols-2 gap-4">
@@ -608,22 +608,22 @@ export default function Reports() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.2} />
                 <Tooltip content={<CustomReportTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="capacity" 
-                  name="Capacity" 
-                  stroke="#f59e0b" 
-                  strokeWidth={2.5} 
-                  fill="url(#amberAreaGrad)" 
+                <Area
+                  type="monotone"
+                  dataKey="capacity"
+                  name="Capacity"
+                  stroke="#f59e0b"
+                  strokeWidth={2.5}
+                  fill="url(#amberAreaGrad)"
                   dot={{ r: 4, stroke: '#f59e0b', strokeWidth: 2, fill: '#fff' }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="speed" 
-                  name="Velocity" 
-                  stroke="#6366f1" 
-                  strokeWidth={2.5} 
-                  fill="url(#indigoAreaGrad)" 
+                <Area
+                  type="monotone"
+                  dataKey="speed"
+                  name="Velocity"
+                  stroke="#6366f1"
+                  strokeWidth={2.5}
+                  fill="url(#indigoAreaGrad)"
                   dot={{ r: 4, stroke: '#6366f1', strokeWidth: 2, fill: '#fff' }}
                 />
               </AreaChart>
@@ -637,7 +637,7 @@ export default function Reports() {
       {/* ROW 3: 3 WIDGETS (Bidirectional Bar, Production Timeline, Grouped Bars) */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
+
         {/* CARD 8: Bidirectional Floating Bar Chart (Bottom Left of Image 1) */}
         <div className="lg:col-span-4 bg-white dark:bg-[#0b1120] rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
           <div>

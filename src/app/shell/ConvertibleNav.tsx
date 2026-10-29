@@ -617,7 +617,7 @@ export function ConvertibleNav({
                       '&:hover': { transform: 'scale(1.05)' },
                     }}
                   >
-                    {profile?.avatarInitials || '3D'}
+                    {backendUserInitials}
                   </ButtonBase>
                 </Tooltip>
 
@@ -647,10 +647,10 @@ export function ConvertibleNav({
                   >
                     <Box sx={{ display: { xs: 'none', xl: 'flex' }, flexDirection: 'column', textAlign: 'left', lineHeight: 1.1 }}>
                       <Typography sx={{ fontSize: '0.75rem', fontWeight: 900, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {profile?.firstName || 'Abdu M.'}
+                        {backendUserName}
                       </Typography>
                       <Typography sx={{ fontSize: '0.625rem', fontWeight: 800, color: '#ea580c' }}>
-                        Lead Specialist
+                        {backendUserRole}
                       </Typography>
                     </Box>
                     <ChevronDown size={12} style={{ opacity: 0.6 }} />
@@ -673,10 +673,10 @@ export function ConvertibleNav({
                     >
                       <Box sx={{ p: 1, mb: 1, borderBottom: `1px solid ${isDark ? alpha('#ffffff', 0.08) : alpha('#000000', 0.06)}` }}>
                         <Typography sx={{ fontSize: '0.75rem', fontWeight: 900 }}>
-                          {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
+                          {backendUserName}
                         </Typography>
                         <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary', fontFamily: 'monospace' }}>
-                          a.aladawy@3ddx.com • ID: 3DDX-9942
+                          {backendEmail} {backendUserId ? `• ${backendUserId}` : ''}
                         </Typography>
                       </Box>
 
@@ -1841,10 +1841,10 @@ export function ConvertibleNav({
             {!collapsed && (
               <Box sx={{ display: 'flex', flexDirection: 'column', textAlign: 'left', minWidth: 0, lineHeight: 1.1 }}>
                 <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : 'Abdu Mohamed'}
+                  {backendUserName}
                 </Typography>
                 <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: '#ea580c' }}>
-                  CP Specialist
+                  {backendUserRole}
                 </Typography>
               </Box>
             )}
