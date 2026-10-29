@@ -161,17 +161,19 @@ export const APPROVED_DEMO_IDENTITIES: Record<string, any> = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_SESSION_KEY = 'newcp_iam_session_v098';
+const LEGACY_STORAGE_SESSION_KEY = 'newcp_iam_session_v097';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<UserSession | null>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_SESSION_KEY);
+      const stored = localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem(LEGACY_STORAGE_SESSION_KEY);
       if (stored) {
         const parsed: UserSession = JSON.parse(stored);
         const now = Date.now();
         // Check timeout
         if (now > parsed.expiresAt || (now - parsed.lastActivityAt) > IDLE_TIMEOUT_MS) {
           localStorage.removeItem(STORAGE_SESSION_KEY);
+          localStorage.removeItem(LEGACY_STORAGE_SESSION_KEY);
           return null;
         }
         return parsed;
@@ -199,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setStatus('unauthenticated');
       localStorage.removeItem(STORAGE_SESSION_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_SESSION_KEY);
     }
   }, []);
 

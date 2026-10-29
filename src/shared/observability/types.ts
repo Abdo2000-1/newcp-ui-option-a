@@ -118,3 +118,31 @@ export interface IPostHogClient {
   isFeatureEnabled?: (key: string) => boolean | undefined;
   getFeatureFlag?: (key: string) => string | boolean | undefined;
 }
+
+export type FeatureFlagEvaluationState = 'remote' | 'local' | 'disabled' | 'unavailable';
+
+export interface FeatureFlagDetail {
+  key: string;
+  enabled: boolean;
+  state: FeatureFlagEvaluationState;
+  source: string;
+}
+
+export interface PostHogStatusSummary {
+  enabled: boolean;
+  configured: boolean;
+  host: string;
+  maskedKey: string;
+  environment: TelemetryEnvironment;
+  phiSafe: boolean;
+}
+
+export interface SentryStatusSummary {
+  enabled: boolean;
+  configured: boolean;
+  maskedDsn: string;
+  environment: string;
+  release: string;
+  sampleRate: number;
+  phiScrubbingActive: boolean;
+}

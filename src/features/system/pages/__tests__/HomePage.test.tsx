@@ -155,7 +155,23 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
     });
 
     it('renders 404 NotFound view when accessing /dashboard directly via route access', async () => {
-      localStorage.setItem('3ddx-auth', 'true');
+            localStorage.setItem('3ddx-auth', 'true');
+      localStorage.setItem('newcp_iam_session_v098', JSON.stringify({
+        userId: 'usr-home-001',
+        email: 'doctor@3ddx.com',
+        fullName: 'Dr. Test User',
+        activeTenant: { id: 1, label: '3ddx.com' },
+        tenantId: 1,
+        family: 'DOCTOR',
+        roles: ['tenant_user'],
+        capabilities: ['orders.view'],
+        status: 'authenticated',
+        accessStatus: 'AUTHORIZED',
+        tenantSwitchingEnabled: false,
+        issuedAt: Date.now(),
+        lastActivityAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }));
 
       render(
         <MemoryRouter initialEntries={['/dashboard']}>
@@ -174,7 +190,23 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
 
   describe('Authenticated users enter /home & unauthorized users are not redirected incorrectly', () => {
     it('redirects authenticated users entering root / directly to /home', async () => {
-      localStorage.setItem('3ddx-auth', 'true');
+            localStorage.setItem('3ddx-auth', 'true');
+      localStorage.setItem('newcp_iam_session_v098', JSON.stringify({
+        userId: 'usr-home-001',
+        email: 'doctor@3ddx.com',
+        fullName: 'Dr. Test User',
+        activeTenant: { id: 1, label: '3ddx.com' },
+        tenantId: 1,
+        family: 'DOCTOR',
+        roles: ['tenant_user'],
+        capabilities: ['orders.view'],
+        status: 'authenticated',
+        accessStatus: 'AUTHORIZED',
+        tenantSwitchingEnabled: false,
+        issuedAt: Date.now(),
+        lastActivityAt: Date.now(),
+        expiresAt: Date.now() + 3600000,
+      }));
 
       render(
         <MemoryRouter initialEntries={['/']}>

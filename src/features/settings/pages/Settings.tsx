@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Bell, 
-  Palette, 
-  Globe, 
-  ShieldCheck, 
-  Building2, 
-  Moon, 
-  Sun, 
+import {
+  User,
+  Bell,
+  Palette,
+  Globe,
+  ShieldCheck,
+  Building2,
+  Moon,
+  Sun,
   Monitor,
   Check,
   CheckCircle2,
@@ -200,7 +200,7 @@ export default function Settings() {
     if (/[A-Z]/.test(pass)) score += 25;
     if (/[0-9]/.test(pass)) score += 25;
     if (/[^A-Za-z0-9]/.test(pass)) score += 25;
-    
+
     if (score <= 25) return { score, label: 'Weak', color: 'bg-rose-500' };
     if (score <= 50) return { score, label: 'Fair', color: 'bg-amber-500' };
     if (score <= 75) return { score, label: 'Good', color: 'bg-cyan-500' };
@@ -260,7 +260,7 @@ export default function Settings() {
               <span>{savedMessage}</span>
             </div>
           )}
-          <Button 
+          <Button
             onClick={handleSave}
             className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-sm shadow-cyan-500/30 flex items-center gap-2"
           >
@@ -325,7 +325,7 @@ export default function Settings() {
 
         {/* Content Panel Area */}
         <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-7 shadow-xs">
-          
+
           {/* ========================================================================= */}
           {/* TAB 1: THEME & APPEARANCE (Completely Overhauled)                          */}
           {/* ========================================================================= */}
@@ -548,8 +548,8 @@ export default function Settings() {
                           : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
-                      <span 
-                        className="w-4 h-4 rounded-full shadow-xs shrink-0" 
+                      <span
+                        className="w-4 h-4 rounded-full shadow-xs shrink-0"
                         style={{ backgroundColor: acc.color }}
                       />
                       <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
@@ -601,7 +601,7 @@ export default function Settings() {
               {/* Hardware Acceleration & Visual Performance */}
               <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Display & 3D Acceleration</h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
                     <div>
@@ -609,11 +609,11 @@ export default function Settings() {
                       <div className="text-xs text-slate-500">Accelerate root rendering and titanium screw models via GPU shaders</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={hardwareAcceleration} 
+                      <input
+                        type="checkbox"
+                        checked={hardwareAcceleration}
                         onChange={e => setHardwareAcceleration(e.target.checked)}
-                        className="sr-only peer" 
+                        className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </label>
@@ -625,11 +625,11 @@ export default function Settings() {
                       <div className="text-xs text-slate-500">Sharpen tooth labels against gingival background colors</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={highContrastTeeth} 
+                      <input
+                        type="checkbox"
+                        checked={highContrastTeeth}
                         onChange={e => setHighContrastTeeth(e.target.checked)}
-                        className="sr-only peer" 
+                        className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </label>
@@ -641,11 +641,11 @@ export default function Settings() {
                       <div className="text-xs text-slate-500">Fluid transitions on modal overlays and navigation items</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={animationsEnabled} 
+                      <input
+                        type="checkbox"
+                        checked={animationsEnabled}
                         onChange={e => setAnimationsEnabled(e.target.checked)}
-                        className="sr-only peer" 
+                        className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </label>
@@ -691,7 +691,7 @@ export default function Settings() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                     {email} • {specialty}
                   </p>
-                  
+
                   {/* Preset Avatar Selector */}
                   <div className="pt-2 flex items-center gap-2">
                     <span className="text-xs text-slate-400">Avatar Initials:</span>
@@ -717,9 +717,9 @@ export default function Settings() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">First Name</label>
-                  <input 
-                    type="text" 
-                    value={firstName} 
+                  <input
+                    type="text"
+                    value={firstName}
                     onChange={e => setFirstName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -727,9 +727,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Last Name</label>
-                  <input 
-                    type="text" 
-                    value={lastName} 
+                  <input
+                    type="text"
+                    value={lastName}
                     onChange={e => setLastName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -737,9 +737,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address (CAD Notifications)</label>
-                  <input 
-                    type="email" 
-                    value={email} 
+                  <input
+                    type="email"
+                    value={email}
                     onChange={e => setEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -747,9 +747,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Direct Phone / Hotline</label>
-                  <input 
-                    type="tel" 
-                    value={phone} 
+                  <input
+                    type="tel"
+                    value={phone}
                     onChange={e => setPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -757,9 +757,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Staff Role & Position</label>
-                  <input 
-                    type="text" 
-                    value={role} 
+                  <input
+                    type="text"
+                    value={role}
                     onChange={e => setRole(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -767,9 +767,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">License / Board Certification #</label>
-                  <input 
-                    type="text" 
-                    value={licenseNumber} 
+                  <input
+                    type="text"
+                    value={licenseNumber}
                     onChange={e => setLicenseNumber(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden font-mono"
                   />
@@ -777,9 +777,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Clinical Specialty</label>
-                  <input 
-                    type="text" 
-                    value={specialty} 
+                  <input
+                    type="text"
+                    value={specialty}
                     onChange={e => setSpecialty(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -787,9 +787,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Bio & Lab Notes</label>
-                  <textarea 
+                  <textarea
                     rows={3}
-                    value={bio} 
+                    value={bio}
                     onChange={e => setBio(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -845,7 +845,7 @@ export default function Settings() {
                 ].map((item) => {
                   const isChecked = notifPreferences[item.key as keyof typeof notifPreferences];
                   return (
-                    <div 
+                    <div
                       key={item.key}
                       className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30"
                     >
@@ -854,11 +854,11 @@ export default function Settings() {
                         <div className="text-xs text-slate-500 mt-0.5">{item.desc}</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input 
-                          type="checkbox" 
-                          checked={isChecked} 
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
                           onChange={() => setNotifPreferences(prev => ({ ...prev, [item.key]: !isChecked }))}
-                          className="sr-only peer" 
+                          className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                       </label>
@@ -947,10 +947,10 @@ export default function Settings() {
                       <span>{currentOption.nativeName}</span>
                     </div>
                   </div>
-                  <select 
+                  <select
                     id="settings-studio-language"
                     aria-label="Studio Language"
-                    value={language} 
+                    value={language}
                     onChange={e => setLanguage(e.target.value as LanguageCode)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   >
@@ -964,8 +964,8 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Operating Timezone</label>
-                  <select 
-                    value={timezone} 
+                  <select
+                    value={timezone}
                     onChange={e => setTimezone(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   >
@@ -980,8 +980,8 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Date Formatting</label>
-                  <select 
-                    value={dateFormat} 
+                  <select
+                    value={dateFormat}
                     onChange={e => setDateFormat(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   >
@@ -993,8 +993,8 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Invoicing Currency</label>
-                  <select 
-                    value={currency} 
+                  <select
+                    value={currency}
                     onChange={e => setCurrency(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   >
@@ -1035,7 +1035,7 @@ export default function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Current Password</label>
-                    <input 
+                    <input
                       type="password"
                       value={currentPassword}
                       onChange={e => setCurrentPassword(e.target.value)}
@@ -1047,7 +1047,7 @@ export default function Settings() {
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">New Password</label>
                     <div className="relative">
-                      <input 
+                      <input
                         type={showPassword ? 'text' : 'password'}
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
@@ -1066,7 +1066,7 @@ export default function Settings() {
 
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Confirm Password</label>
-                    <input 
+                    <input
                       type="password"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
@@ -1084,17 +1084,17 @@ export default function Settings() {
                       <span className="font-bold text-slate-800 dark:text-slate-200">{passStrength.label}</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${passStrength.color}`} 
-                        style={{ width: `${passStrength.score}%` }} 
+                      <div
+                        className={`h-full transition-all duration-300 ${passStrength.color}`}
+                        style={{ width: `${passStrength.score}%` }}
                       />
                     </div>
                   </div>
                 )}
 
                 <div className="flex justify-end pt-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     disabled={!currentPassword || !newPassword || newPassword !== confirmPassword}
                     onClick={() => {
@@ -1159,7 +1159,7 @@ export default function Settings() {
                   {sessions.map((sess) => {
                     const DeviceIcon = sess.icon;
                     return (
-                      <div 
+                      <div
                         key={sess.id}
                         className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                       >
@@ -1219,9 +1219,9 @@ export default function Settings() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Laboratory Facility / Brand Name</label>
-                  <input 
-                    type="text" 
-                    value={orgName} 
+                  <input
+                    type="text"
+                    value={orgName}
                     onChange={e => setOrgName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -1229,9 +1229,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Registered Legal Entity</label>
-                  <input 
-                    type="text" 
-                    value={legalName} 
+                  <input
+                    type="text"
+                    value={legalName}
                     onChange={e => setLegalName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -1239,9 +1239,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">FDA Dental Facility / Tax ID</label>
-                  <input 
-                    type="text" 
-                    value={taxId} 
+                  <input
+                    type="text"
+                    value={taxId}
                     onChange={e => setTaxId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden font-mono"
                   />
@@ -1249,9 +1249,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Lab Dispatch Email</label>
-                  <input 
-                    type="email" 
-                    value={orgEmail} 
+                  <input
+                    type="email"
+                    value={orgEmail}
                     onChange={e => setOrgEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -1259,9 +1259,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Clinic Support Phone</label>
-                  <input 
-                    type="tel" 
-                    value={orgPhone} 
+                  <input
+                    type="tel"
+                    value={orgPhone}
                     onChange={e => setOrgPhone(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -1269,9 +1269,9 @@ export default function Settings() {
 
                 <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Milling Facility Address</label>
-                  <input 
-                    type="text" 
-                    value={orgAddress} 
+                  <input
+                    type="text"
+                    value={orgAddress}
                     onChange={e => setOrgAddress(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-hidden"
                   />
@@ -1285,11 +1285,11 @@ export default function Settings() {
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-2">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Crowns & Inlays</span>
                     <div className="flex items-center gap-2">
-                      <input 
-                        type="number" 
-                        min={1} 
-                        max={14} 
-                        value={crownDays} 
+                      <input
+                        type="number"
+                        min={1}
+                        max={14}
+                        value={crownDays}
                         onChange={e => setCrownDays(Number(e.target.value))}
                         className="w-16 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-center"
                       />
@@ -1300,11 +1300,11 @@ export default function Settings() {
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-2">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Implant Abutments</span>
                     <div className="flex items-center gap-2">
-                      <input 
-                        type="number" 
-                        min={1} 
-                        max={14} 
-                        value={implantDays} 
+                      <input
+                        type="number"
+                        min={1}
+                        max={14}
+                        value={implantDays}
                         onChange={e => setImplantDays(Number(e.target.value))}
                         className="w-16 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-center"
                       />
@@ -1315,11 +1315,11 @@ export default function Settings() {
                   <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-2">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Clear Aligner Sets</span>
                     <div className="flex items-center gap-2">
-                      <input 
-                        type="number" 
-                        min={1} 
-                        max={21} 
-                        value={alignerDays} 
+                      <input
+                        type="number"
+                        min={1}
+                        max={21}
+                        value={alignerDays}
                         onChange={e => setAlignerDays(Number(e.target.value))}
                         className="w-16 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-center"
                       />
@@ -1357,7 +1357,7 @@ export default function Settings() {
               DentaLab CAD Engine • Synchronized with Local Storage & In-Memory Store
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   setSavedMessage('Discarded changes.');
@@ -1366,7 +1366,7 @@ export default function Settings() {
               >
                 Reset Tab
               </Button>
-              <Button 
+              <Button
                 onClick={handleSave}
                 className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-sm shadow-cyan-500/25 flex items-center gap-2"
               >
@@ -1387,8 +1387,8 @@ export default function Settings() {
                 <QrCode className="w-5 h-5 text-cyan-500" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Setup Authenticator App</h3>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowTwoFactorModal(false)}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
@@ -1408,7 +1408,7 @@ export default function Settings() {
                 <rect x="10" y="10" width="25" height="25" fill="#0f172a" rx="2" />
                 <rect x="15" y="15" width="15" height="15" fill="white" />
                 <rect x="18" y="18" width="9" height="9" fill="#0f172a" />
-                
+
                 <rect x="65" y="10" width="25" height="25" fill="#0f172a" rx="2" />
                 <rect x="70" y="15" width="15" height="15" fill="white" />
                 <rect x="73" y="18" width="9" height="9" fill="#0f172a" />
@@ -1436,14 +1436,14 @@ export default function Settings() {
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-500">Or enter manual key:</label>
               <div className="flex items-center gap-2">
-                <input 
-                  type="text" 
-                  readOnly 
-                  value="DENT-LAB7-X892-KQ41" 
+                <input
+                  type="text"
+                  readOnly
+                  value="DENT-LAB7-X892-KQ41"
                   className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs font-mono text-slate-800 dark:text-slate-200"
                 />
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => {
                     navigator.clipboard?.writeText('DENT-LAB7-X892-KQ41');
@@ -1459,8 +1459,8 @@ export default function Settings() {
             {/* Verification Code */}
             <div className="space-y-1.5 pt-1">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Enter 6-digit Code</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 maxLength={6}
                 placeholder="123456"
                 value={twoFactorCode}
@@ -1473,7 +1473,7 @@ export default function Settings() {
               <Button variant="outline" size="sm" onClick={() => setShowTwoFactorModal(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 size="sm"
                 disabled={twoFactorCode.length < 6}
                 onClick={() => {
