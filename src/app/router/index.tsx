@@ -20,7 +20,6 @@ const OrderWorkflow = lazy(() => import('@/features/orders/pages/OrderWorkflow')
 const OrderFiles = lazy(() => import('@/features/orders/pages/OrderFiles'));
 const SubOrderDetail = lazy(() => import('@/features/orders/pages/SubOrderDetail'));
 const CaseDetails = lazy(() => import('@/features/orders/pages/CaseDetails'));
-const WorkflowBoard = lazy(() => import('@/features/orders/pages/WorkflowBoard'));
 const ChangeRequests = lazy(() => import('@/features/orders/pages/ChangeRequests'));
 
 // Models
@@ -61,6 +60,7 @@ export const ROUTES = {
   EDIT_CASE: '/edit-case',
   ORDER_DETAILS: '/order-details',
   QUARTER_TARGETS: '/quarter-targets',
+  LIVE_DASHBOARD: '/live-dashboard',
   TASK_47: '/task-47',
   TASK_31: '/task-31',
   PROFILE: '/profile',
@@ -73,8 +73,7 @@ export const ROUTES = {
   SCAN_CENTER: '/scan-center',
   DOCUMENTS: '/documents',
   CHANGE_REQUESTS: '/change-requests',
-  WORKFLOW_BOARD: '/workflow-board',
-  REPORTS: '/reports',
+    REPORTS: '/reports',
   SETTINGS: '/settings',
   SWAGGER: '/swagger',
   API_DOCS: '/api-docs',
@@ -167,6 +166,7 @@ export function AppRouter() {
           <Route path="add-case" element={<SuspenseWrapper><AddCase /></SuspenseWrapper>} />
           <Route path="order-details" element={<SuspenseWrapper><OrderDetailsPage /></SuspenseWrapper>} />
           <Route path="quarter-targets" element={<SuspenseWrapper><QuarterTargetsReport /></SuspenseWrapper>} />
+          <Route path="live-dashboard" element={<SuspenseWrapper><QuarterTargetsReport /></SuspenseWrapper>} />
           <Route path="task-47" element={<SuspenseWrapper><Task47ModelWorkReport /></SuspenseWrapper>} />
           <Route path="task-31" element={<SuspenseWrapper><Task31StaffTargets /></SuspenseWrapper>} />
           <Route path="edit-case" element={<SuspenseWrapper><EditCasePage /></SuspenseWrapper>} />
@@ -196,7 +196,6 @@ export function AppRouter() {
           <Route path="settings" element={<SuspenseWrapper><Settings /></SuspenseWrapper>} />
           <Route path="change-requests" element={<SuspenseWrapper><ChangeRequests /></SuspenseWrapper>} />
           <Route path="scan-center" element={<SuspenseWrapper><ScanCenter /></SuspenseWrapper>} />
-          <Route path="workflow-board" element={<SuspenseWrapper><WorkflowBoard /></SuspenseWrapper>} />
           <Route path="documents" element={<SuspenseWrapper><Documents /></SuspenseWrapper>} />
           <Route path="503" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />
           <Route path="maintenance" element={<SuspenseWrapper><Maintenance503Page /></SuspenseWrapper>} />

@@ -57,7 +57,7 @@ export default function HomePage() {
       tag: 'Specifications',
     },
     {
-      title: 'Quarterly Targets',
+      title: 'Live Dashboard',
       description: 'Monitor clinical delivery performance, SLA completion, and output goals.',
       path: '/quarter-targets',
       icon: <FileSpreadsheet className="w-5 h-5 text-indigo-500" />,

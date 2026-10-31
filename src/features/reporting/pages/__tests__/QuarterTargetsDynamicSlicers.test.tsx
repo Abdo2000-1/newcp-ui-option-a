@@ -1,15 +1,30 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import QuarterTargetsReport from '../QuarterTargetsReport';
 import { AppProviders } from '@/app/providers';
+import { catalogClient, MOCK_CATALOG_SERVICES } from '@/shared/api/catalogClient';
 
-describe('UIUX-REQ-019: Quarter Targets Dynamic Slicers & Mock Power BI Canvas', () => {
+// Mock Recharts ResponsiveContainer to avoid 0x0 container size issues in JSDOM
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="responsive-container" style={{ width: 800, height: 400 }}>
+        {children}
+      </div>
+    ),
+  };
+});
+
+describe('Live Dashboard & Contract Telemetries (UIUX-REQ-019)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(catalogClient, 'listServices').mockResolvedValue(MOCK_CATALOG_SERVICES);
   });
 
-  it('renders the Quarter Targets header, view switchers, and mock notice banner', () => {
+  it('renders the Live Dashboard header, API Live badge, and contract compliance notice', async () => {
     render(
       <MemoryRouter>
         <AppProviders>
@@ -18,13 +33,27 @@ describe('UIUX-REQ-019: Quarter Targets Dynamic Slicers & Mock Power BI Canvas',
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/3DDX Quarter Targets/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /power bi live dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /doctor target matrix/i })).toBeInTheDocument();
-    expect(screen.getByText(/Power BI Canvas Emulation: Synthetic demonstration/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Live Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('API Live')).toBeInTheDocument();
+    });
+
+    // Truthful Contract Capability Gap Alert
+    expect(screen.getByText(/Canonical Contract Integration & Telemetry Governance/i)).toBeInTheDocument();
+    expect(screen.getByText(/In accordance with zero-fake-data standards/i)).toBeInTheDocument();
+
+    // Verify complete absence of Power BI text
+    expect(screen.queryByText(/Power BI Web Canvas/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Power BI Gateway/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Power Designer/i)).not.toBeInTheDocument();
+
+    // Verify absence of unsupported synthetic slicers
+    expect(screen.queryByRole('button', { name: /^Guides$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^TP Plans$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^All Quota$/i })).not.toBeInTheDocument();
   });
 
-  it('manages Reset Slicers button state and resets active slicers to defaults', () => {
+  it('renders real catalog services and KPI summary cards from catalogClient', async () => {
     render(
       <MemoryRouter>
         <AppProviders>
@@ -33,24 +62,49 @@ describe('UIUX-REQ-019: Quarter Targets Dynamic Slicers & Mock Power BI Canvas',
       </MemoryRouter>
     );
 
+    await waitFor(() => {
+      expect(screen.getByText('Biomodel 3D Printing')).toBeInTheDocument();
+      expect(screen.getByText('Dicom to CAD Conversion')).toBeInTheDocument();
+    });
+
+    // KPI cards
+    expect(screen.getByText('Registered Services')).toBeInTheDocument();
+    expect(screen.getByText('Average SLA Lead Time')).toBeInTheDocument();
+    expect(screen.getByText('Digital CAD Services')).toBeInTheDocument();
+    expect(screen.getByText('Active Workflows')).toBeInTheDocument();
+  });
+
+  it('filters catalog services dynamically and displays empty state on zero matches', async () => {
+    render(
+      <MemoryRouter>
+        <AppProviders>
+          <QuarterTargetsReport />
+        </AppProviders>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Biomodel 3D Printing')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText(/search service name, code, workflow/i);
+    fireEvent.change(searchInput, { target: { value: 'non_existent_service_xyz' } });
+
+    // Empty state should appear
+    expect(screen.getByTestId('slicer-no-results')).toBeInTheDocument();
+    expect(screen.getByText('No Matching Catalog Services')).toBeInTheDocument();
+
+    // Click Reset Filters
     const resetBtn = screen.getByTestId('reset-slicers-btn');
-    expect(resetBtn).toBeDisabled();
-
-    // Select Q1 slicer
-    const q1Btn = screen.getByRole('button', { name: /^Q1$/i });
-    fireEvent.click(q1Btn);
-
-    expect(resetBtn).toBeEnabled();
-    expect(screen.getByText(/2,580/)).toBeInTheDocument();
-
-    // Click Reset Slicers
     fireEvent.click(resetBtn);
 
-    expect(resetBtn).toBeDisabled();
-    expect(screen.getByText(/11,770/)).toBeInTheDocument();
+    // Services should reappear
+    await waitFor(() => {
+      expect(screen.getByText('Biomodel 3D Printing')).toBeInTheDocument();
+    });
   });
 
-  it('supports modality and quota slicer selections dynamically', () => {
+  it('filters by Digital CAD format and switches tabs', async () => {
     render(
       <MemoryRouter>
         <AppProviders>
@@ -59,46 +113,21 @@ describe('UIUX-REQ-019: Quarter Targets Dynamic Slicers & Mock Power BI Canvas',
       </MemoryRouter>
     );
 
-    const guidesBtn = screen.getByRole('button', { name: /^Guides$/i });
-    fireEvent.click(guidesBtn);
+    await waitFor(() => {
+      expect(screen.getByText('Biomodel 3D Printing')).toBeInTheDocument();
+    });
 
-    const resetBtn = screen.getByTestId('reset-slicers-btn');
-    expect(resetBtn).toBeEnabled();
+    // Click Digital CAD filter
+    const digitalBtn = screen.getByRole('button', { name: /digital cad/i });
+    fireEvent.click(digitalBtn);
 
-    const aboveQuotaBtn = screen.getByRole('button', { name: /^≥ 100%$/i });
-    fireEvent.click(aboveQuotaBtn);
+    expect(screen.getByText('Dicom to CAD Conversion')).toBeInTheDocument();
+    expect(screen.queryByText('Biomodel 3D Printing')).not.toBeInTheDocument();
 
-    expect(resetBtn).toBeEnabled();
-  });
-
-  it('displays empty state in Doctor Target Matrix when query has no matches and resets', () => {
-    render(
-      <MemoryRouter>
-        <AppProviders>
-          <QuarterTargetsReport />
-        </AppProviders>
-      </MemoryRouter>
-    );
-
-    // Switch to Doctor Target Matrix view
-    const matrixTab = screen.getByRole('button', { name: /doctor target matrix/i });
+    // Switch to Catalog Matrix tab
+    const matrixTab = screen.getByRole('button', { name: /catalog matrix/i });
     fireEvent.click(matrixTab);
 
-    expect(screen.getByText(/CT Dent Ltd/i)).toBeInTheDocument();
-
-    // Type non-existent doctor
-    const searchInput = screen.getByPlaceholderText(/search doctor or clinic/i);
-    fireEvent.change(searchInput, { target: { value: 'non_existent_doctor_xyz' } });
-
-    const noResults = screen.getByTestId('slicer-no-results');
-    expect(noResults).toBeInTheDocument();
-    expect(noResults).toHaveTextContent(/No client accounts match active slicers/i);
-
-    // Reset from within empty state
-    const resetFromEmptyBtn = screen.getByRole('button', { name: /^reset slicers$/i });
-    fireEvent.click(resetFromEmptyBtn);
-
-    expect(screen.queryByTestId('slicer-no-results')).not.toBeInTheDocument();
-    expect(screen.getByText(/CT Dent Ltd/i)).toBeInTheDocument();
+    expect(screen.getByText('Clinical Catalog Specifications Matrix')).toBeInTheDocument();
   });
 });

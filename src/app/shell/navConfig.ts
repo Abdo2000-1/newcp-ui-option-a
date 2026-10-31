@@ -3,7 +3,6 @@ import {
   Package,
   FolderOpen,
   FilePlus2,
-  GitBranch,
   RefreshCcw,
   TrendingUp,
   Boxes,
@@ -59,7 +58,6 @@ export const APPROVED_NAV_SECTIONS: NavSection[] = [
       { id: 'home', label: 'Home', path: '/home', icon: Home },
       { id: 'orders', label: 'Orders', path: '/orders', icon: Package },
       { id: 'addCase', label: 'Add Case', path: '/add-case', icon: FilePlus2 },
-      { id: 'workflowBoard', label: 'Workflow Board', path: '/workflow-board', icon: GitBranch },
       { id: 'changeRequests', label: 'Change Requests', path: '/change-requests', icon: RefreshCcw, badge: 4 },
     ],
   },
@@ -67,7 +65,7 @@ export const APPROVED_NAV_SECTIONS: NavSection[] = [
     id: 'intelligence',
     title: 'Clinical Operations',
     items: [
-      { id: 'quarterTargets', label: 'Quarter Targets', path: '/quarter-targets', icon: TrendingUp },
+      { id: 'liveDashboard', label: 'Live Dashboard', path: '/quarter-targets', icon: TrendingUp },
       { id: 'task47', label: '3D Models (Task 47)', path: '/task-47', icon: Boxes },
       { id: 'task31', label: 'Staff Targets (Task 31)', path: '/task-31', icon: Users2 },
       { id: 'reports', label: 'Reports', path: '/reports', icon: BarChart3 },
@@ -158,6 +156,10 @@ export function isRouteActive(currentPath: string, itemPath: string): boolean {
   }
 
 
+
+  if (itemPath === '/quarter-targets') {
+    return currentPath === '/quarter-targets' || currentPath === '/live-dashboard';
+  }
 
   if (itemPath === '/home') {
     return currentPath === '/home';

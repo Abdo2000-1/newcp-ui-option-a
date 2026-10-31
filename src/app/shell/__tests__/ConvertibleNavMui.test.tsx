@@ -142,7 +142,7 @@ describe('Streamlined Navigation Shell with MUI (UIUX-REQ-007)', () => {
       expect(screen.getByText(/^orders$/i)).toBeInTheDocument();
       expect(screen.queryByText(/^cases$/i)).not.toBeInTheDocument();
       expect(screen.getByText(/add case/i)).toBeInTheDocument();
-      expect(screen.getByText(/quarter targets/i)).toBeInTheDocument();
+      expect(screen.getByText(/live dashboard/i)).toBeInTheDocument();
       expect(screen.getByText(/3d models/i)).toBeInTheDocument();
       expect(screen.getByText(/staff targets/i)).toBeInTheDocument();
       expect(screen.queryByText(/order details/i)).not.toBeInTheDocument();

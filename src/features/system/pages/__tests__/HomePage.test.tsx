@@ -62,7 +62,7 @@ describe('UIUX-HOME-001: Home Page & Landing Route Acceptance', () => {
       expect(screen.getByText('Active Case Flow')).toBeInTheDocument();
       expect(screen.getByText('Add New Case')).toBeInTheDocument();
       expect(screen.getByText('Order Details')).toBeInTheDocument();
-      expect(screen.getByText('Quarterly Targets')).toBeInTheDocument();
+      expect(screen.getByText('Live Dashboard')).toBeInTheDocument();
       expect(screen.getByText('3D Model Production')).toBeInTheDocument();
       expect(screen.getByText('Operator Profile & Preferences')).toBeInTheDocument();
     });

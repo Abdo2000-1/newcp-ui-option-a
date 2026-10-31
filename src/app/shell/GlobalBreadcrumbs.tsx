@@ -13,7 +13,8 @@ const ROUTE_LABELS: Record<string, string> = {
   orders: 'Orders Queue',
   'add-case': 'Add New Case',
   'order-details': 'Order Details',
-  'quarter-targets': 'Quarterly Targets',
+  'quarter-targets': 'Live Dashboard',
+  'live-dashboard': 'Live Dashboard',
   'task-47': '3D Model Production',
   'task-31': 'Staff Workload Targets',
   'edit-case': 'Edit Case',
@@ -30,7 +31,7 @@ const ROUTE_LABELS: Record<string, string> = {
   swagger: 'API Documentation',
   'change-requests': 'Change Requests',
   'scan-center': 'Scan Center',
-  'workflow-board': 'Workflow Board',
+
   documents: 'Documents Library',
   grid: 'Grid',
   forms: 'Forms',
