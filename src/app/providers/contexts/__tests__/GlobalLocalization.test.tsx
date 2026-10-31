@@ -6,7 +6,7 @@ import { Layout } from '@/app/shell/Layout';
 import Dashboard from '@/features/reporting/pages/Dashboard';
 import AddCase from '@/features/orders/pages/AddCase';
 import OrderDetailsPage from '@/features/orders/pages/OrderDetailsPage';
-import WorkflowBoard from '@/features/orders/pages/WorkflowBoard';
+import QuarterTargetsReport from '@/features/reporting/pages/QuarterTargetsReport';
 import Settings from '@/features/settings/pages/Settings';
 import { useLanguage, LanguageFlag } from '../LanguageContext';
 
@@ -121,7 +121,7 @@ describe('Global Application Localization (UIUX-REQ-004)', () => {
 
       expect(screen.getByText('Centre de Contrôle')).toBeInTheDocument();
       expect(screen.getByText('Analytique en Direct')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /analytique power bi/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /analytique exécutive/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /file de production/i })).toBeInTheDocument();
     });
 
@@ -138,7 +138,7 @@ describe('Global Application Localization (UIUX-REQ-004)', () => {
 
       expect(screen.getByText('Leitzentrale')).toBeInTheDocument();
       expect(screen.getByText('Echtzeit-Analytik')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /power bi analysen/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /executive analytics/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /produktionswarteschlange/i })).toBeInTheDocument();
     });
 
@@ -195,18 +195,18 @@ describe('Global Application Localization (UIUX-REQ-004)', () => {
             expect(screen.getByText(/matrice sotto-ordini/i)).toBeInTheDocument();
     });
 
-    it('translates Workflow Board into Spanish (es)', () => {
+    it('translates Live Dashboard into Spanish (es)', () => {
       localStorage.setItem('3ddx-language', 'es');
 
       render(
-        <MemoryRouter initialEntries={['/workflow-board']}>
+        <MemoryRouter initialEntries={['/live-dashboard']}>
           <AppProviders>
-            <WorkflowBoard />
+            <QuarterTargetsReport />
           </AppProviders>
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Tablero de Flujo Clínico')).toBeInTheDocument();
+      expect(screen.getByText('Panel en Vivo')).toBeInTheDocument();
     });
   });
 

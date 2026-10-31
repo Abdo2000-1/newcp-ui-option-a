@@ -131,7 +131,7 @@ export function ConvertibleNav({
     { id: 'home', label: t('nav.home', 'Home'), path: '/home', icon: Home },
     { id: 'flow', label: t('nav.flow', 'Order Flow'), path: '/flow', icon: Layers },
     { id: 'addCase', label: t('nav.addCase', 'Add New Case'), path: '/add-case', icon: FilePlus2 },
-    { id: 'quarterTargets', label: t('nav.quarterTargets', 'Quarter Targets'), path: '/quarter-targets', icon: TrendingUp },
+    { id: 'liveDashboard', label: t('nav.liveDashboard', 'Live Dashboard'), path: '/quarter-targets', icon: TrendingUp },
     { id: 'task47', label: t('nav.task47', 'Task 47: Models'), path: '/task-47', icon: Boxes },
     { id: 'task31', label: t('nav.task31', 'Task 31: Staff Targets'), path: '/task-31', icon: Users2 },
   ];
@@ -871,13 +871,13 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
+                      bgcolor: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
-                      color: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
+                      color: ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? '#38bdf8' : '#0284c7')
                         : (isDark ? '#94a3b8' : '#475569'),
-                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/workflow-board', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
+                      border: `1px solid ${ordersDropdownOpen || ['/flow', '/orders', '/add-case', '/change-requests', '/order-details', '/edit-case'].some(p => location.pathname.startsWith(p)) ? alpha(isDark ? '#38bdf8' : '#0284c7', 0.3) : 'transparent'}`,
                       '&:hover': {
                         color: isDark ? '#f8fafc' : '#0f172a',
                         bgcolor: isDark ? alpha('#ffffff', 0.05) : alpha('#ffffff', 0.8),
@@ -951,34 +951,6 @@ export function ConvertibleNav({
                       </NavLink>
 
                       <NavLink
-                        to="/workflow-board"
-                        onClick={() => setOrdersDropdownOpen(false)}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            p: 1.25,
-                            borderRadius: 2,
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            color: isDark ? '#e2e8f0' : '#1e293b',
-                            '&:hover': {
-                              bgcolor: isDark ? alpha('#ffffff', 0.06) : alpha('#0284c7', 0.06),
-                            },
-                          }}
-                        >
-                          <Layers size={15} color="#8b5cf6" />
-                          <Box>
-                            <div>Workflow Board</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Kanban stage progression</Typography>
-                          </Box>
-                        </Box>
-                      </NavLink>
-
-                      <NavLink
                         to="/change-requests"
                         onClick={() => setOrdersDropdownOpen(false)}
                         style={{ textDecoration: 'none' }}
@@ -1034,7 +1006,7 @@ export function ConvertibleNav({
                       fontWeight: 700,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
-                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p))
+                      bgcolor: opsDropdownOpen || ['/quarter-targets', '/live-dashboard', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p))
                         ? (isDark ? alpha('#0284c7', 0.2) : alpha('#0284c7', 0.1))
                         : 'transparent',
                       color: opsDropdownOpen || ['/quarter-targets', '/task-47', '/task-31', '/reports'].some(p => location.pathname.startsWith(p))
@@ -1079,8 +1051,8 @@ export function ConvertibleNav({
                         >
                           <TrendingUp size={15} color="#0284c7" />
                           <Box>
-                            <div>Quarter Targets & Power BI</div>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>DAX analytics & targets</Typography>
+                            <div>Live Dashboard</div>
+                            <Typography sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>Live clinical operations telemetries</Typography>
                           </Box>
                         </Box>
                       </NavLink>

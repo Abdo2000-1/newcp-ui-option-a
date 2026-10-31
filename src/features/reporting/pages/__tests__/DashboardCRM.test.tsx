@@ -51,7 +51,7 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
       expect(screen.getByText(/command center/i)).toBeInTheDocument();
 
       // Verify Studio Switcher tabs
-      expect(screen.getByRole('button', { name: /power bi analytics/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /executive analytics/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /production queue/i })).toBeInTheDocument();
 
       // Verify Power BI KPI metrics cards exist
@@ -61,7 +61,7 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
       expect(screen.getByText(/turnaround time/i)).toBeInTheDocument();
     });
 
-    it('switches between Power BI Analytics and Production Queue seamlessly', () => {
+    it('switches between Executive Analytics and Production Queue seamlessly', () => {
       render(
         <MemoryRouter>
           <AppProviders>
@@ -70,7 +70,7 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
         </MemoryRouter>
       );
 
-      // Default tab is Power BI Analytics: regional hubs attainment is visible
+      // Default tab is Executive Analytics: regional hubs attainment is visible
       expect(screen.getByText(/regional diagnostic hubs attainment/i)).toBeInTheDocument();
 
       // Click Production Queue tab
@@ -81,8 +81,8 @@ describe('Dashboard CRM Modernization (UIUX-REQ-006)', () => {
       expect(screen.getByText(/live intake orders/i)).toBeInTheDocument();
       expect(screen.getByText(/pacs audit activity/i)).toBeInTheDocument();
 
-      // Switch back to Power BI Analytics
-      const analyticsTab = screen.getByRole('button', { name: /power bi analytics/i });
+      // Switch back to Executive Analytics
+      const analyticsTab = screen.getByRole('button', { name: /executive analytics/i });
       fireEvent.click(analyticsTab);
       expect(screen.getByText(/regional diagnostic hubs attainment/i)).toBeInTheDocument();
     });

@@ -101,7 +101,7 @@ describe('Tier 2 Navbar Dropdown Visibility & Overflow Fix (UIUX-REQ-012)', () =
       expect(opsBtn).toHaveAttribute('aria-expanded', 'true');
       const menu = screen.getByTestId('ops-dropdown-menu');
       expect(menu).toBeInTheDocument();
-      expect(screen.getByText(/quarter targets & power bi/i)).toBeInTheDocument();
+      expect(screen.getByText(/live dashboard/i)).toBeInTheDocument();
       expect(screen.getByText(/task 47: models report/i)).toBeInTheDocument();
       expect(screen.getByText(/task 31: staff targets/i)).toBeInTheDocument();
 
